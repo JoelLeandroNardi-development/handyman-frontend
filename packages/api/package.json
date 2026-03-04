@@ -1,0 +1,10 @@
+{
+  "name": "@smart/api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@smart/core": "workspace:*"
+  }
+}
