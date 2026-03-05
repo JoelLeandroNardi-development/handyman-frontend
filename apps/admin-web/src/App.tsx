@@ -1,60 +1,31 @@
-import React, { useMemo, useState } from "react";
-import { ApiClient, login } from "@smart/api";
-import { decodeJwt } from "@smart/core";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import LoginPage from "./auth/LoginPage";
+import { RequireAdmin } from "./auth/RequireAdmin";
+import AdminLayout from "./layout/AdminLayout";
+import OverviewPage from "./routes/OverviewPage";
+import BookingsPage from "./routes/BookingsPage";
+import SystemHealthPage from "./routes/SystemHealthPage";
 
 export default function App() {
-  const [email, setEmail] = useState("admin@example.com");
-  const [password, setPassword] = useState("password");
-  const [status, setStatus] = useState<string>("Not logged in");
-
-  const api = useMemo(() => {
-    return new ApiClient(API_BASE_URL, () => localStorage.getItem("token"));
-  }, []);
-
-  async function onLogin() {
-    try {
-      const res = await login(api, { email, password });
-      localStorage.setItem("token", res.access_token);
-
-      const claims = decodeJwt(res.access_token);
-      if (!(claims.roles ?? []).includes("admin")) {
-        setStatus(`Logged in, but NOT admin. roles=${JSON.stringify(claims.roles ?? [])}`);
-        return;
-      }
-      setStatus(`Logged in as admin. roles=${JSON.stringify(claims.roles ?? [])}`);
-    } catch (e) {
-      setStatus(`Login failed: ${(e as Error).message}`);
-    }
-  }
-
   return (
-    <div style={{ padding: 24, fontFamily: "system-ui", maxWidth: 480 }}>
-      <h1>Admin Web</h1>
-      <p style={{ opacity: 0.7 }}>API: {API_BASE_URL}</p>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
 
-      <div style={{ display: "grid", gap: 8 }}>
-        <label>
-          Email
-          <input value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: "100%", padding: 8 }} />
-        </label>
-        <label>
-          Password
-          <input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            style={{ width: "100%", padding: 8 }}
-          />
-        </label>
+      <Route
+        path="/"
+        element={
+          <RequireAdmin>
+            <AdminLayout />
+          </RequireAdmin>
+        }
+      >
+        <Route index element={<OverviewPage />} />
+        <Route path="bookings" element={<BookingsPage />} />
+        <Route path="system/health" element={<SystemHealthPage />} />
+      </Route>
 
-        <button onClick={onLogin} style={{ padding: 10 }}>
-          Login
-        </button>
-
-        <div>{status}</div>
-      </div>
-    </div>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

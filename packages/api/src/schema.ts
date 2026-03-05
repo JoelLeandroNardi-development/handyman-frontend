@@ -28,11 +28,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * System Health
-         * @description Admin-only: fan-out to each service /health.
-         *     Returns per-service status, latency, and raw JSON payload (including outbox stats, exchange_name, etc).
-         */
+        /** System Health */
         get: operations["system_health_system_health_get"];
         put?: never;
         post?: never;
@@ -49,11 +45,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * System Rabbit
-         * @description Admin-only: fan-out to each service /debug/rabbit (where implemented).
-         *     If a service returns 404, it likely doesn't implement the endpoint (that's fine).
-         */
+        /** System Rabbit */
         get: operations["system_rabbit_system_rabbit_get"];
         put?: never;
         post?: never;
@@ -70,11 +62,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * System Outbox
-         * @description Admin-only: fan-out to /health and extract a compact outbox view.
-         *     Works best once each service includes 'outbox' + 'exchange_name' in /health.
-         */
+        /** System Outbox */
         get: operations["system_outbox_system_outbox_get"];
         put?: never;
         post?: never;
@@ -169,6 +157,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth-users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin List Auth Users */
+        get: operations["admin_list_auth_users_auth_users_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth-users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin Get Auth User */
+        get: operations["admin_get_auth_user_auth_users__user_id__get"];
+        /** Admin Update Auth User */
+        put: operations["admin_update_auth_user_auth_users__user_id__put"];
+        post?: never;
+        /** Admin Delete Auth User */
+        delete: operations["admin_delete_auth_user_auth_users__user_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth-users/by-email/{email}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin Get Auth User By Email */
+        get: operations["admin_get_auth_user_by_email_auth_users_by_email__email__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users": {
         parameters: {
             query?: never;
@@ -176,7 +217,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Admin List Users */
+        get: operations["admin_list_users_users_get"];
         put?: never;
         /** Create User Endpoint */
         post: operations["create_user_endpoint_users_post"];
@@ -212,9 +254,11 @@ export interface paths {
         };
         /** Get User Endpoint */
         get: operations["get_user_endpoint_users__email__get"];
-        put?: never;
+        /** Admin Update User Endpoint */
+        put: operations["admin_update_user_endpoint_users__email__put"];
         post?: never;
-        delete?: never;
+        /** Admin Delete User Endpoint */
+        delete: operations["admin_delete_user_endpoint_users__email__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -247,9 +291,11 @@ export interface paths {
         };
         /** Get Handyman Endpoint */
         get: operations["get_handyman_endpoint_handymen__email__get"];
-        put?: never;
+        /** Admin Update Handyman Endpoint */
+        put: operations["admin_update_handyman_endpoint_handymen__email__put"];
         post?: never;
-        delete?: never;
+        /** Admin Delete Handyman Endpoint */
+        delete: operations["admin_delete_handyman_endpoint_handymen__email__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -291,6 +337,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin List All Availability */
+        get: operations["admin_list_all_availability_availability_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/match": {
         parameters: {
             query?: never;
@@ -308,7 +371,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/bookings": {
+    "/match-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin List Match Logs */
+        get: operations["admin_list_match_logs_match_logs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/match-logs/{log_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -316,6 +396,24 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
+        put?: never;
+        post?: never;
+        /** Admin Delete Match Log */
+        delete: operations["admin_delete_match_log_match_logs__log_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin List Bookings */
+        get: operations["admin_list_bookings_bookings_get"];
         put?: never;
         /** Create Booking Endpoint */
         post: operations["create_booking_endpoint_bookings_post"];
@@ -334,9 +432,11 @@ export interface paths {
         };
         /** Get Booking Endpoint */
         get: operations["get_booking_endpoint_bookings__booking_id__get"];
-        put?: never;
+        /** Admin Update Booking Endpoint */
+        put: operations["admin_update_booking_endpoint_bookings__booking_id__put"];
         post?: never;
-        delete?: never;
+        /** Admin Delete Booking Endpoint */
+        delete: operations["admin_delete_booking_endpoint_bookings__booking_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -380,6 +480,15 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AuthUserResponse */
+        AuthUserResponse: {
+            /** Id */
+            id: number;
+            /** Email */
+            email: string;
+            /** Roles */
+            roles: string[];
+        };
         /** AvailabilitySlot */
         AvailabilitySlot: {
             /** Start */
@@ -484,6 +593,26 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** HandymanResponse */
+        HandymanResponse: {
+            /** Email */
+            email: string;
+            /** Skills */
+            skills: string[];
+            /** Years Experience */
+            years_experience: number;
+            /** Service Radius Km */
+            service_radius_km: number;
+            /** Latitude */
+            latitude?: number | null;
+            /** Longitude */
+            longitude?: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** Login */
         Login: {
             /** Email */
@@ -543,6 +672,35 @@ export interface components {
             /** Access Token */
             access_token: string;
         };
+        /** UpdateAuthUser */
+        UpdateAuthUser: {
+            /** Password */
+            password?: string | null;
+            /** Roles */
+            roles?: string[] | null;
+        };
+        /** UpdateBookingAdmin */
+        UpdateBookingAdmin: {
+            /** Status */
+            status?: string | null;
+            /** Failure Reason */
+            failure_reason?: string | null;
+            /** Cancellation Reason */
+            cancellation_reason?: string | null;
+        };
+        /** UpdateHandyman */
+        UpdateHandyman: {
+            /** Skills */
+            skills?: string[] | null;
+            /** Years Experience */
+            years_experience?: number | null;
+            /** Service Radius Km */
+            service_radius_km?: number | null;
+            /** Latitude */
+            latitude?: number | null;
+            /** Longitude */
+            longitude?: number | null;
+        };
         /** UpdateHandymanLocation */
         UpdateHandymanLocation: {
             /** Latitude */
@@ -550,12 +708,37 @@ export interface components {
             /** Longitude */
             longitude: number;
         };
+        /** UpdateUser */
+        UpdateUser: {
+            /** Full Name */
+            full_name?: string | null;
+            /** Latitude */
+            latitude?: number | null;
+            /** Longitude */
+            longitude?: number | null;
+        };
         /** UpdateUserLocation */
         UpdateUserLocation: {
             /** Latitude */
             latitude: number;
             /** Longitude */
             longitude: number;
+        };
+        /** UserResponse */
+        UserResponse: {
+            /** Email */
+            email: string;
+            /** Full Name */
+            full_name?: string | null;
+            /** Latitude */
+            latitude?: number | null;
+            /** Longitude */
+            longitude?: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -803,6 +986,198 @@ export interface operations {
             };
         };
     };
+    admin_list_auth_users_auth_users_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthUserResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_get_auth_user_auth_users__user_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthUserResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_update_auth_user_auth_users__user_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAuthUser"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthUserResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_delete_auth_user_auth_users__user_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_get_auth_user_by_email_auth_users_by_email__email__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthUserResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_list_users_users_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_user_endpoint_users_post: {
         parameters: {
             query?: never;
@@ -902,9 +1277,78 @@ export interface operations {
             };
         };
     };
-    list_handymen_endpoint_handymen_get: {
+    admin_update_user_endpoint_users__email__put: {
         parameters: {
             query?: never;
+            header?: never;
+            path: {
+                email: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUser"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_delete_user_endpoint_users__email__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_handymen_endpoint_handymen_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -918,6 +1362,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -956,6 +1409,72 @@ export interface operations {
         };
     };
     get_handyman_endpoint_handymen__email__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_update_handyman_endpoint_handymen__email__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateHandyman"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HandymanResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_delete_handyman_endpoint_handymen__email__delete: {
         parameters: {
             query?: never;
             header?: never;
@@ -1118,6 +1637,38 @@ export interface operations {
             };
         };
     };
+    admin_list_all_availability_availability_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     match_endpoint_match_post: {
         parameters: {
             query?: never;
@@ -1138,6 +1689,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MatchResult"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_list_match_logs_match_logs_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+                skill?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_delete_match_log_match_logs__log_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                log_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_list_bookings_bookings_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+                status?: string | null;
+                user_email?: string | null;
+                handyman_email?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -1202,6 +1852,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BookingResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_update_booking_endpoint_bookings__booking_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBookingAdmin"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_delete_booking_endpoint_bookings__booking_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
