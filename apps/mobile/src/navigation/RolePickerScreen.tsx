@@ -1,12 +1,10 @@
 import React from "react";
 import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
-import type { RoleMode } from "../auth/session";
+import { useSession } from "../auth/SessionProvider";
 
-export default function RolePickerScreen({
-  onPick
-}: {
-  onPick: (mode: RoleMode) => void;
-}) {
+export default function RolePickerScreen() {
+  const { pickRole } = useSession();
+
   return (
     <SafeAreaView style={{ flex: 1, padding: 16, gap: 12 }}>
       <Text style={{ fontSize: 22, fontWeight: "700" }}>Choose mode</Text>
@@ -16,7 +14,7 @@ export default function RolePickerScreen({
 
       <View style={{ gap: 12, marginTop: 12 }}>
         <TouchableOpacity
-          onPress={() => onPick("user")}
+          onPress={() => pickRole("user")}
           style={{
             backgroundColor: "#fff",
             borderWidth: 1,
@@ -30,7 +28,7 @@ export default function RolePickerScreen({
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => onPick("handyman")}
+          onPress={() => pickRole("handyman")}
           style={{
             backgroundColor: "#fff",
             borderWidth: 1,

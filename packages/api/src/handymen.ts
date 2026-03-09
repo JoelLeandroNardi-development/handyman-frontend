@@ -10,7 +10,7 @@ export async function createHandyman(api: ApiClient, body: CreateHandyman): Prom
   return api.request("/handymen", { method: "POST", json: body });
 }
 
-// GET /handymen list response is `{}` in OpenAPI right now; keep unknown for now
+// Still untyped in OpenAPI right now
 export async function listHandymen(
   api: ApiClient,
   params?: { limit?: number; offset?: number }
@@ -22,19 +22,47 @@ export async function listHandymen(
   return api.request(`/handymen${suffix}`, { method: "GET" });
 }
 
-// GET /handymen/{email} response is `{}` in OpenAPI right now; keep unknown
+// Still untyped in OpenAPI right now
 export async function getHandyman(api: ApiClient, email: string): Promise<unknown> {
   return api.request(`/handymen/${encodeURIComponent(email)}`, { method: "GET" });
 }
 
-export async function adminUpdateHandyman(api: ApiClient, email: string, body: UpdateHandyman): Promise<HandymanResponse> {
-  return api.request<HandymanResponse>(`/handymen/${encodeURIComponent(email)}`, { method: "PUT", json: body });
+export async function adminUpdateHandyman(
+  api: ApiClient,
+  email: string,
+  body: UpdateHandyman
+): Promise<HandymanResponse> {
+  return api.request<HandymanResponse>(`/handymen/${encodeURIComponent(email)}`, {
+    method: "PUT",
+    json: body,
+  });
 }
 
 export async function adminDeleteHandyman(api: ApiClient, email: string): Promise<unknown> {
   return api.request(`/handymen/${encodeURIComponent(email)}`, { method: "DELETE" });
 }
 
-export async function updateHandymanLocation(api: ApiClient, email: string, body: UpdateHandymanLocation): Promise<unknown> {
-  return api.request(`/handymen/${encodeURIComponent(email)}/location`, { method: "PUT", json: body });
+export async function updateHandymanLocation(
+  api: ApiClient,
+  email: string,
+  body: UpdateHandymanLocation
+): Promise<unknown> {
+  return api.request(`/handymen/${encodeURIComponent(email)}/location`, {
+    method: "PUT",
+    json: body,
+  });
+}
+
+export async function getMeHandyman(api: ApiClient): Promise<HandymanResponse> {
+  return api.request<HandymanResponse>("/me/handyman", { method: "GET" });
+}
+
+export async function updateMeHandyman(
+  api: ApiClient,
+  body: UpdateHandyman
+): Promise<HandymanResponse> {
+  return api.request<HandymanResponse>("/me/handyman", {
+    method: "PUT",
+    json: body,
+  });
 }

@@ -1,14 +1,15 @@
 import * as SecureStore from "expo-secure-store";
-import { decodeJwt, type JwtClaims } from "@smart/core";
+import type { MeResponse } from "@smart/api";
 
 const TOKEN_KEY = "token";
-const ROLE_MODE_KEY = "mobile_role_mode"; // "user" | "handyman"
+const ROLE_MODE_KEY = "mobile_role_mode";
 
 export type RoleMode = "user" | "handyman";
 
 export type MobileSession = {
   token: string;
-  claims: JwtClaims;
+  me: MeResponse;
+  email: string;
   roles: string[];
 };
 
@@ -24,24 +25,19 @@ export async function clearToken(): Promise<void> {
   await SecureStore.deleteItemAsync(TOKEN_KEY);
 }
 
-export async function getSession(): Promise<MobileSession | null> {
-  const token = await getStoredToken();
-  if (!token) return null;
-
-  try {
-    const claims = decodeJwt(token);
-    const roles = (claims.roles ?? []) as string[];
-    return { token, claims, roles };
-  } catch {
-    return null;
-  }
+export function buildSession(token: string, me: MeResponse): MobileSession {
+  return {
+    token,
+    me,
+    email: me.email,
+    roles: me.roles ?? [],
+  };
 }
 
 export function getMobileRoles(roles: string[]): RoleMode[] {
-  const set = new Set(roles);
   const out: RoleMode[] = [];
-  if (set.has("user")) out.push("user");
-  if (set.has("handyman")) out.push("handyman");
+  if (roles.includes("user")) out.push("user");
+  if (roles.includes("handyman")) out.push("handyman");
   return out;
 }
 

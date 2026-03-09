@@ -8,7 +8,7 @@ export async function match(api: ApiClient, body: MatchRequest): Promise<MatchRe
   return api.request<MatchResult[]>("/match", { method: "POST", json: body });
 }
 
-// Admin list match logs response schema is `{}` right now -> unknown for now
+// Admin list match logs response schema is still {} in OpenAPI
 export async function adminListMatchLogs(
   api: ApiClient,
   params?: { limit?: number; offset?: number; skill?: string | null }

@@ -5,13 +5,19 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
-  FlatList,
   Alert,
+  FlatList,
   Modal,
   TextInput,
 } from "react-native";
-import { cancelBooking, getMyBookings, type BookingResponse } from "@smart/api";
+import {
+  cancelBooking,
+  confirmBooking,
+  getMyJobs,
+  type BookingResponse,
+} from "@smart/api";
 import { createApiClient } from "../../lib/api";
+import { useSession } from "../../auth/SessionProvider";
 
 function formatDate(value?: string) {
   if (!value) return "-";
@@ -35,21 +41,29 @@ function statusColor(status?: string) {
   }
 }
 
-export default function BookingsPlaceholder() {
+export default function JobsScreen() {
   const api = useMemo(() => createApiClient(), []);
+  const { session } = useSession();
+
+  const handymanEmail = session?.email ?? "";
+
   const [loading, setLoading] = useState(false);
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [selected, setSelected] = useState<BookingResponse | null>(null);
-  const [cancelReason, setCancelReason] = useState("user_requested");
+  const [cancelReason, setCancelReason] = useState("handyman_unavailable");
+  const [confirming, setConfirming] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
   async function loadBookings() {
     setLoading(true);
     try {
-      const data = await getMyBookings(api, { limit: 100, offset: 0 });
+      const data = await getMyJobs(api, {
+        limit: 100,
+        offset: 0,
+      });
       setBookings(data);
     } catch (e) {
-      Alert.alert("Could not load bookings", (e as Error).message);
+      Alert.alert("Could not load jobs", (e as Error).message);
     } finally {
       setLoading(false);
     }
@@ -57,14 +71,36 @@ export default function BookingsPlaceholder() {
 
   useEffect(() => {
     loadBookings();
-  }, []);
+  }, [handymanEmail]);
+
+  const incoming = bookings.filter((b) => (b.status ?? "").toLowerCase() === "pending");
+  const active = bookings.filter((b) => (b.status ?? "").toLowerCase() === "confirmed");
+  const other = bookings.filter((b) => {
+    const s = (b.status ?? "").toLowerCase();
+    return s !== "pending" && s !== "confirmed";
+  });
+
+  async function onConfirm() {
+    if (!selected) return;
+    setConfirming(true);
+    try {
+      const res = await confirmBooking(api, selected.booking_id);
+      Alert.alert("Booking confirmed", `Booking ${res.booking_id} is now ${res.status}.`);
+      setSelected(null);
+      await loadBookings();
+    } catch (e) {
+      Alert.alert("Confirm failed", (e as Error).message);
+    } finally {
+      setConfirming(false);
+    }
+  }
 
   async function onCancel() {
     if (!selected) return;
     setCancelling(true);
     try {
       const res = await cancelBooking(api, selected.booking_id, {
-        reason: cancelReason || "user_requested",
+        reason: cancelReason || "handyman_unavailable",
       });
       Alert.alert("Booking cancelled", `Booking ${res.booking_id} is now ${res.status}.`);
       setSelected(null);
@@ -76,21 +112,14 @@ export default function BookingsPlaceholder() {
     }
   }
 
-  const grouped = {
-    Pending: bookings.filter((b) => (b.status ?? "").toLowerCase() === "pending"),
-    Confirmed: bookings.filter((b) => (b.status ?? "").toLowerCase() === "confirmed"),
-    Cancelled: bookings.filter((b) => (b.status ?? "").toLowerCase() === "cancelled"),
-    Failed: bookings.filter((b) => (b.status ?? "").toLowerCase() === "failed"),
-  };
-
-  function renderCard(item: BookingResponse) {
+  function renderBookingCard(item: BookingResponse) {
     const colors = statusColor(item.status);
 
     return (
       <TouchableOpacity
         key={item.booking_id}
         onPress={() => {
-          setCancelReason(item.cancellation_reason ?? "user_requested");
+          setCancelReason(item.cancellation_reason ?? "handyman_unavailable");
           setSelected(item);
         }}
         style={{
@@ -104,7 +133,7 @@ export default function BookingsPlaceholder() {
       >
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
           <View style={{ flex: 1, paddingRight: 10 }}>
-            <Text style={{ fontWeight: "800" }}>{item.handyman_email}</Text>
+            <Text style={{ fontWeight: "800" }}>{item.user_email}</Text>
             <Text style={{ opacity: 0.65, marginTop: 4, fontFamily: "monospace" }}>
               {item.booking_id}
             </Text>
@@ -135,7 +164,7 @@ export default function BookingsPlaceholder() {
           ) : null}
         </View>
 
-        <Text style={{ marginTop: 10, color: "#2563eb", fontWeight: "700" }}>Open details</Text>
+        <Text style={{ marginTop: 10, color: "#2563eb", fontWeight: "700" }}>Open actions</Text>
       </TouchableOpacity>
     );
   }
@@ -145,8 +174,8 @@ export default function BookingsPlaceholder() {
       <View style={{ padding: 16, gap: 12 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
           <View>
-            <Text style={{ fontSize: 20, fontWeight: "700" }}>Bookings</Text>
-            <Text style={{ opacity: 0.7 }}>Your booking requests and status</Text>
+            <Text style={{ fontSize: 20, fontWeight: "700" }}>Jobs</Text>
+            <Text style={{ opacity: 0.7 }}>Incoming and active bookings</Text>
           </View>
 
           <TouchableOpacity
@@ -161,6 +190,19 @@ export default function BookingsPlaceholder() {
             <Text style={{ color: "#fff", fontWeight: "700" }}>Refresh</Text>
           </TouchableOpacity>
         </View>
+
+        <View
+          style={{
+            backgroundColor: "#fff",
+            borderWidth: 1,
+            borderColor: "#e6e8ef",
+            borderRadius: 14,
+            padding: 12,
+          }}
+        >
+          <Text style={{ fontWeight: "700" }}>Logged in as</Text>
+          <Text style={{ opacity: 0.75, marginTop: 4 }}>{handymanEmail || "-"}</Text>
+        </View>
       </View>
 
       {loading ? (
@@ -170,13 +212,17 @@ export default function BookingsPlaceholder() {
       ) : (
         <FlatList
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
-          data={Object.entries(grouped)}
-          keyExtractor={([section]) => section}
-          renderItem={({ item: [section, items] }) => (
+          data={[
+            { section: "Incoming requests", items: incoming },
+            { section: "Active jobs", items: active },
+            { section: "Other", items: other },
+          ]}
+          keyExtractor={(item, index) => `${item.section}-${index}`}
+          renderItem={({ item }) => (
             <View style={{ marginBottom: 18 }}>
-              <Text style={{ fontSize: 16, fontWeight: "800", marginBottom: 10 }}>{section}</Text>
+              <Text style={{ fontSize: 16, fontWeight: "800", marginBottom: 10 }}>{item.section}</Text>
 
-              {items.length === 0 ? (
+              {item.items.length === 0 ? (
                 <View
                   style={{
                     backgroundColor: "#fff",
@@ -189,7 +235,7 @@ export default function BookingsPlaceholder() {
                   <Text style={{ opacity: 0.7 }}>No bookings in this section.</Text>
                 </View>
               ) : (
-                items.map(renderCard)
+                item.items.map(renderBookingCard)
               )}
             </View>
           )}
@@ -213,21 +259,15 @@ export default function BookingsPlaceholder() {
               gap: 10,
             }}
           >
-            <Text style={{ fontSize: 18, fontWeight: "800" }}>Booking details</Text>
+            <Text style={{ fontSize: 18, fontWeight: "800" }}>Job actions</Text>
 
             {selected ? (
               <>
-                <Text style={{ opacity: 0.85 }}>Handyman: {selected.handyman_email}</Text>
+                <Text style={{ opacity: 0.85 }}>User: {selected.user_email}</Text>
                 <Text style={{ opacity: 0.85 }}>Booking ID: {selected.booking_id}</Text>
                 <Text style={{ opacity: 0.85 }}>Start: {formatDate(selected.desired_start)}</Text>
                 <Text style={{ opacity: 0.85 }}>End: {formatDate(selected.desired_end)}</Text>
                 <Text style={{ opacity: 0.85 }}>Status: {selected.status}</Text>
-                {selected.cancellation_reason ? (
-                  <Text style={{ opacity: 0.75 }}>Cancel reason: {selected.cancellation_reason}</Text>
-                ) : null}
-                {selected.failure_reason ? (
-                  <Text style={{ opacity: 0.75 }}>Failure reason: {selected.failure_reason}</Text>
-                ) : null}
 
                 <View
                   style={{
@@ -243,7 +283,7 @@ export default function BookingsPlaceholder() {
                   <TextInput
                     value={cancelReason}
                     onChangeText={setCancelReason}
-                    placeholder="user_requested"
+                    placeholder="handyman_unavailable"
                     style={{
                       borderWidth: 1,
                       borderColor: "#ddd",
@@ -271,23 +311,30 @@ export default function BookingsPlaceholder() {
 
               <TouchableOpacity
                 onPress={onCancel}
-                disabled={cancelling || !selected || ["cancelled", "failed"].includes((selected.status ?? "").toLowerCase())}
+                disabled={cancelling}
                 style={{
                   flex: 1,
-                  backgroundColor:
-                    !selected || ["cancelled", "failed"].includes((selected.status ?? "").toLowerCase())
-                      ? "#fca5a5"
-                      : "#dc2626",
+                  backgroundColor: "#dc2626",
                   padding: 12,
                   borderRadius: 12,
                   alignItems: "center",
                 }}
               >
-                {cancelling ? (
-                  <ActivityIndicator />
-                ) : (
-                  <Text style={{ color: "#fff", fontWeight: "800" }}>Cancel booking</Text>
-                )}
+                {cancelling ? <ActivityIndicator /> : <Text style={{ color: "#fff", fontWeight: "800" }}>Decline</Text>}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={onConfirm}
+                disabled={confirming}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#111827",
+                  padding: 12,
+                  borderRadius: 12,
+                  alignItems: "center",
+                }}
+              >
+                {confirming ? <ActivityIndicator /> : <Text style={{ color: "#fff", fontWeight: "800" }}>Confirm</Text>}
               </TouchableOpacity>
             </View>
           </View>

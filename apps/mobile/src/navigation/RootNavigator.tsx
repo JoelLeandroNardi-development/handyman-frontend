@@ -1,57 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import LoginScreen from "../auth/LoginScreen";
 import RolePickerScreen from "./RolePickerScreen";
 import UserTabs from "./UserTabs";
 import HandymanTabs from "./HandymanTabs";
-import { getMobileRoles, getSession, getStoredRoleMode, storeRoleMode, type RoleMode } from "../auth/session";
 import { SafeAreaView, Text } from "react-native";
-
-type ViewState =
-  | { kind: "loading" }
-  | { kind: "loggedOut" }
-  | { kind: "pickRole" }
-  | { kind: "user" }
-  | { kind: "handyman" }
-  | { kind: "unauthorized" };
+import { useSession } from "../auth/SessionProvider";
 
 export default function RootNavigator() {
-  const [state, setState] = useState<ViewState>({ kind: "loading" });
+  const { loading, session, roleMode, availableRoles } = useSession();
 
-  async function hydrate() {
-    const session = await getSession();
-    if (!session) {
-      setState({ kind: "loggedOut" });
-      return;
-    }
-
-    const mobileRoles = getMobileRoles(session.roles);
-
-    if (mobileRoles.length === 0) {
-      setState({ kind: "unauthorized" });
-      return;
-    }
-
-    if (mobileRoles.length === 1) {
-      setState({ kind: mobileRoles[0] });
-      return;
-    }
-
-    // has both roles -> show picker unless stored mode exists
-    const stored = await getStoredRoleMode();
-    if (stored) {
-      setState({ kind: stored });
-      return;
-    }
-
-    setState({ kind: "pickRole" });
-  }
-
-  useEffect(() => {
-    hydrate();
-  }, []);
-
-  if (state.kind === "loading") {
+  if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>Loading…</Text>
@@ -59,15 +18,15 @@ export default function RootNavigator() {
     );
   }
 
-  if (state.kind === "loggedOut") {
+  if (!session) {
     return (
       <NavigationContainer>
-        <LoginScreen onLoggedIn={hydrate} />
+        <LoginScreen />
       </NavigationContainer>
     );
   }
 
-  if (state.kind === "unauthorized") {
+  if (availableRoles.length === 0) {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16 }}>
         <Text style={{ fontSize: 16, fontWeight: "700" }}>No mobile role</Text>
@@ -78,22 +37,17 @@ export default function RootNavigator() {
     );
   }
 
-  if (state.kind === "pickRole") {
+  if (availableRoles.length > 1 && !roleMode) {
     return (
       <NavigationContainer>
-        <RolePickerScreen
-          onPick={async (mode: RoleMode) => {
-            await storeRoleMode(mode);
-            setState({ kind: mode });
-          }}
-        />
+        <RolePickerScreen />
       </NavigationContainer>
     );
   }
 
   return (
     <NavigationContainer>
-      {state.kind === "user" ? <UserTabs /> : <HandymanTabs />}
+      {roleMode === "handyman" ? <HandymanTabs /> : <UserTabs />}
     </NavigationContainer>
   );
 }

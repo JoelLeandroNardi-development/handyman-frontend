@@ -8,36 +8,20 @@ import {
   ActivityIndicator,
   FlatList,
   Alert,
+  Modal,
 } from "react-native";
 import MapView, { Marker, UrlTile, Region } from "react-native-maps";
 import * as Location from "expo-location";
 
-import { match, type MatchResult } from "@smart/api";
+import { createBooking, match, type MatchResult } from "@smart/api";
 import { createApiClient } from "../../lib/api";
+import { useSession } from "../../auth/SessionProvider";
 
 type Coords = { latitude: number; longitude: number };
 
-function kmToLatDelta(km: number) {
-  // ~1 deg latitude ~111km
-  return km / 111;
-}
-
-function offsetFromDistanceKm(base: Coords, distanceKm: number, seed: number): Coords {
-  // Create a deterministic-ish bearing from seed, then place point around user by distance.
-  // This is ONLY for MVP because match results do not include lat/lng.
-  const bearing = (seed * 137.508) % 360; // pseudo-random
-  const rad = (bearing * Math.PI) / 180;
-  const latDelta = kmToLatDelta(distanceKm) * Math.cos(rad);
-  const lonDelta = (kmToLatDelta(distanceKm) * Math.sin(rad)) / Math.cos((base.latitude * Math.PI) / 180);
-
-  return {
-    latitude: base.latitude + latDelta,
-    longitude: base.longitude + lonDelta,
-  };
-}
-
 export default function FindScreen() {
   const api = useMemo(() => createApiClient(), []);
+  const { session } = useSession();
 
   const [skill, setSkill] = useState("plumbing");
   const [desiredStart, setDesiredStart] = useState(new Date(Date.now() + 60 * 60 * 1000).toISOString());
@@ -47,26 +31,41 @@ export default function FindScreen() {
   const [loadingLocation, setLoadingLocation] = useState(false);
 
   const [loadingMatch, setLoadingMatch] = useState(false);
+  const [creatingBooking, setCreatingBooking] = useState(false);
   const [results, setResults] = useState<MatchResult[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
+  const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
+
+  const currentUserEmail = session?.email ?? "";
 
   const region: Region = useMemo(() => {
-    const base = userCoords ?? { latitude: 37.7749, longitude: -122.4194 }; // fallback
+    if (selectedEmail) {
+      const selected = results.find((r) => r.email === selectedEmail);
+      if (selected) {
+        return {
+          latitude: selected.latitude,
+          longitude: selected.longitude,
+          latitudeDelta: 0.03,
+          longitudeDelta: 0.03,
+        };
+      }
+    }
+
+    const base = userCoords ?? { latitude: 37.7749, longitude: -122.4194 };
     return {
       latitude: base.latitude,
       longitude: base.longitude,
       latitudeDelta: 0.05,
       longitudeDelta: 0.05,
     };
-  }, [userCoords]);
+  }, [userCoords, results, selectedEmail]);
 
   async function getLocation() {
     setLoadingLocation(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert("Location permission", "Permission denied. Using fallback location.");
-        setUserCoords(null);
+        Alert.alert("Location permission", "Permission denied.");
         return;
       }
       const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
@@ -80,7 +79,7 @@ export default function FindScreen() {
 
   async function runMatch() {
     if (!userCoords) {
-      Alert.alert("Location required", "Tap “Use my location” first (or allow location permission).");
+      Alert.alert("Location required", "Tap “Use my location” first.");
       return;
     }
     if (!skill.trim()) {
@@ -90,6 +89,8 @@ export default function FindScreen() {
 
     setLoadingMatch(true);
     setSelectedEmail(null);
+    setBookingSuccess(null);
+
     try {
       const res = await match(api, {
         latitude: userCoords.latitude,
@@ -106,24 +107,50 @@ export default function FindScreen() {
     }
   }
 
-  const markers = useMemo(() => {
-    if (!userCoords) return [];
-    return results.map((r, idx) => ({
-      ...r,
-      coords: offsetFromDistanceKm(userCoords, Math.max(0.1, r.distance_km), idx + 1),
-    }));
-  }, [results, userCoords]);
+  async function onConfirmBooking() {
+    if (!selectedEmail) return;
+    if (!currentUserEmail) {
+      Alert.alert("Missing user email", "Could not determine current user from /me.");
+      return;
+    }
+
+    setCreatingBooking(true);
+    try {
+      const booking = await createBooking(api, {
+        user_email: currentUserEmail,
+        handyman_email: selectedEmail,
+        desired_start: desiredStart,
+        desired_end: desiredEnd,
+      });
+
+      setBookingSuccess(`Booking created: ${booking.booking_id}`);
+      setSelectedEmail(null);
+      Alert.alert("Booking created", `Status: ${booking.status}\nBooking ID: ${booking.booking_id}`);
+    } catch (e) {
+      Alert.alert("Booking failed", (e as Error).message);
+    } finally {
+      setCreatingBooking(false);
+    }
+  }
 
   const selected = results.find((r) => r.email === selectedEmail) ?? null;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f6f7fb" }}>
-      {/* Header */}
       <View style={{ padding: 12, gap: 10 }}>
         <Text style={{ fontSize: 20, fontWeight: "700" }}>Find a handyman</Text>
         <Text style={{ opacity: 0.7 }}>Map-first discovery (OpenStreetMap tiles)</Text>
 
-        <View style={{ backgroundColor: "#fff", borderRadius: 14, borderWidth: 1, borderColor: "#e6e8ef", padding: 12, gap: 10 }}>
+        <View
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: "#e6e8ef",
+            padding: 12,
+            gap: 10,
+          }}
+        >
           <View style={{ gap: 6 }}>
             <Text style={{ fontWeight: "600" }}>Skill</Text>
             <TextInput
@@ -189,33 +216,35 @@ export default function FindScreen() {
               {loadingMatch ? <ActivityIndicator /> : <Text style={{ color: "#fff", fontWeight: "700" }}>Match</Text>}
             </TouchableOpacity>
           </View>
+
+          {bookingSuccess ? (
+            <View
+              style={{
+                backgroundColor: "#ecfdf5",
+                borderWidth: 1,
+                borderColor: "#a7f3d0",
+                borderRadius: 10,
+                padding: 10,
+              }}
+            >
+              <Text style={{ color: "#065f46", fontWeight: "600" }}>{bookingSuccess}</Text>
+            </View>
+          ) : null}
         </View>
       </View>
 
-      {/* Map + Bottom Panel */}
       <View style={{ flex: 1 }}>
         <MapView style={{ flex: 1 }} initialRegion={region} region={region}>
-          {/* OpenStreetMap tiles */}
-          <UrlTile
-            urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-            maximumZ={19}
-          />
+          <UrlTile urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
 
-          {/* User marker */}
           {userCoords ? (
-            <Marker
-              coordinate={userCoords}
-              title="You"
-              description="Your location"
-              pinColor="blue"
-            />
+            <Marker coordinate={userCoords} title="You" description="Your location" pinColor="blue" />
           ) : null}
 
-          {/* Match markers (approximate positions for MVP) */}
-          {markers.map((m) => (
+          {results.map((m) => (
             <Marker
               key={m.email}
-              coordinate={m.coords}
+              coordinate={{ latitude: m.latitude, longitude: m.longitude }}
               title={m.email}
               description={`${m.distance_km.toFixed(1)} km • ${m.years_experience} yrs`}
               onPress={() => setSelectedEmail(m.email)}
@@ -223,7 +252,6 @@ export default function FindScreen() {
           ))}
         </MapView>
 
-        {/* Bottom panel (simple MVP instead of draggable sheet) */}
         <View
           style={{
             position: "absolute",
@@ -235,7 +263,7 @@ export default function FindScreen() {
             borderWidth: 1,
             borderColor: "#e6e8ef",
             padding: 12,
-            maxHeight: 240,
+            maxHeight: 260,
           }}
         >
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -252,53 +280,116 @@ export default function FindScreen() {
           ) : results.length === 0 ? (
             <Text style={{ marginTop: 10, opacity: 0.7 }}>No results yet. Tap Match.</Text>
           ) : (
-            <>
-              <FlatList
-                style={{ marginTop: 10 }}
-                data={results}
-                keyExtractor={(item) => item.email}
-                renderItem={({ item }) => {
-                  const isSelected = item.email === selectedEmail;
-                  return (
-                    <TouchableOpacity
-                      onPress={() => setSelectedEmail(item.email)}
-                      style={{
-                        padding: 10,
-                        borderRadius: 12,
-                        borderWidth: 1,
-                        borderColor: isSelected ? "#2563eb" : "#eef0f6",
-                        backgroundColor: isSelected ? "#eff6ff" : "#fff",
-                        marginBottom: 8,
-                      }}
-                    >
-                      <Text style={{ fontWeight: "700" }}>{item.email}</Text>
-                      <Text style={{ opacity: 0.75, marginTop: 2 }}>
-                        {item.distance_km.toFixed(1)} km • {item.years_experience} yrs
-                        {item.availability_unknown ? " • availability unknown" : ""}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                }}
-              />
-
-              {selected ? (
-                <TouchableOpacity
-                  onPress={() => Alert.alert("Next", "Next step: booking confirmation + POST /bookings")}
-                  style={{
-                    marginTop: 8,
-                    backgroundColor: "#111827",
-                    padding: 12,
-                    borderRadius: 12,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text style={{ color: "#fff", fontWeight: "800" }}>Request booking (next)</Text>
-                </TouchableOpacity>
-              ) : null}
-            </>
+            <FlatList
+              style={{ marginTop: 10 }}
+              data={results}
+              keyExtractor={(item) => item.email}
+              renderItem={({ item }) => {
+                const isSelected = item.email === selectedEmail;
+                return (
+                  <TouchableOpacity
+                    onPress={() => setSelectedEmail(item.email)}
+                    style={{
+                      padding: 10,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: isSelected ? "#2563eb" : "#eef0f6",
+                      backgroundColor: isSelected ? "#eff6ff" : "#fff",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text style={{ fontWeight: "700" }}>{item.email}</Text>
+                    <Text style={{ opacity: 0.75, marginTop: 2 }}>
+                      {item.distance_km.toFixed(1)} km • {item.years_experience} yrs
+                      {item.availability_unknown ? " • availability unknown" : ""}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
+            />
           )}
         </View>
       </View>
+
+      <Modal visible={!!selected} transparent animationType="slide" onRequestClose={() => setSelectedEmail(null)}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "flex-end",
+            backgroundColor: "rgba(0,0,0,0.25)",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#fff",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              padding: 16,
+              gap: 10,
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "800" }}>Confirm booking</Text>
+
+            {selected ? (
+              <>
+                <Text style={{ opacity: 0.8 }}>Handyman: {selected.email}</Text>
+                <Text style={{ opacity: 0.8 }}>Distance: {selected.distance_km.toFixed(1)} km</Text>
+                <Text style={{ opacity: 0.8 }}>Experience: {selected.years_experience} yrs</Text>
+                <Text style={{ opacity: 0.8 }}>
+                  Availability: {selected.availability_unknown ? "Unknown" : "Known"}
+                </Text>
+
+                <View
+                  style={{
+                    backgroundColor: "#f8fafc",
+                    borderWidth: 1,
+                    borderColor: "#e6e8ef",
+                    borderRadius: 12,
+                    padding: 12,
+                  }}
+                >
+                  <Text style={{ fontWeight: "700", marginBottom: 6 }}>Requested window</Text>
+                  <Text>{desiredStart}</Text>
+                  <Text>{desiredEnd}</Text>
+                </View>
+              </>
+            ) : null}
+
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <TouchableOpacity
+                onPress={() => setSelectedEmail(null)}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#e5e7eb",
+                  padding: 12,
+                  borderRadius: 12,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ fontWeight: "700" }}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={onConfirmBooking}
+                disabled={creatingBooking}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#111827",
+                  padding: 12,
+                  borderRadius: 12,
+                  alignItems: "center",
+                }}
+              >
+                {creatingBooking ? (
+                  <ActivityIndicator />
+                ) : (
+                  <Text style={{ color: "#fff", fontWeight: "800" }}>Confirm request</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

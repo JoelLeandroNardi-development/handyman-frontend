@@ -10,8 +10,10 @@ export async function createUser(api: ApiClient, body: CreateUser): Promise<unkn
   return api.request("/users", { method: "POST", json: body });
 }
 
-// Admin list users returns array of UserResponse
-export async function adminListUsers(api: ApiClient, params?: { limit?: number; offset?: number }): Promise<UserResponse[]> {
+export async function adminListUsers(
+  api: ApiClient,
+  params?: { limit?: number; offset?: number }
+): Promise<UserResponse[]> {
   const qs = new URLSearchParams();
   if (params?.limit != null) qs.set("limit", String(params.limit));
   if (params?.offset != null) qs.set("offset", String(params.offset));
@@ -19,7 +21,7 @@ export async function adminListUsers(api: ApiClient, params?: { limit?: number; 
   return api.request<UserResponse[]>(`/users${suffix}`, { method: "GET" });
 }
 
-// GET /users/{email} response is `{}` in OpenAPI right now; keeping unknown until you fix schema
+// Still untyped in OpenAPI right now
 export async function getUser(api: ApiClient, email: string): Promise<unknown> {
   return api.request(`/users/${encodeURIComponent(email)}`, { method: "GET" });
 }
@@ -34,4 +36,12 @@ export async function adminDeleteUser(api: ApiClient, email: string): Promise<un
 
 export async function updateUserLocation(api: ApiClient, email: string, body: UpdateUserLocation): Promise<unknown> {
   return api.request(`/users/${encodeURIComponent(email)}/location`, { method: "PUT", json: body });
+}
+
+export async function updateMe(api: ApiClient, body: UpdateUser): Promise<UserResponse> {
+  return api.request<UserResponse>("/me", { method: "PUT", json: body });
+}
+
+export async function getMeUser(api: ApiClient): Promise<UserResponse> {
+  return api.request<UserResponse>("/me/user", { method: "GET" });
 }

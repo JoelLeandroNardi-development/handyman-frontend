@@ -16,11 +16,16 @@ export async function getBooking(api: ApiClient, bookingId: string): Promise<Boo
   return api.request<BookingResponse>(`/bookings/${encodeURIComponent(bookingId)}`, { method: "GET" });
 }
 
-// Admin list supports filters; OpenAPI response schema is `{}` right now.
-// We'll return unknown until you define the response type.
+// Admin list still has {} schema in OpenAPI, keep as unknown for now
 export async function adminListBookings(
   api: ApiClient,
-  params?: { limit?: number; offset?: number; status?: string | null; user_email?: string | null; handyman_email?: string | null }
+  params?: {
+    limit?: number;
+    offset?: number;
+    status?: string | null;
+    user_email?: string | null;
+    handyman_email?: string | null;
+  }
 ): Promise<unknown> {
   const qs = new URLSearchParams();
   if (params?.limit != null) qs.set("limit", String(params.limit));
@@ -32,8 +37,15 @@ export async function adminListBookings(
   return api.request(`/bookings${suffix}`, { method: "GET" });
 }
 
-export async function adminUpdateBooking(api: ApiClient, bookingId: string, body: UpdateBookingAdmin): Promise<unknown> {
-  return api.request(`/bookings/${encodeURIComponent(bookingId)}`, { method: "PUT", json: body });
+export async function adminUpdateBooking(
+  api: ApiClient,
+  bookingId: string,
+  body: UpdateBookingAdmin
+): Promise<unknown> {
+  return api.request(`/bookings/${encodeURIComponent(bookingId)}`, {
+    method: "PUT",
+    json: body,
+  });
 }
 
 export async function adminDeleteBooking(api: ApiClient, bookingId: string): Promise<unknown> {
@@ -41,7 +53,9 @@ export async function adminDeleteBooking(api: ApiClient, bookingId: string): Pro
 }
 
 export async function confirmBooking(api: ApiClient, bookingId: string): Promise<ConfirmBookingResponse> {
-  return api.request<ConfirmBookingResponse>(`/bookings/${encodeURIComponent(bookingId)}/confirm`, { method: "POST" });
+  return api.request<ConfirmBookingResponse>(`/bookings/${encodeURIComponent(bookingId)}/confirm`, {
+    method: "POST",
+  });
 }
 
 export async function cancelBooking(
@@ -51,6 +65,30 @@ export async function cancelBooking(
 ): Promise<CancelBookingResponse> {
   return api.request<CancelBookingResponse>(`/bookings/${encodeURIComponent(bookingId)}/cancel`, {
     method: "POST",
-    json: body ?? { reason: "user_requested" }
+    json: body ?? { reason: "user_requested" },
   });
+}
+
+export async function getMyBookings(
+  api: ApiClient,
+  params?: { limit?: number; offset?: number; status?: string | null }
+): Promise<BookingResponse[]> {
+  const qs = new URLSearchParams();
+  if (params?.limit != null) qs.set("limit", String(params.limit));
+  if (params?.offset != null) qs.set("offset", String(params.offset));
+  if (params?.status != null) qs.set("status", String(params.status));
+  const suffix = qs.toString() ? `?${qs}` : "";
+  return api.request<BookingResponse[]>(`/me/bookings${suffix}`, { method: "GET" });
+}
+
+export async function getMyJobs(
+  api: ApiClient,
+  params?: { limit?: number; offset?: number; status?: string | null }
+): Promise<BookingResponse[]> {
+  const qs = new URLSearchParams();
+  if (params?.limit != null) qs.set("limit", String(params.limit));
+  if (params?.offset != null) qs.set("offset", String(params.offset));
+  if (params?.status != null) qs.set("status", String(params.status));
+  const suffix = qs.toString() ? `?${qs}` : "";
+  return api.request<BookingResponse[]>(`/me/jobs${suffix}`, { method: "GET" });
 }

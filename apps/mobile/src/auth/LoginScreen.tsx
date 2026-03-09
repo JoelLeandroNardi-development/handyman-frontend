@@ -3,20 +3,21 @@ import { SafeAreaView, Text, TextInput, Button, View } from "react-native";
 import { login } from "@smart/api";
 import { createApiClient, API_BASE_URL } from "../lib/api";
 import { storeToken } from "./session";
+import { useSession } from "./SessionProvider";
 
-export default function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
+export default function LoginScreen() {
   const [email, setEmail] = useState("admin@example.com");
   const [password, setPassword] = useState("password");
   const [status, setStatus] = useState<string>("Not logged in");
-
   const api = useMemo(() => createApiClient(), []);
+  const { refresh } = useSession();
 
   async function onLogin() {
     try {
       const res = await login(api, { email, password });
       await storeToken(res.access_token);
+      await refresh();
       setStatus("Logged in.");
-      onLoggedIn();
     } catch (e) {
       setStatus(`Login failed: ${(e as Error).message}`);
     }
