@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@react-native-community/datetimepicker": "8.4.4",
-    "@react-native-community/slider": "4.5.7",
+    "@react-native-community/datetimepicker": "8.6.0",
+    "@react-native-community/slider": "5.1.2",
     "@react-navigation/bottom-tabs": "^7.15.5",
     "@react-navigation/native": "^7.1.33",
     "@smart/api": "workspace:^",
