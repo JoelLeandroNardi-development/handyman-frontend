@@ -26,9 +26,10 @@ export default function DataTable<T>({
                 key={column.key}
                 style={{
                   textAlign: "left",
-                  borderBottom: "1px solid #e2e8f0",
+                  borderBottom: "1px solid var(--border)",
                   padding: "0 12px 12px 12px",
                   width: column.width,
+                  color: "var(--text-faint)",
                 }}
               >
                 {column.header}
@@ -58,8 +59,9 @@ export default function DataTable<T>({
                     key={column.key}
                     style={{
                       padding: "14px 12px",
-                      borderBottom: "1px solid #f1f5f9",
+                      borderBottom: "1px solid var(--border)",
                       verticalAlign: "top",
+                      color: "var(--text)",
                     }}
                   >
                     {column.render(row)}

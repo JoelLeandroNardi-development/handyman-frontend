@@ -33,8 +33,8 @@ export default function OverlayPanel({
           width,
           maxWidth: "100%",
           height: "100%",
-          background: "#fff",
-          borderLeft: "1px solid #e2e8f0",
+          background: "var(--surface)",
+          borderLeft: "1px solid var(--border)",
           boxShadow: "-12px 0 32px rgba(15,23,42,0.12)",
           display: "flex",
           flexDirection: "column",
@@ -43,21 +43,21 @@ export default function OverlayPanel({
         <div
           style={{
             padding: "18px 20px",
-            borderBottom: "1px solid #e2e8f0",
+            borderBottom: "1px solid var(--border)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
           }}
         >
-          <div style={{ fontSize: 18, fontWeight: 800 }}>{title}</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text)" }}>{title}</div>
 
           <button
             onClick={onClose}
             style={{
               padding: "10px 12px",
               borderRadius: 10,
-              background: "#e2e8f0",
-              color: "#0f172a",
+              background: "var(--surface-muted)",
+              color: "var(--text)",
               fontWeight: 700,
               cursor: "pointer",
             }}

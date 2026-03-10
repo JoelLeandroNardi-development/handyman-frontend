@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { cancelBooking, getMyBookings, type BookingResponse } from "@smart/api";
 import { createApiClient } from "../../lib/api";
+import { useTheme } from "../../theme";
 
 function formatDate(value?: string) {
   if (!value) return "-";
@@ -37,6 +38,7 @@ function statusColor(status?: string) {
 
 export default function BookingsPlaceholder() {
   const api = useMemo(() => createApiClient(), []);
+  const { colors: theme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [selected, setSelected] = useState<BookingResponse | null>(null);
@@ -94,10 +96,10 @@ export default function BookingsPlaceholder() {
           setSelected(item);
         }}
         style={{
-          backgroundColor: "#fff",
+          backgroundColor: theme.surface,
           borderRadius: 14,
           borderWidth: 1,
-          borderColor: "#e6e8ef",
+          borderColor: theme.border,
           padding: 14,
           marginBottom: 10,
         }}
@@ -141,7 +143,7 @@ export default function BookingsPlaceholder() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f6f7fb" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
       <View style={{ padding: 16, gap: 12 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
           <View>
@@ -152,7 +154,7 @@ export default function BookingsPlaceholder() {
           <TouchableOpacity
             onPress={loadBookings}
             style={{
-              backgroundColor: "#111827",
+              backgroundColor: theme.primary,
               paddingHorizontal: 12,
               paddingVertical: 10,
               borderRadius: 12,
@@ -179,14 +181,14 @@ export default function BookingsPlaceholder() {
               {items.length === 0 ? (
                 <View
                   style={{
-                    backgroundColor: "#fff",
+                    backgroundColor: theme.surface,
                     borderWidth: 1,
-                    borderColor: "#e6e8ef",
+                    borderColor: theme.border,
                     borderRadius: 14,
                     padding: 14,
                   }}
                 >
-                  <Text style={{ opacity: 0.7 }}>No bookings in this section.</Text>
+                  <Text style={{ color: theme.textSoft }}>No bookings in this section.</Text>
                 </View>
               ) : (
                 items.map(renderCard)
@@ -206,7 +208,7 @@ export default function BookingsPlaceholder() {
         >
           <View
             style={{
-              backgroundColor: "#fff",
+              backgroundColor: theme.surface,
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
               padding: 16,

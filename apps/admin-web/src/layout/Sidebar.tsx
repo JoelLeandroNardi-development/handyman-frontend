@@ -8,7 +8,7 @@ const baseLinkStyle: React.CSSProperties = {
   padding: "12px 14px",
   borderRadius: 14,
   textDecoration: "none",
-  color: "#334155",
+  color: "var(--text)",
   fontWeight: 600,
 };
 
@@ -28,7 +28,7 @@ export default function Sidebar() {
             width: 42,
             height: 42,
             borderRadius: 14,
-            background: "#2563eb",
+            background: "var(--primary)",
             color: "#fff",
             display: "grid",
             placeItems: "center",
@@ -62,8 +62,8 @@ export default function Sidebar() {
             end={to === "/"}
             style={({ isActive }) => ({
               ...baseLinkStyle,
-              background: isActive ? "#dbeafe" : "transparent",
-              color: isActive ? "#1d4ed8" : "#334155",
+              background: isActive ? "var(--primary-soft)" : "transparent",
+              color: isActive ? "var(--primary)" : "var(--text)",
             })}
           >
             <span>{label}</span>
@@ -74,14 +74,14 @@ export default function Sidebar() {
       <div style={{ marginTop: "auto", padding: 6 }}>
         <div
           style={{
-            border: "1px solid #e2e8f0",
-            background: "#f8fafc",
+            border: "1px solid var(--border)",
+            background: "var(--surface-muted)",
             borderRadius: 16,
             padding: 14,
           }}
         >
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>Environment</div>
-          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>Environment</div>
+          <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 4 }}>
             Local development dashboard
           </div>
         </div>

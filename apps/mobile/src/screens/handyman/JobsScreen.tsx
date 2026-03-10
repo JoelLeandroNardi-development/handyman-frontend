@@ -10,6 +10,7 @@ import {
   Modal,
   TextInput,
 } from "react-native";
+import { useTheme } from "../../theme";
 import {
   cancelBooking,
   confirmBooking,
@@ -44,6 +45,7 @@ function statusColor(status?: string) {
 export default function JobsScreen() {
   const api = useMemo(() => createApiClient(), []);
   const { session } = useSession();
+  const { colors } = useTheme();
 
   const handymanEmail = session?.email ?? "";
 
@@ -170,18 +172,18 @@ export default function JobsScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f6f7fb" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
       <View style={{ padding: 16, gap: 12 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
           <View>
-            <Text style={{ fontSize: 20, fontWeight: "700" }}>Jobs</Text>
-            <Text style={{ opacity: 0.7 }}>Incoming and active bookings</Text>
+            <Text style={{ fontSize: 20, fontWeight: "700", color: colors.text }}>Jobs</Text>
+            <Text style={{ color: colors.textSoft, opacity: 0.9 }}>Incoming and active bookings</Text>
           </View>
 
           <TouchableOpacity
             onPress={loadBookings}
             style={{
-              backgroundColor: "#111827",
+              backgroundColor: colors.primary,
               paddingHorizontal: 12,
               paddingVertical: 10,
               borderRadius: 12,
@@ -193,9 +195,9 @@ export default function JobsScreen() {
 
         <View
           style={{
-            backgroundColor: "#fff",
+            backgroundColor: colors.surface,
             borderWidth: 1,
-            borderColor: "#e6e8ef",
+            borderColor: colors.border,
             borderRadius: 14,
             padding: 12,
           }}
@@ -206,8 +208,8 @@ export default function JobsScreen() {
       </View>
 
       {loading ? (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <ActivityIndicator />
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.bg }}>
+          <ActivityIndicator color={colors.primary} />
         </View>
       ) : (
         <FlatList
@@ -220,19 +222,19 @@ export default function JobsScreen() {
           keyExtractor={(item, index) => `${item.section}-${index}`}
           renderItem={({ item }) => (
             <View style={{ marginBottom: 18 }}>
-              <Text style={{ fontSize: 16, fontWeight: "800", marginBottom: 10 }}>{item.section}</Text>
+              <Text style={{ fontSize: 16, fontWeight: "800", marginBottom: 10, color: colors.text }}>{item.section}</Text>
 
               {item.items.length === 0 ? (
                 <View
                   style={{
-                    backgroundColor: "#fff",
+                    backgroundColor: colors.surface,
                     borderWidth: 1,
-                    borderColor: "#e6e8ef",
+                    borderColor: colors.border,
                     borderRadius: 14,
                     padding: 14,
                   }}
                 >
-                  <Text style={{ opacity: 0.7 }}>No bookings in this section.</Text>
+                  <Text style={{ color: colors.textSoft }}>No bookings in this section.</Text>
                 </View>
               ) : (
                 item.items.map(renderBookingCard)
@@ -252,7 +254,7 @@ export default function JobsScreen() {
         >
           <View
             style={{
-              backgroundColor: "#fff",
+              backgroundColor: colors.surface,
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
               padding: 16,

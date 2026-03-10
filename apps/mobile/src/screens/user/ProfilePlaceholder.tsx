@@ -12,10 +12,12 @@ import {
 import * as Location from "expo-location";
 import { getMeUser, updateMe } from "@smart/api";
 import { createApiClient } from "../../lib/api";
+import { useTheme } from "../../theme";
 import { useSession } from "../../auth/SessionProvider";
 
 export default function ProfilePlaceholder() {
   const api = useMemo(() => createApiClient(), []);
+  const { colors } = useTheme();
   const { session, availableRoles, pickRole, roleMode, logout, refresh } = useSession();
 
   const [loadingProfile, setLoadingProfile] = useState(false);
@@ -103,32 +105,32 @@ export default function ProfilePlaceholder() {
   const loading = loadingProfile;
 
   return (
-    <SafeAreaView style={{ flex: 1, padding: 16, backgroundColor: "#f6f7fb" }}>
+    <SafeAreaView style={{ flex: 1, padding: 16, backgroundColor: colors.bg }}>
       <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-        <Text style={{ fontSize: 20, fontWeight: "700" }}>Profile</Text>
+        <Text style={{ fontSize: 20, fontWeight: "700", color: colors.text }}>Profile</Text>
 
         <View
           style={{
-            backgroundColor: "#fff",
+            backgroundColor: colors.surface,
             borderWidth: 1,
-            borderColor: "#e6e8ef",
+            borderColor: colors.border,
             borderRadius: 14,
             padding: 14,
             gap: 6,
           }}
         >
-          <Text style={{ fontWeight: "700" }}>{session?.email ?? "-"}</Text>
-          <Text style={{ opacity: 0.7 }}>Current mode: {roleMode ?? "-"}</Text>
-          <Text style={{ opacity: 0.7 }}>
+          <Text style={{ fontWeight: "700", color: colors.text }}>{session?.email ?? "-"}</Text>
+          <Text style={{ color: colors.textSoft }}>Current mode: {roleMode ?? "-"}</Text>
+          <Text style={{ color: colors.textSoft }}>
             Roles: {(session?.roles ?? []).join(", ") || "-"}
           </Text>
         </View>
 
         <View
           style={{
-            backgroundColor: "#fff",
+            backgroundColor: colors.surface,
             borderWidth: 1,
-            borderColor: "#e6e8ef",
+            borderColor: colors.border,
             borderRadius: 14,
             padding: 14,
             gap: 10,
@@ -149,10 +151,10 @@ export default function ProfilePlaceholder() {
                   placeholder="Your full name"
                   style={{
                     borderWidth: 1,
-                    borderColor: "#ddd",
+                    borderColor: colors.border,
                     borderRadius: 10,
                     padding: 12,
-                    backgroundColor: "#fff",
+                    backgroundColor: colors.surface,
                   }}
                 />
               </View>
@@ -166,7 +168,7 @@ export default function ProfilePlaceholder() {
                   onPress={useCurrentLocation}
                   disabled={locating}
                   style={{
-                    backgroundColor: locating ? "#9ca3af" : "#2563eb",
+                    backgroundColor: locating ? colors.border : colors.primary,
                     padding: 12,
                     borderRadius: 12,
                     alignItems: "center",
@@ -186,7 +188,7 @@ export default function ProfilePlaceholder() {
                 onPress={saveProfile}
                 disabled={saving}
                 style={{
-                  backgroundColor: saving ? "#93c5fd" : "#2563eb",
+                  backgroundColor: saving ? colors.primarySoft : colors.primary,
                   padding: 12,
                   borderRadius: 12,
                   alignItems: "center",
@@ -207,9 +209,9 @@ export default function ProfilePlaceholder() {
         {availableRoles.length > 1 && (
           <View
             style={{
-              backgroundColor: "#fff",
+              backgroundColor: colors.surface,
               borderWidth: 1,
-              borderColor: "#e6e8ef",
+              borderColor: colors.border,
               borderRadius: 14,
               padding: 14,
               gap: 10,
@@ -250,7 +252,7 @@ export default function ProfilePlaceholder() {
         <TouchableOpacity
           onPress={logout}
           style={{
-            backgroundColor: "#111827",
+            backgroundColor: colors.primary,
             padding: 12,
             borderRadius: 12,
             alignItems: "center",

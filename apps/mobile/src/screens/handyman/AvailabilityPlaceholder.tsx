@@ -8,6 +8,7 @@ import {
   Alert,
   FlatList,
 } from "react-native";
+import { useTheme } from "../../theme";
 import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import {
   clearMyAvailability,
@@ -87,6 +88,7 @@ function sortSlots(slots: AvailabilitySlot[]) {
 
 export default function AvailabilityPlaceholder() {
   const api = useMemo(() => createApiClient(), []);
+  const { colors } = useTheme();
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -194,18 +196,18 @@ export default function AvailabilityPlaceholder() {
   const previewEnd = combineDateAndTime(selectedDate, endTime);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f6f7fb" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
       <View style={{ padding: 16, gap: 12 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
           <View>
-            <Text style={{ fontSize: 20, fontWeight: "700" }}>Availability</Text>
-            <Text style={{ opacity: 0.7 }}>Manage the time slots you can accept jobs</Text>
+            <Text style={{ fontSize: 20, fontWeight: "700", color: colors.text }}>Availability</Text>
+            <Text style={{ color: colors.textSoft, opacity: 0.9 }}>Manage the time slots you can accept jobs</Text>
           </View>
 
           <TouchableOpacity
             onPress={loadAvailability}
             style={{
-              backgroundColor: "#111827",
+              backgroundColor: colors.primary,
               paddingHorizontal: 12,
               paddingVertical: 10,
               borderRadius: 12,
@@ -217,9 +219,9 @@ export default function AvailabilityPlaceholder() {
 
         <View
           style={{
-            backgroundColor: "#fff",
+            backgroundColor: colors.surface,
             borderWidth: 1,
-            borderColor: "#e6e8ef",
+            borderColor: colors.border,
             borderRadius: 14,
             padding: 14,
             gap: 10,
@@ -228,15 +230,15 @@ export default function AvailabilityPlaceholder() {
           <Text style={{ fontWeight: "700" }}>Add slot</Text>
 
           <View style={{ gap: 6 }}>
-            <Text style={{ fontWeight: "600" }}>Date</Text>
+            <Text style={{ fontWeight: "600", color: colors.text }}>Date</Text>
             <TouchableOpacity
               onPress={() => setPickerTarget("date")}
               style={{
                 borderWidth: 1,
-                borderColor: "#ddd",
+                borderColor: colors.border,
                 borderRadius: 10,
                 padding: 12,
-                backgroundColor: "#fff",
+                backgroundColor: colors.surface,
               }}
             >
               <Text>{formatDateLabel(selectedDate)}</Text>
@@ -245,15 +247,15 @@ export default function AvailabilityPlaceholder() {
 
           <View style={{ flexDirection: "row", gap: 10 }}>
             <View style={{ flex: 1, gap: 6 }}>
-              <Text style={{ fontWeight: "600" }}>Start</Text>
+              <Text style={{ fontWeight: "600", color: colors.text }}>Start</Text>
               <TouchableOpacity
                 onPress={() => setPickerTarget("start")}
                 style={{
                   borderWidth: 1,
-                  borderColor: "#ddd",
+                  borderColor: colors.border,
                   borderRadius: 10,
                   padding: 12,
-                  backgroundColor: "#fff",
+                  backgroundColor: colors.surface,
                 }}
               >
                 <Text>{formatTimeLabel(startTime)}</Text>
@@ -261,15 +263,15 @@ export default function AvailabilityPlaceholder() {
             </View>
 
             <View style={{ flex: 1, gap: 6 }}>
-              <Text style={{ fontWeight: "600" }}>End</Text>
+              <Text style={{ fontWeight: "600", color: colors.text }}>End</Text>
               <TouchableOpacity
                 onPress={() => setPickerTarget("end")}
                 style={{
                   borderWidth: 1,
-                  borderColor: "#ddd",
+                  borderColor: colors.border,
                   borderRadius: 10,
                   padding: 12,
-                  backgroundColor: "#fff",
+                  backgroundColor: colors.surface,
                 }}
               >
                 <Text>{formatTimeLabel(endTime)}</Text>
@@ -279,10 +281,10 @@ export default function AvailabilityPlaceholder() {
 
           <View
             style={{
-              backgroundColor: "#f8fafc",
+              backgroundColor: colors.surfaceMuted,
               borderRadius: 10,
               borderWidth: 1,
-              borderColor: "#e6e8ef",
+              borderColor: colors.border,
               padding: 10,
             }}
           >
@@ -294,7 +296,7 @@ export default function AvailabilityPlaceholder() {
           <TouchableOpacity
             onPress={addDraftSlot}
             style={{
-              backgroundColor: "#2563eb",
+              backgroundColor: colors.primary,
               padding: 12,
               borderRadius: 12,
               alignItems: "center",
@@ -337,9 +339,9 @@ export default function AvailabilityPlaceholder() {
           ListEmptyComponent={
             <View
               style={{
-                backgroundColor: "#fff",
+                backgroundColor: colors.surface,
                 borderWidth: 1,
-                borderColor: "#e6e8ef",
+                borderColor: colors.border,
                 borderRadius: 14,
                 padding: 14,
               }}
@@ -350,30 +352,29 @@ export default function AvailabilityPlaceholder() {
           renderItem={({ item, index }) => (
             <View
               style={{
-                backgroundColor: "#fff",
-                borderWidth: 1,
-                borderColor: "#e6e8ef",
-                borderRadius: 14,
-                padding: 14,
-                marginBottom: 10,
-              }}
-            >
-              <Text style={{ fontWeight: "700" }}>Slot {index + 1}</Text>
-              <Text style={{ opacity: 0.8, marginTop: 6 }}>Start: {formatDate(item.start)}</Text>
-              <Text style={{ opacity: 0.8, marginTop: 2 }}>End: {formatDate(item.end)}</Text>
-
-              <TouchableOpacity
-                onPress={() => removeSlot(index)}
-                style={{
-                  marginTop: 10,
-                  backgroundColor: "#e5e7eb",
-                  padding: 10,
-                  borderRadius: 10,
-                  alignItems: "center",
+                  backgroundColor: colors.surface,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 14,
+                  padding: 14,
+                  marginBottom: 10,
                 }}
               >
-                <Text style={{ fontWeight: "700" }}>Remove</Text>
-              </TouchableOpacity>
+                <Text style={{ fontWeight: "700", color: colors.text }}>Slot {index + 1}</Text>
+                <Text style={{ color: colors.textSoft, marginTop: 6 }}>Start: {formatDate(item.start)}</Text>
+                <Text style={{ color: colors.textSoft, marginTop: 2 }}>End: {formatDate(item.end)}</Text>
+                <TouchableOpacity
+                  onPress={() => removeSlot(index)}
+                  style={{
+                    marginTop: 10,
+                    backgroundColor: "#e5e7eb",
+                    padding: 10,
+                    borderRadius: 10,
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ fontWeight: "700" }}>Remove</Text>
+                </TouchableOpacity>
             </View>
           )}
         />
@@ -383,8 +384,8 @@ export default function AvailabilityPlaceholder() {
         style={{
           padding: 16,
           borderTopWidth: 1,
-          borderTopColor: "#e6e8ef",
-          backgroundColor: "#fff",
+          borderTopColor: colors.border,
+          backgroundColor: colors.surface,
           flexDirection: "row",
           gap: 10,
         }}
@@ -394,7 +395,7 @@ export default function AvailabilityPlaceholder() {
           disabled={clearing}
           style={{
             flex: 1,
-            backgroundColor: clearing ? "#fca5a5" : "#dc2626",
+            backgroundColor: clearing ? "#fca5a5" : colors.danger,
             padding: 12,
             borderRadius: 12,
             alignItems: "center",
@@ -412,7 +413,7 @@ export default function AvailabilityPlaceholder() {
           disabled={saving}
           style={{
             flex: 1,
-            backgroundColor: "#111827",
+            backgroundColor: colors.primary,
             padding: 12,
             borderRadius: 12,
             alignItems: "center",

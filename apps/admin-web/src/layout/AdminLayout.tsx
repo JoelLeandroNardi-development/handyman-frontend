@@ -1,10 +1,12 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { clearToken, getSession } from "../auth/session";
+import { useTheme } from "../theme";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const session = getSession();
+  const { mode, toggle } = useTheme();
 
   function logout() {
     clearToken();
@@ -17,13 +19,13 @@ export default function AdminLayout() {
         display: "grid",
         gridTemplateColumns: "280px minmax(0, 1fr)",
         minHeight: "100vh",
-        background: "#f3f5f9",
+        background: "var(--bg)",
       }}
     >
       <aside
         style={{
-          background: "#ffffff",
-          borderRight: "1px solid #e2e8f0",
+          background: "var(--surface)",
+          borderRight: "1px solid var(--border)",
         }}
       >
         <Sidebar />
@@ -37,8 +39,8 @@ export default function AdminLayout() {
             justifyContent: "space-between",
             alignItems: "center",
             padding: "0 28px",
-            borderBottom: "1px solid #e2e8f0",
-            background: "rgba(255,255,255,0.86)",
+            borderBottom: "1px solid var(--border)",
+            background: "var(--surface)",
             backdropFilter: "blur(8px)",
             position: "sticky",
             top: 0,
@@ -46,22 +48,37 @@ export default function AdminLayout() {
           }}
         >
           <div>
-            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.02em" }}>
+            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.02em", color: "var(--text)" }}>
               Admin Console
             </div>
-            <div style={{ fontSize: 13, color: "#64748b", marginTop: 2 }}>
+            <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 2 }}>
               Operational control center
             </div>
           </div>
 
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <button
+              onClick={toggle}
+              style={{
+                padding: "8px 12px",
+                borderRadius: 999,
+                border: "1px solid var(--border)",
+                background: "var(--surface-muted)",
+                color: "var(--text)",
+                fontSize: 14,
+                cursor: "pointer",
+              }}
+            >
+              {mode === "light" ? "Dark Mode" : "Light Mode"}
+            </button>
+
             <div
               style={{
-                background: "#fff",
-                border: "1px solid #e2e8f0",
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
                 borderRadius: 999,
                 padding: "8px 12px",
-                color: "#475569",
+                color: "var(--text-soft)",
                 fontSize: 14,
               }}
             >
@@ -73,7 +90,7 @@ export default function AdminLayout() {
               style={{
                 padding: "10px 14px",
                 borderRadius: 12,
-                background: "#0f172a",
+                background: "var(--primary)",
                 color: "#fff",
                 fontWeight: 700,
                 cursor: "pointer",

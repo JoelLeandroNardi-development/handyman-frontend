@@ -4,33 +4,33 @@ function getToneStyles(tone: Tone) {
   switch (tone) {
     case "success":
       return {
-        background: "#dcfce7",
-        color: "#166534",
-        border: "#bbf7d0",
+        background: "var(--success-soft)",
+        color: "var(--success)",
+        border: "var(--success-soft)",
       };
     case "warning":
       return {
-        background: "#fef3c7",
-        color: "#92400e",
-        border: "#fde68a",
+        background: "var(--warning-soft)",
+        color: "var(--warning)",
+        border: "var(--warning-soft)",
       };
     case "danger":
       return {
-        background: "#fee2e2",
-        color: "#991b1b",
-        border: "#fecaca",
+        background: "var(--danger-soft)",
+        color: "var(--danger)",
+        border: "var(--danger-soft)",
       };
     case "info":
       return {
-        background: "#dbeafe",
-        color: "#1d4ed8",
-        border: "#bfdbfe",
+        background: "var(--primary-soft)",
+        color: "var(--primary)",
+        border: "var(--primary-soft)",
       };
     default:
       return {
-        background: "#f8fafc",
-        color: "#334155",
-        border: "#e2e8f0",
+        background: "var(--surface-muted)",
+        color: "var(--text)",
+        border: "var(--border)",
       };
   }
 }

@@ -17,6 +17,7 @@
     "@mui/material": "^7.3.9",
     "@smart/api": "workspace:^",
     "@smart/core": "workspace:^",
+    "@smart/theme": "workspace:^",
     "@tanstack/react-query": "^5.90.21",
     "react": "19.2.0",
     "react-dom": "19.2.0",

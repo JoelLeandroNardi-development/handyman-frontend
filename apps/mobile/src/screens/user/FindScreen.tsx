@@ -10,6 +10,7 @@ import {
   Modal,
   ScrollView,
 } from "react-native";
+import { useTheme } from "../../theme";
 import * as Location from "expo-location";
 import { WebView } from "react-native-webview";
 import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
@@ -174,6 +175,7 @@ function flattenSkills(catalog: SkillCatalogFlatResponse | null): SkillOption[] 
 
 export default function FindScreen() {
   const api = useMemo(() => createApiClient(), []);
+  const { colors } = useTheme();
   const { session } = useSession();
 
   const [userCoords, setUserCoords] = useState<Coords | null>(null);
@@ -354,31 +356,31 @@ export default function FindScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f6f7fb" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
       <View style={{ padding: 12, gap: 10 }}>
-        <Text style={{ fontSize: 20, fontWeight: "700" }}>Find a handyman</Text>
-        <Text style={{ opacity: 0.7 }}>Choose a skill, time window, and search nearby pros.</Text>
+        <Text style={{ fontSize: 20, fontWeight: "700", color: colors.text }}>Find a handyman</Text>
+        <Text style={{ color: colors.textSoft, opacity: 0.9 }}>Choose a skill, time window, and search nearby pros.</Text>
 
         <View
           style={{
-            backgroundColor: "#fff",
+            backgroundColor: colors.surface,
             borderRadius: 14,
             borderWidth: 1,
-            borderColor: "#e6e8ef",
+            borderColor: colors.border,
             padding: 12,
             gap: 10,
           }}
         >
           <View style={{ gap: 6 }}>
-            <Text style={{ fontWeight: "600" }}>Skill</Text>
+            <Text style={{ fontWeight: "600", color: colors.text }}>Skill</Text>
             <TouchableOpacity
               onPress={() => setSkillModalOpen(true)}
               style={{
                 borderWidth: 1,
-                borderColor: "#ddd",
+                borderColor: colors.border,
                 borderRadius: 10,
                 padding: 12,
-                backgroundColor: "#fff",
+                backgroundColor: colors.surface,
               }}
             >
               <Text style={{ fontWeight: selectedSkill ? "600" : "400" }}>
@@ -392,15 +394,15 @@ export default function FindScreen() {
           </View>
 
           <View style={{ gap: 6 }}>
-            <Text style={{ fontWeight: "600" }}>Date</Text>
+            <Text style={{ fontWeight: "600", color: colors.text }}>Date</Text>
             <TouchableOpacity
               onPress={() => setPickerTarget("date")}
               style={{
                 borderWidth: 1,
-                borderColor: "#ddd",
+                borderColor: colors.border,
                 borderRadius: 10,
                 padding: 12,
-                backgroundColor: "#fff",
+                backgroundColor: colors.surface,
               }}
             >
               <Text>{formatDateLabel(selectedDate)}</Text>
@@ -414,10 +416,10 @@ export default function FindScreen() {
                 onPress={() => setPickerTarget("start")}
                 style={{
                   borderWidth: 1,
-                  borderColor: "#ddd",
+                  borderColor: colors.border,
                   borderRadius: 10,
                   padding: 12,
-                  backgroundColor: "#fff",
+                  backgroundColor: colors.surface,
                 }}
               >
                 <Text>{formatTimeLabel(startTime)}</Text>
@@ -425,15 +427,15 @@ export default function FindScreen() {
             </View>
 
             <View style={{ flex: 1, gap: 6 }}>
-              <Text style={{ fontWeight: "600" }}>End</Text>
+              <Text style={{ fontWeight: "600", color: colors.text }}>End</Text>
               <TouchableOpacity
                 onPress={() => setPickerTarget("end")}
                 style={{
                   borderWidth: 1,
-                  borderColor: "#ddd",
+                  borderColor: colors.border,
                   borderRadius: 10,
                   padding: 12,
-                  backgroundColor: "#fff",
+                  backgroundColor: colors.surface,
                 }}
               >
                 <Text>{formatTimeLabel(endTime)}</Text>
@@ -443,14 +445,14 @@ export default function FindScreen() {
 
           <View
             style={{
-              backgroundColor: "#f8fafc",
+              backgroundColor: colors.surfaceMuted,
               borderRadius: 10,
               borderWidth: 1,
-              borderColor: "#e6e8ef",
+              borderColor: colors.border,
               padding: 10,
             }}
           >
-            <Text style={{ opacity: 0.8 }}>
+            <Text style={{ color: colors.textSoft }}>
               Requested window: {desiredStartDate.toLocaleString()} → {desiredEndDate.toLocaleString()}
             </Text>
           </View>
@@ -460,7 +462,7 @@ export default function FindScreen() {
               onPress={getLocation}
               style={{
                 flex: 1,
-                backgroundColor: "#111827",
+                backgroundColor: colors.primary,
                 padding: 12,
                 borderRadius: 12,
                 alignItems: "center",
@@ -479,7 +481,7 @@ export default function FindScreen() {
               onPress={runMatch}
               style={{
                 flex: 1,
-                backgroundColor: userCoords && selectedSkillKey ? "#2563eb" : "#93c5fd",
+                backgroundColor: userCoords && selectedSkillKey ? colors.primary : colors.primarySoft,
                 padding: 12,
                 borderRadius: 12,
                 alignItems: "center",
@@ -533,8 +535,8 @@ export default function FindScreen() {
             borderRadius: 16,
             overflow: "hidden",
             borderWidth: 1,
-            borderColor: "#e6e8ef",
-            backgroundColor: "#fff",
+            borderColor: colors.border,
+            backgroundColor: colors.surface,
           }}
         >
           <WebView
@@ -557,10 +559,10 @@ export default function FindScreen() {
             left: 12,
             right: 12,
             bottom: 12,
-            backgroundColor: "#fff",
+            backgroundColor: colors.surface,
             borderRadius: 16,
             borderWidth: 1,
-            borderColor: "#e6e8ef",
+            borderColor: colors.border,
             padding: 12,
             maxHeight: 260,
           }}
@@ -592,8 +594,8 @@ export default function FindScreen() {
                       padding: 10,
                       borderRadius: 12,
                       borderWidth: 1,
-                      borderColor: isSelected ? "#2563eb" : "#eef0f6",
-                      backgroundColor: isSelected ? "#eff6ff" : "#fff",
+                      borderColor: isSelected ? colors.primary : colors.border,
+                      backgroundColor: isSelected ? colors.primarySoft : colors.surface,
                       marginBottom: 8,
                     }}
                   >
@@ -620,7 +622,7 @@ export default function FindScreen() {
         >
           <View
             style={{
-              backgroundColor: "#fff",
+              backgroundColor: colors.surface,
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
               maxHeight: "70%",
@@ -650,8 +652,8 @@ export default function FindScreen() {
                           style={{
                             padding: 12,
                             borderWidth: 1,
-                            borderColor: selectedRow ? "#2563eb" : "#e6e8ef",
-                            backgroundColor: selectedRow ? "#eff6ff" : "#fff",
+                            borderColor: selectedRow ? colors.primary : colors.border,
+                            backgroundColor: selectedRow ? colors.primarySoft : colors.surface,
                             borderRadius: 12,
                             marginBottom: 8,
                           }}
@@ -670,7 +672,7 @@ export default function FindScreen() {
               onPress={() => setSkillModalOpen(false)}
               style={{
                 marginTop: 8,
-                backgroundColor: "#111827",
+                backgroundColor: colors.primary,
                 padding: 12,
                 borderRadius: 12,
                 alignItems: "center",
@@ -692,7 +694,7 @@ export default function FindScreen() {
         >
           <View
             style={{
-              backgroundColor: "#fff",
+              backgroundColor: colors.surface,
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
               padding: 16,
@@ -715,9 +717,9 @@ export default function FindScreen() {
 
                 <View
                   style={{
-                    backgroundColor: "#f8fafc",
+                    backgroundColor: colors.surfaceMuted,
                     borderWidth: 1,
-                    borderColor: "#e6e8ef",
+                    borderColor: colors.border,
                     borderRadius: 12,
                     padding: 12,
                   }}
@@ -734,7 +736,7 @@ export default function FindScreen() {
                 onPress={() => setSelectedEmail(null)}
                 style={{
                   flex: 1,
-                  backgroundColor: "#e5e7eb",
+                  backgroundColor: colors.surfaceMuted,
                   padding: 12,
                   borderRadius: 12,
                   alignItems: "center",
@@ -748,7 +750,7 @@ export default function FindScreen() {
                 disabled={creatingBooking}
                 style={{
                   flex: 1,
-                  backgroundColor: "#111827",
+                  backgroundColor: colors.primary,
                   padding: 12,
                   borderRadius: 12,
                   alignItems: "center",

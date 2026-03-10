@@ -10,10 +10,12 @@ import HandymenPage from "./routes/HandymenPage";
 import SkillsCatalogPage from "./routes/SkillsCatalogPage";
 import AvailabilityPage from "./routes/AvailabilityPage";
 import MatchLogsPage from "./routes/MatchLogsPage";
+import { ThemeProvider } from "./theme";
 
 export default function App() {
   return (
-    <Routes>
+    <ThemeProvider>
+      <Routes>
       <Route path="/login" element={<LoginPage />} />
 
       <Route
@@ -35,6 +37,7 @@ export default function App() {
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </ThemeProvider>
   );
 }

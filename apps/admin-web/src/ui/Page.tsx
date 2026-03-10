@@ -18,7 +18,7 @@ export default function Page({
             lineHeight: 1.1,
             fontWeight: 800,
             letterSpacing: "-0.03em",
-            color: "#0f172a",
+            color: "var(--text)",
           }}
         >
           {title}
@@ -27,7 +27,7 @@ export default function Page({
         {subtitle ? (
           <div
             style={{
-              color: "#64748b",
+              color: "var(--text-faint)",
               marginTop: 8,
               fontSize: 15,
             }}
