@@ -7,8 +7,8 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  TextInput,
 } from "react-native";
+import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import {
   clearMyAvailability,
   getMyAvailability,
@@ -17,11 +17,35 @@ import {
 } from "@smart/api";
 import { createApiClient } from "../../lib/api";
 
+type PickerTarget = "date" | "start" | "end" | null;
+
 function formatDate(value?: string) {
   if (!value) return "-";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
   return d.toLocaleString();
+}
+
+function formatDateLabel(value: Date) {
+  return value.toLocaleDateString(undefined, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatTimeLabel(value: Date) {
+  return value.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function combineDateAndTime(datePart: Date, timePart: Date) {
+  const next = new Date(datePart);
+  next.setHours(timePart.getHours(), timePart.getMinutes(), 0, 0);
+  return next;
 }
 
 function normalizeAvailability(data: unknown): AvailabilitySlot[] {
@@ -69,8 +93,19 @@ export default function AvailabilityPlaceholder() {
   const [clearing, setClearing] = useState(false);
 
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
-  const [draftStart, setDraftStart] = useState(new Date(Date.now() + 60 * 60 * 1000).toISOString());
-  const [draftEnd, setDraftEnd] = useState(new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString());
+
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [startTime, setStartTime] = useState<Date>(() => {
+    const d = new Date();
+    d.setHours(d.getHours() + 1, 0, 0, 0);
+    return d;
+  });
+  const [endTime, setEndTime] = useState<Date>(() => {
+    const d = new Date();
+    d.setHours(d.getHours() + 2, 0, 0, 0);
+    return d;
+  });
+  const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
 
   async function loadAvailability() {
     setLoading(true);
@@ -88,19 +123,29 @@ export default function AvailabilityPlaceholder() {
     loadAvailability();
   }, []);
 
+  function onPickerChange(event: DateTimePickerEvent, value?: Date) {
+    if (event.type === "dismissed") {
+      setPickerTarget(null);
+      return;
+    }
+    if (!value) {
+      setPickerTarget(null);
+      return;
+    }
+
+    if (pickerTarget === "date") {
+      setSelectedDate(value);
+    } else if (pickerTarget === "start") {
+      setStartTime(value);
+    } else if (pickerTarget === "end") {
+      setEndTime(value);
+    }
+    setPickerTarget(null);
+  }
+
   function addDraftSlot() {
-    if (!draftStart.trim() || !draftEnd.trim()) {
-      Alert.alert("Missing values", "Please enter both start and end.");
-      return;
-    }
-
-    const start = new Date(draftStart);
-    const end = new Date(draftEnd);
-
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-      Alert.alert("Invalid date", "Please use valid ISO date strings.");
-      return;
-    }
+    const start = combineDateAndTime(selectedDate, startTime);
+    const end = combineDateAndTime(selectedDate, endTime);
 
     if (end <= start) {
       Alert.alert("Invalid range", "End must be after start.");
@@ -113,8 +158,6 @@ export default function AvailabilityPlaceholder() {
     };
 
     setSlots((prev) => sortSlots([...prev, next]));
-    setDraftStart(new Date(end.getTime() + 60 * 60 * 1000).toISOString());
-    setDraftEnd(new Date(end.getTime() + 2 * 60 * 60 * 1000).toISOString());
   }
 
   function removeSlot(index: number) {
@@ -146,6 +189,9 @@ export default function AvailabilityPlaceholder() {
       setClearing(false);
     }
   }
+
+  const previewStart = combineDateAndTime(selectedDate, startTime);
+  const previewEnd = combineDateAndTime(selectedDate, endTime);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f6f7fb" }}>
@@ -182,35 +228,67 @@ export default function AvailabilityPlaceholder() {
           <Text style={{ fontWeight: "700" }}>Add slot</Text>
 
           <View style={{ gap: 6 }}>
-            <Text style={{ fontWeight: "600" }}>Start (ISO)</Text>
-            <TextInput
-              value={draftStart}
-              onChangeText={setDraftStart}
-              autoCapitalize="none"
+            <Text style={{ fontWeight: "600" }}>Date</Text>
+            <TouchableOpacity
+              onPress={() => setPickerTarget("date")}
               style={{
                 borderWidth: 1,
                 borderColor: "#ddd",
                 borderRadius: 10,
-                padding: 10,
+                padding: 12,
                 backgroundColor: "#fff",
               }}
-            />
+            >
+              <Text>{formatDateLabel(selectedDate)}</Text>
+            </TouchableOpacity>
           </View>
 
-          <View style={{ gap: 6 }}>
-            <Text style={{ fontWeight: "600" }}>End (ISO)</Text>
-            <TextInput
-              value={draftEnd}
-              onChangeText={setDraftEnd}
-              autoCapitalize="none"
-              style={{
-                borderWidth: 1,
-                borderColor: "#ddd",
-                borderRadius: 10,
-                padding: 10,
-                backgroundColor: "#fff",
-              }}
-            />
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <View style={{ flex: 1, gap: 6 }}>
+              <Text style={{ fontWeight: "600" }}>Start</Text>
+              <TouchableOpacity
+                onPress={() => setPickerTarget("start")}
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#ddd",
+                  borderRadius: 10,
+                  padding: 12,
+                  backgroundColor: "#fff",
+                }}
+              >
+                <Text>{formatTimeLabel(startTime)}</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ flex: 1, gap: 6 }}>
+              <Text style={{ fontWeight: "600" }}>End</Text>
+              <TouchableOpacity
+                onPress={() => setPickerTarget("end")}
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#ddd",
+                  borderRadius: 10,
+                  padding: 12,
+                  backgroundColor: "#fff",
+                }}
+              >
+                <Text>{formatTimeLabel(endTime)}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View
+            style={{
+              backgroundColor: "#f8fafc",
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: "#e6e8ef",
+              padding: 10,
+            }}
+          >
+            <Text style={{ opacity: 0.8 }}>
+              Slot preview: {previewStart.toLocaleString()} → {previewEnd.toLocaleString()}
+            </Text>
           </View>
 
           <TouchableOpacity
@@ -224,12 +302,23 @@ export default function AvailabilityPlaceholder() {
           >
             <Text style={{ color: "#fff", fontWeight: "700" }}>Add slot locally</Text>
           </TouchableOpacity>
-
-          <Text style={{ opacity: 0.65 }}>
-            Tip: for now this screen uses ISO datetimes directly. We can replace this with proper date/time pickers later.
-          </Text>
         </View>
       </View>
+
+      {pickerTarget ? (
+        <DateTimePicker
+          value={
+            pickerTarget === "date"
+              ? selectedDate
+              : pickerTarget === "start"
+                ? startTime
+                : endTime
+          }
+          mode={pickerTarget === "date" ? "date" : "time"}
+          is24Hour
+          onChange={onPickerChange}
+        />
+      ) : null}
 
       {loading ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

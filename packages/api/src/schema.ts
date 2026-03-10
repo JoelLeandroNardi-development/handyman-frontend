@@ -371,6 +371,75 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/skills-catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Skills Catalog Endpoint */
+        get: operations["get_skills_catalog_endpoint_skills_catalog_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/skills-catalog/flat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Skills Catalog Flat Endpoint */
+        get: operations["get_skills_catalog_flat_endpoint_skills_catalog_flat_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/skills-catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace Skills Catalog Endpoint */
+        put: operations["replace_skills_catalog_endpoint_admin_skills_catalog_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Skills Catalog Endpoint */
+        patch: operations["patch_skills_catalog_endpoint_admin_skills_catalog_patch"];
+        trace?: never;
+    };
+    "/admin/handymen/invalid-skills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Invalid Handymen Skills Endpoint */
+        get: operations["invalid_handymen_skills_endpoint_admin_handymen_invalid_skills_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/availability/{email}": {
         parameters: {
             query?: never;
@@ -719,6 +788,24 @@ export interface components {
              */
             created_at: string;
         };
+        /** InvalidHandymanSkillsItem */
+        InvalidHandymanSkillsItem: {
+            /** Email */
+            email: string;
+            /** Current Skills */
+            current_skills: string[];
+            /** Invalid Skills */
+            invalid_skills: string[];
+            /** Valid Skills */
+            valid_skills: string[];
+        };
+        /** InvalidHandymanSkillsResponse */
+        InvalidHandymanSkillsResponse: {
+            /** Items */
+            items: components["schemas"]["InvalidHandymanSkillsItem"][];
+            /** Count */
+            count: number;
+        };
         /** Login */
         Login: {
             /** Email */
@@ -785,6 +872,59 @@ export interface components {
         SetAvailability: {
             /** Slots */
             slots: components["schemas"]["AvailabilitySlot"][];
+        };
+        /** SkillCatalogCategoryItem */
+        SkillCatalogCategoryItem: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Active */
+            active: boolean;
+            /** Sort Order */
+            sort_order: number;
+            /** Skills */
+            skills: components["schemas"]["SkillCatalogSkillItem"][];
+        };
+        /** SkillCatalogFlatResponse */
+        SkillCatalogFlatResponse: {
+            /** Categories */
+            categories: components["schemas"]["SkillCatalogCategoryItem"][];
+            /** Allowed Skill Keys */
+            allowed_skill_keys: string[];
+        };
+        /** SkillCatalogPatchRequest */
+        SkillCatalogPatchRequest: {
+            /** Upserts */
+            upserts?: {
+                [key: string]: string[];
+            };
+            /** Activate Skills */
+            activate_skills?: string[];
+            /** Deactivate Skills */
+            deactivate_skills?: string[];
+            /** Activate Categories */
+            activate_categories?: string[];
+            /** Deactivate Categories */
+            deactivate_categories?: string[];
+        };
+        /** SkillCatalogReplaceRequest */
+        SkillCatalogReplaceRequest: {
+            /** Catalog */
+            catalog: {
+                [key: string]: string[];
+            };
+        };
+        /** SkillCatalogSkillItem */
+        SkillCatalogSkillItem: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Active */
+            active: boolean;
+            /** Sort Order */
+            sort_order: number;
         };
         /** TokenResponse */
         TokenResponse: {
@@ -1781,6 +1921,154 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_skills_catalog_endpoint_skills_catalog_get: {
+        parameters: {
+            query?: {
+                active_only?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_skills_catalog_flat_endpoint_skills_catalog_flat_get: {
+        parameters: {
+            query?: {
+                active_only?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkillCatalogFlatResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_skills_catalog_endpoint_admin_skills_catalog_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillCatalogReplaceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_skills_catalog_endpoint_admin_skills_catalog_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillCatalogPatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    invalid_handymen_skills_endpoint_admin_handymen_invalid_skills_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvalidHandymanSkillsResponse"];
                 };
             };
         };

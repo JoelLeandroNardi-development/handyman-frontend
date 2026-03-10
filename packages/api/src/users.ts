@@ -38,8 +38,14 @@ export async function updateUserLocation(api: ApiClient, email: string, body: Up
   return api.request(`/users/${encodeURIComponent(email)}/location`, { method: "PUT", json: body });
 }
 
-export async function updateMe(api: ApiClient, body: UpdateUser): Promise<UserResponse> {
-  return api.request<UserResponse>("/me", { method: "PUT", json: body });
+export async function updateMe(
+  api: ApiClient,
+  body: UpdateUser
+): Promise<UserResponse> {
+  return api.request<UserResponse>("/me", {
+    method: "PUT",
+    json: body,
+  });
 }
 
 export async function getMeUser(api: ApiClient): Promise<UserResponse> {

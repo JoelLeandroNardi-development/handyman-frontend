@@ -1353,6 +1353,218 @@
         ]
       }
     },
+    "/skills-catalog": {
+      "get": {
+        "tags": [
+          "Handymen"
+        ],
+        "summary": "Get Skills Catalog Endpoint",
+        "operationId": "get_skills_catalog_endpoint_skills_catalog_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "active_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Active Only"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/skills-catalog/flat": {
+      "get": {
+        "tags": [
+          "Handymen"
+        ],
+        "summary": "Get Skills Catalog Flat Endpoint",
+        "operationId": "get_skills_catalog_flat_endpoint_skills_catalog_flat_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "active_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Active Only"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillCatalogFlatResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/skills-catalog": {
+      "put": {
+        "tags": [
+          "Handymen"
+        ],
+        "summary": "Replace Skills Catalog Endpoint",
+        "operationId": "replace_skills_catalog_endpoint_admin_skills_catalog_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillCatalogReplaceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Handymen"
+        ],
+        "summary": "Patch Skills Catalog Endpoint",
+        "operationId": "patch_skills_catalog_endpoint_admin_skills_catalog_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillCatalogPatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/handymen/invalid-skills": {
+      "get": {
+        "tags": [
+          "Handymen"
+        ],
+        "summary": "Invalid Handymen Skills Endpoint",
+        "operationId": "invalid_handymen_skills_endpoint_admin_handymen_invalid_skills_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidHandymanSkillsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/availability/{email}": {
       "post": {
         "tags": [
@@ -2770,6 +2982,64 @@
         ],
         "title": "HandymanResponse"
       },
+      "InvalidHandymanSkillsItem": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "current_skills": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Current Skills"
+          },
+          "invalid_skills": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Invalid Skills"
+          },
+          "valid_skills": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Valid Skills"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "current_skills",
+          "invalid_skills",
+          "valid_skills"
+        ],
+        "title": "InvalidHandymanSkillsItem"
+      },
+      "InvalidHandymanSkillsResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InvalidHandymanSkillsItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "InvalidHandymanSkillsResponse"
+      },
       "Login": {
         "properties": {
           "email": {
@@ -2942,6 +3212,157 @@
           "slots"
         ],
         "title": "SetAvailability"
+      },
+      "SkillCatalogCategoryItem": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/SkillCatalogSkillItem"
+            },
+            "type": "array",
+            "title": "Skills"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "active",
+          "sort_order",
+          "skills"
+        ],
+        "title": "SkillCatalogCategoryItem"
+      },
+      "SkillCatalogFlatResponse": {
+        "properties": {
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/SkillCatalogCategoryItem"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "allowed_skill_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Allowed Skill Keys"
+          }
+        },
+        "type": "object",
+        "required": [
+          "categories",
+          "allowed_skill_keys"
+        ],
+        "title": "SkillCatalogFlatResponse"
+      },
+      "SkillCatalogPatchRequest": {
+        "properties": {
+          "upserts": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Upserts"
+          },
+          "activate_skills": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Activate Skills"
+          },
+          "deactivate_skills": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Deactivate Skills"
+          },
+          "activate_categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Activate Categories"
+          },
+          "deactivate_categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Deactivate Categories"
+          }
+        },
+        "type": "object",
+        "title": "SkillCatalogPatchRequest"
+      },
+      "SkillCatalogReplaceRequest": {
+        "properties": {
+          "catalog": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Catalog"
+          }
+        },
+        "type": "object",
+        "required": [
+          "catalog"
+        ],
+        "title": "SkillCatalogReplaceRequest"
+      },
+      "SkillCatalogSkillItem": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "active",
+          "sort_order"
+        ],
+        "title": "SkillCatalogSkillItem"
       },
       "TokenResponse": {
         "properties": {

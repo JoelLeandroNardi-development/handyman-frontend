@@ -1,3 +1,3 @@
 import { Buffer } from "buffer";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(global as any).Buffer = Buffer;
+
+(globalThis as typeof globalThis & { Buffer: typeof Buffer }).Buffer = Buffer;
