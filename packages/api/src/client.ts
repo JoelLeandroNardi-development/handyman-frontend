@@ -28,3 +28,7 @@ export class ApiClient {
     return data as T;
   }
 }
+
+export function createApiClient(baseUrl: string, getToken: TokenProvider) {
+  return new ApiClient(baseUrl, getToken);
+}

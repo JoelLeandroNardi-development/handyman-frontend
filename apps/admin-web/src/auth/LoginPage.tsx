@@ -5,6 +5,25 @@ import { decodeJwt } from "@smart/core";
 import { API_BASE_URL, createApiClient } from "../lib/api";
 import { storeToken } from "./session";
 
+const styles = {
+  page: {
+    minHeight: "100vh",
+    display: "grid",
+    placeItems: "center",
+    padding: 24,
+    background: "radial-gradient(circle at top, rgba(37,99,235,0.08), transparent 30%), #f3f5f9",
+  } as const,
+  card: {
+    width: "100%",
+    maxWidth: 460,
+    background: "#fff",
+    border: "1px solid #e2e8f0",
+    borderRadius: 24,
+    boxShadow: "0 16px 40px rgba(15,23,42,0.08)",
+    padding: 28,
+  } as const,
+};
+
 export default function LoginPage() {
   const [email, setEmail] = useState("admin@example.com");
   const [password, setPassword] = useState("password");
@@ -34,27 +53,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-        padding: 24,
-        background:
-          "radial-gradient(circle at top, rgba(37,99,235,0.08), transparent 30%), #f3f5f9",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 460,
-          background: "#fff",
-          border: "1px solid #e2e8f0",
-          borderRadius: 24,
-          boxShadow: "0 16px 40px rgba(15,23,42,0.08)",
-          padding: 28,
-        }}
-      >
+    <div style={styles.page}>
+      <div style={styles.card}>
         <div style={{ marginBottom: 22 }}>
           <div
             style={{
