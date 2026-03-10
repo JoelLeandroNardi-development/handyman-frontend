@@ -3,7 +3,7 @@ import React from "react";
 export default function Page({
   title,
   subtitle,
-  children
+  children,
 }: {
   title: string;
   subtitle?: string;
@@ -11,10 +11,32 @@ export default function Page({
 }) {
   return (
     <div>
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 22, fontWeight: 700 }}>{title}</div>
-        {subtitle ? <div style={{ opacity: 0.7, marginTop: 4 }}>{subtitle}</div> : null}
+      <div style={{ marginBottom: 22 }}>
+        <div
+          style={{
+            fontSize: 32,
+            lineHeight: 1.1,
+            fontWeight: 800,
+            letterSpacing: "-0.03em",
+            color: "#0f172a",
+          }}
+        >
+          {title}
+        </div>
+
+        {subtitle ? (
+          <div
+            style={{
+              color: "#64748b",
+              marginTop: 8,
+              fontSize: 15,
+            }}
+          >
+            {subtitle}
+          </div>
+        ) : null}
       </div>
+
       {children}
     </div>
   );

@@ -6,6 +6,11 @@ import AdminLayout from "./layout/AdminLayout";
 import OverviewPage from "./routes/OverviewPage";
 import BookingsPage from "./routes/BookingsPage";
 import SystemHealthPage from "./routes/SystemHealthPage";
+import UsersPage from "./routes/UsersPage";
+import HandymenPage from "./routes/HandymenPage";
+import SkillsCatalogPage from "./routes/SkillsCatalogPage";
+import AvailabilityPage from "./routes/AvailabilityPage";
+import MatchLogsPage from "./routes/MatchLogsPage";
 
 export default function App() {
   return (
@@ -22,6 +27,11 @@ export default function App() {
       >
         <Route index element={<OverviewPage />} />
         <Route path="bookings" element={<BookingsPage />} />
+        <Route path="users" element={<UsersPage />} />
+        <Route path="handymen" element={<HandymenPage />} />
+        <Route path="skills" element={<SkillsCatalogPage />} />
+        <Route path="availability" element={<AvailabilityPage />} />
+        <Route path="match-logs" element={<MatchLogsPage />} />
         <Route path="system/health" element={<SystemHealthPage />} />
       </Route>
 

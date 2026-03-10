@@ -1,0 +1,181 @@
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  adminListAllAvailability,
+  clearAvailability,
+  getAvailability,
+  setAvailability,
+  type AvailabilitySlot,
+} from "@smart/api";
+import { createApiClient } from "../lib/api";
+import { formatDateTime, safeJsonParse } from "../lib/adminFormat";
+import Card from "../ui/Card";
+import Page from "../ui/Page";
+
+function normalizeAvailabilityResponse(data: unknown): { email: string; slots: AvailabilitySlot[] }[] {
+  if (Array.isArray(data)) {
+    return data as { email: string; slots: AvailabilitySlot[] }[];
+  }
+
+  if (data && typeof data === "object") {
+    const obj = data as { items?: unknown; results?: unknown };
+    if (Array.isArray(obj.items)) return obj.items as { email: string; slots: AvailabilitySlot[] }[];
+    if (Array.isArray(obj.results)) return obj.results as { email: string; slots: AvailabilitySlot[] }[];
+  }
+
+  return [];
+}
+
+export default function AvailabilityPage() {
+  const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
+  const [email, setEmail] = useState("");
+  const [slotsJson, setSlotsJson] = useState(JSON.stringify({ slots: [] }, null, 2));
+  const [busy, setBusy] = useState("");
+
+  const listQ = useQuery({
+    queryKey: ["admin-availability"],
+    queryFn: () => adminListAllAvailability(api, { limit: 200, cursor: 0 }),
+  });
+
+  const rows = normalizeAvailabilityResponse(listQ.data);
+
+  async function loadByEmail() {
+    if (!email.trim()) return;
+    setBusy("load");
+    try {
+      const res = await getAvailability(api, email.trim());
+      setSlotsJson(JSON.stringify(res, null, 2));
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function saveByEmail() {
+    if (!email.trim()) return;
+    setBusy("save");
+    try {
+      const parsed = safeJsonParse<{ slots: AvailabilitySlot[] }>(slotsJson);
+      await setAvailability(api, email.trim(), parsed);
+      await listQ.refetch();
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function clearByEmail() {
+    if (!email.trim()) return;
+    const ok = window.confirm(`Clear availability for ${email}?`);
+    if (!ok) return;
+
+    setBusy("clear");
+    try {
+      await clearAvailability(api, email.trim());
+      setSlotsJson(JSON.stringify({ slots: [] }, null, 2));
+      await listQ.refetch();
+    } finally {
+      setBusy("");
+    }
+  }
+
+  return (
+    <Page title="Availability" subtitle="Inspect, set, and clear handyman availability by email">
+      <div style={{ display: "grid", gap: 12, gridTemplateColumns: "0.9fr 1.1fr" }}>
+        <Card title="Availability actions">
+          <div style={{ display: "grid", gap: 12 }}>
+            <label style={{ display: "grid", gap: 6 }}>
+              <span style={{ fontSize: 13, fontWeight: 700 }}>Email</span>
+              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="handyman@example.com" />
+            </label>
+
+            <label style={{ display: "grid", gap: 6 }}>
+              <span style={{ fontSize: 13, fontWeight: 700 }}>Availability JSON</span>
+              <textarea
+                value={slotsJson}
+                onChange={(e) => setSlotsJson(e.target.value)}
+                rows={16}
+                style={{ resize: "vertical" }}
+              />
+            </label>
+
+            <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr 1fr 1fr" }}>
+              <button
+                onClick={loadByEmail}
+                disabled={busy !== ""}
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  background: "#2563eb",
+                  color: "#fff",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {busy === "load" ? "Loading…" : "Load"}
+              </button>
+
+              <button
+                onClick={saveByEmail}
+                disabled={busy !== ""}
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  background: "#16a34a",
+                  color: "#fff",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {busy === "save" ? "Saving…" : "Save"}
+              </button>
+
+              <button
+                onClick={clearByEmail}
+                disabled={busy !== ""}
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  background: "#dc2626",
+                  color: "#fff",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {busy === "clear" ? "Clearing…" : "Clear"}
+              </button>
+            </div>
+          </div>
+        </Card>
+
+        <Card title="All availability" right={listQ.isFetching ? "Refreshing…" : `${rows.length} row(s)`}>
+          <div style={{ display: "grid", gap: 10 }}>
+            {rows.length ? (
+              rows.map((row) => (
+                <div
+                  key={row.email}
+                  style={{
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 14,
+                    padding: 14,
+                    background: "#fff",
+                  }}
+                >
+                  <div style={{ fontWeight: 800 }}>{row.email}</div>
+                  <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+                    {(row.slots ?? []).map((slot, index) => (
+                      <div key={`${row.email}-${index}`} style={{ color: "#475569", fontSize: 14 }}>
+                        {formatDateTime(slot.start)} → {formatDateTime(slot.end)}
+                      </div>
+                    ))}
+                    {!row.slots?.length ? <div style={{ color: "#64748b" }}>No slots</div> : null}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ color: "#64748b" }}>No availability data returned.</div>
+            )}
+          </div>
+        </Card>
+      </div>
+    </Page>
+  );
+}

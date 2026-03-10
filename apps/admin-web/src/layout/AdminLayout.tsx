@@ -13,32 +13,79 @@ export default function AdminLayout() {
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", minHeight: "100vh", background: "#f6f7fb" }}>
-      <aside style={{ background: "#fff", borderRight: "1px solid #e6e8ef" }}>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "280px minmax(0, 1fr)",
+        minHeight: "100vh",
+        background: "#f3f5f9",
+      }}
+    >
+      <aside
+        style={{
+          background: "#ffffff",
+          borderRight: "1px solid #e2e8f0",
+        }}
+      >
         <Sidebar />
       </aside>
 
-      <main>
+      <main style={{ minWidth: 0 }}>
         <header
           style={{
+            height: 76,
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: "14px 18px",
-            borderBottom: "1px solid #e6e8ef",
-            background: "#fff"
+            padding: "0 28px",
+            borderBottom: "1px solid #e2e8f0",
+            background: "rgba(255,255,255,0.86)",
+            backdropFilter: "blur(8px)",
+            position: "sticky",
+            top: 0,
+            zIndex: 5,
           }}
         >
-          <div style={{ fontWeight: 600 }}>Admin Console</div>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.02em" }}>
+              Admin Console
+            </div>
+            <div style={{ fontSize: 13, color: "#64748b", marginTop: 2 }}>
+              Operational control center
+            </div>
+          </div>
+
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <div style={{ opacity: 0.75 }}>{session?.claims?.email ?? session?.claims?.sub ?? ""}</div>
-            <button onClick={logout} style={{ padding: "8px 10px", cursor: "pointer" }}>
+            <div
+              style={{
+                background: "#fff",
+                border: "1px solid #e2e8f0",
+                borderRadius: 999,
+                padding: "8px 12px",
+                color: "#475569",
+                fontSize: 14,
+              }}
+            >
+              {session?.claims?.email ?? session?.claims?.sub ?? ""}
+            </div>
+
+            <button
+              onClick={logout}
+              style={{
+                padding: "10px 14px",
+                borderRadius: 12,
+                background: "#0f172a",
+                color: "#fff",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
               Logout
             </button>
           </div>
         </header>
 
-        <div style={{ padding: 18 }}>
+        <div style={{ padding: 28 }}>
           <Outlet />
         </div>
       </main>

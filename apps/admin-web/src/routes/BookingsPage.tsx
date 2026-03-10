@@ -1,8 +1,19 @@
-import React, { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { adminListBookings } from "@smart/api";
+import {
+  adminDeleteBooking,
+  adminListBookings,
+  adminUpdateBooking,
+  cancelBooking,
+  confirmBooking,
+  getBooking,
+} from "@smart/api";
 import { createApiClient } from "../lib/api";
+import { formatDateTime, getStatusTone } from "../lib/adminFormat";
+import Badge from "../ui/Badge";
 import Card from "../ui/Card";
+import DataTable, { type DataTableColumn } from "../ui/DataTable";
+import OverlayPanel from "../ui/OverlayPanel";
 import Page from "../ui/Page";
 
 type AnyBooking = {
@@ -16,93 +27,376 @@ type AnyBooking = {
   cancellation_reason?: string | null;
 };
 
+const STATUS_OPTIONS = ["", "PENDING", "CONFIRMED", "FAILED", "CANCELLED"];
+
 export default function BookingsPage() {
   const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
 
-  const [status, setStatus] = useState<string>("");
-  const [userEmail, setUserEmail] = useState<string>("");
-  const [handymanEmail, setHandymanEmail] = useState<string>("");
+  const [status, setStatus] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [handymanEmail, setHandymanEmail] = useState("");
 
-  const q = useQuery({
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [editStatus, setEditStatus] = useState("");
+  const [editFailureReason, setEditFailureReason] = useState("");
+  const [editCancellationReason, setEditCancellationReason] = useState("");
+  const [actionBusy, setActionBusy] = useState("");
+
+  const listQ = useQuery({
     queryKey: ["admin-bookings", status, userEmail, handymanEmail],
     queryFn: () =>
       adminListBookings(api, {
         limit: 50,
         offset: 0,
-        status: status || null,
-        user_email: userEmail || null,
-        handyman_email: handymanEmail || null,
+        status: status || undefined,
+        user_email: userEmail || undefined,
+        handyman_email: handymanEmail || undefined,
       }),
   });
 
-  const data = q.data;
+  const detailQ = useQuery({
+    queryKey: ["admin-booking", selectedId],
+    queryFn: () => getBooking(api, selectedId!),
+    enabled: !!selectedId,
+  });
 
-  const asArray: AnyBooking[] | null = Array.isArray(data) ? (data as AnyBooking[]) : null;
+  const rows: AnyBooking[] = Array.isArray(listQ.data) ? (listQ.data as AnyBooking[]) : [];
+  const selected = (detailQ.data as AnyBooking | undefined) ?? rows.find((row) => row.booking_id === selectedId);
+
+  useEffect(() => {
+    if (!selected) return;
+    setEditStatus(selected.status ?? "");
+    setEditFailureReason(selected.failure_reason ?? "");
+    setEditCancellationReason(selected.cancellation_reason ?? "");
+  }, [selected?.booking_id, selected?.status, selected?.failure_reason, selected?.cancellation_reason]);
+
+  async function refreshAll() {
+    await listQ.refetch();
+    if (selectedId) {
+      await detailQ.refetch();
+    }
+  }
+
+  async function handleSaveUpdate() {
+    if (!selectedId) return;
+
+    setActionBusy("save");
+    try {
+      await adminUpdateBooking(api, selectedId, {
+        status: editStatus || null,
+        failure_reason: editFailureReason || null,
+        cancellation_reason: editCancellationReason || null,
+      });
+      await refreshAll();
+    } finally {
+      setActionBusy("");
+    }
+  }
+
+  async function handleConfirm() {
+    if (!selectedId) return;
+
+    setActionBusy("confirm");
+    try {
+      await confirmBooking(api, selectedId);
+      await refreshAll();
+    } finally {
+      setActionBusy("");
+    }
+  }
+
+  async function handleCancel() {
+    if (!selectedId) return;
+
+    setActionBusy("cancel");
+    try {
+      await cancelBooking(api, selectedId, {
+        reason: editCancellationReason || "admin_cancelled",
+      });
+      await refreshAll();
+    } finally {
+      setActionBusy("");
+    }
+  }
+
+  async function handleDelete() {
+    if (!selectedId) return;
+    const ok = window.confirm(`Delete booking ${selectedId}?`);
+    if (!ok) return;
+
+    setActionBusy("delete");
+    try {
+      await adminDeleteBooking(api, selectedId);
+      setSelectedId(null);
+      await listQ.refetch();
+    } finally {
+      setActionBusy("");
+    }
+  }
+
+  function clearFilters() {
+    setStatus("");
+    setUserEmail("");
+    setHandymanEmail("");
+  }
+
+  const columns: DataTableColumn<AnyBooking>[] = [
+    {
+      key: "booking_id",
+      header: "Booking",
+      width: 280,
+      render: (row) => (
+        <button
+          onClick={() => setSelectedId(row.booking_id ?? null)}
+          style={{
+            background: "transparent",
+            padding: 0,
+            color: "#1d4ed8",
+            fontWeight: 700,
+            cursor: "pointer",
+            textAlign: "left",
+          }}
+        >
+          <span
+            style={{
+              fontFamily:
+                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+              fontSize: 13,
+            }}
+          >
+            {row.booking_id ?? "-"}
+          </span>
+        </button>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      width: 140,
+      render: (row) => <Badge label={row.status ?? "-"} tone={getStatusTone(row.status)} />,
+    },
+    {
+      key: "user_email",
+      header: "User",
+      width: 220,
+      render: (row) => <span>{row.user_email ?? "-"}</span>,
+    },
+    {
+      key: "handyman_email",
+      header: "Handyman",
+      width: 220,
+      render: (row) => <span>{row.handyman_email ?? "-"}</span>,
+    },
+    {
+      key: "desired_start",
+      header: "Start",
+      width: 180,
+      render: (row) => <span>{formatDateTime(row.desired_start)}</span>,
+    },
+    {
+      key: "desired_end",
+      header: "End",
+      width: 180,
+      render: (row) => <span>{formatDateTime(row.desired_end)}</span>,
+    },
+  ];
 
   return (
-    <Page title="Bookings" subtitle="Filter and inspect bookings">
+    <Page title="Bookings" subtitle="Filter, inspect, and administrate bookings">
       <Card title="Filters">
-        <div style={{ display: "grid", gap: 10, gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
-          <label>
-            Status
-            <input value={status} onChange={(e) => setStatus(e.target.value)} style={{ width: "100%", padding: 8 }} />
+        <div
+          style={{
+            display: "grid",
+            gap: 12,
+            gridTemplateColumns: "180px minmax(0, 1fr) minmax(0, 1fr) auto",
+            alignItems: "end",
+          }}
+        >
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#334155" }}>Status</span>
+            <select value={status} onChange={(e) => setStatus(e.target.value)}>
+              {STATUS_OPTIONS.map((option) => (
+                <option key={option || "all"} value={option}>
+                  {option || "All statuses"}
+                </option>
+              ))}
+            </select>
           </label>
-          <label>
-            User email
-            <input
-              value={userEmail}
-              onChange={(e) => setUserEmail(e.target.value)}
-              style={{ width: "100%", padding: 8 }}
-            />
+
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#334155" }}>User email</span>
+            <input value={userEmail} onChange={(e) => setUserEmail(e.target.value)} placeholder="Filter by user email" />
           </label>
-          <label>
-            Handyman email
+
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#334155" }}>Handyman email</span>
             <input
               value={handymanEmail}
               onChange={(e) => setHandymanEmail(e.target.value)}
-              style={{ width: "100%", padding: 8 }}
+              placeholder="Filter by handyman email"
             />
           </label>
+
+          <button
+            onClick={clearFilters}
+            style={{
+              padding: "11px 14px",
+              borderRadius: 12,
+              background: "#e2e8f0",
+              color: "#0f172a",
+              fontWeight: 700,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Clear
+          </button>
         </div>
       </Card>
 
       <div style={{ height: 12 }} />
 
-      <Card title="Results" right={q.isFetching ? "Loading…" : undefined}>
-        {q.error ? (
-          <div>{String((q.error as Error).message)}</div>
-        ) : asArray ? (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  {["booking_id", "status", "user_email", "handyman_email", "desired_start", "desired_end"].map((h) => (
-                    <th key={h} style={{ textAlign: "left", borderBottom: "1px solid #e6e8ef", padding: "10px 8px" }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {asArray.map((b) => (
-                  <tr key={b.booking_id ?? Math.random()}>
-                    <td style={{ borderBottom: "1px solid #f0f2f7", padding: "10px 8px", fontFamily: "monospace" }}>
-                      {b.booking_id ?? "-"}
-                    </td>
-                    <td style={{ borderBottom: "1px solid #f0f2f7", padding: "10px 8px" }}>{b.status ?? "-"}</td>
-                    <td style={{ borderBottom: "1px solid #f0f2f7", padding: "10px 8px" }}>{b.user_email ?? "-"}</td>
-                    <td style={{ borderBottom: "1px solid #f0f2f7", padding: "10px 8px" }}>{b.handyman_email ?? "-"}</td>
-                    <td style={{ borderBottom: "1px solid #f0f2f7", padding: "10px 8px" }}>{b.desired_start ?? "-"}</td>
-                    <td style={{ borderBottom: "1px solid #f0f2f7", padding: "10px 8px" }}>{b.desired_end ?? "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <Card
+        title="Results"
+        right={
+          listQ.isFetching
+            ? "Refreshing…"
+            : `${rows.length} booking${rows.length === 1 ? "" : "s"}`
+        }
+      >
+        {listQ.error ? (
+          <div
+            style={{
+              background: "#fee2e2",
+              color: "#991b1b",
+              border: "1px solid #fecaca",
+              borderRadius: 14,
+              padding: 14,
+            }}
+          >
+            {String((listQ.error as Error).message)}
           </div>
         ) : (
-          <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>{JSON.stringify(data ?? {}, null, 2)}</pre>
+          <DataTable
+            rows={rows}
+            columns={columns}
+            emptyText="No bookings match the current filters."
+          />
         )}
       </Card>
+
+      <OverlayPanel
+        open={!!selectedId}
+        title={selectedId ? `Booking ${selectedId}` : "Booking"}
+        onClose={() => setSelectedId(null)}
+      >
+        {!selected ? (
+          <div style={{ color: "#64748b" }}>{detailQ.isFetching ? "Loading…" : "Booking not found."}</div>
+        ) : (
+          <div style={{ display: "grid", gap: 16 }}>
+            <Card title="Summary">
+              <div style={{ display: "grid", gap: 10 }}>
+                <div><strong>Status:</strong> <Badge label={selected.status ?? "-"} tone={getStatusTone(selected.status)} /></div>
+                <div><strong>User:</strong> {selected.user_email ?? "-"}</div>
+                <div><strong>Handyman:</strong> {selected.handyman_email ?? "-"}</div>
+                <div><strong>Start:</strong> {formatDateTime(selected.desired_start)}</div>
+                <div><strong>End:</strong> {formatDateTime(selected.desired_end)}</div>
+                <div><strong>Failure reason:</strong> {selected.failure_reason ?? "-"}</div>
+                <div><strong>Cancellation reason:</strong> {selected.cancellation_reason ?? "-"}</div>
+              </div>
+            </Card>
+
+            <Card title="Admin update">
+              <div style={{ display: "grid", gap: 12 }}>
+                <label style={{ display: "grid", gap: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700 }}>Status</span>
+                  <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)}>
+                    {STATUS_OPTIONS.filter(Boolean).map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label style={{ display: "grid", gap: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700 }}>Failure reason</span>
+                  <input value={editFailureReason} onChange={(e) => setEditFailureReason(e.target.value)} />
+                </label>
+
+                <label style={{ display: "grid", gap: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700 }}>Cancellation reason</span>
+                  <input value={editCancellationReason} onChange={(e) => setEditCancellationReason(e.target.value)} />
+                </label>
+
+                <button
+                  onClick={handleSaveUpdate}
+                  disabled={actionBusy !== ""}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 12,
+                    background: "#2563eb",
+                    color: "#fff",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {actionBusy === "save" ? "Saving…" : "Save update"}
+                </button>
+              </div>
+            </Card>
+
+            <Card title="Actions">
+              <div style={{ display: "grid", gap: 10 }}>
+                <button
+                  onClick={handleConfirm}
+                  disabled={actionBusy !== ""}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 12,
+                    background: "#16a34a",
+                    color: "#fff",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {actionBusy === "confirm" ? "Confirming…" : "Confirm booking"}
+                </button>
+
+                <button
+                  onClick={handleCancel}
+                  disabled={actionBusy !== ""}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 12,
+                    background: "#d97706",
+                    color: "#fff",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {actionBusy === "cancel" ? "Cancelling…" : "Cancel booking"}
+                </button>
+
+                <button
+                  onClick={handleDelete}
+                  disabled={actionBusy !== ""}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 12,
+                    background: "#dc2626",
+                    color: "#fff",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {actionBusy === "delete" ? "Deleting…" : "Delete booking"}
+                </button>
+              </div>
+            </Card>
+          </div>
+        )}
+      </OverlayPanel>
     </Page>
   );
 }

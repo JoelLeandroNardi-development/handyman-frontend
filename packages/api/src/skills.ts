@@ -18,7 +18,6 @@ export async function getSkillsCatalogFlat(
   });
 }
 
-// Untyped in OpenAPI response body, so keep unknown
 export async function getSkillsCatalog(
   api: ApiClient,
   params?: { active_only?: boolean }
@@ -50,6 +49,34 @@ export async function adminPatchSkillsCatalog(
 }
 
 export async function getInvalidHandymenSkills(
+  api: ApiClient
+): Promise<InvalidHandymanSkillsResponse> {
+  return api.request<InvalidHandymanSkillsResponse>("/admin/handymen/invalid-skills", {
+    method: "GET",
+  });
+}
+
+export async function replaceSkillsCatalog(
+  api: ApiClient,
+  body: SkillCatalogReplaceRequest
+): Promise<unknown> {
+  return api.request("/admin/skills-catalog", {
+    method: "PUT",
+    json: body,
+  });
+}
+
+export async function patchSkillsCatalog(
+  api: ApiClient,
+  body: SkillCatalogPatchRequest
+): Promise<unknown> {
+  return api.request("/admin/skills-catalog", {
+    method: "PATCH",
+    json: body,
+  });
+}
+
+export async function getInvalidHandymanSkills(
   api: ApiClient
 ): Promise<InvalidHandymanSkillsResponse> {
   return api.request<InvalidHandymanSkillsResponse>("/admin/handymen/invalid-skills", {
