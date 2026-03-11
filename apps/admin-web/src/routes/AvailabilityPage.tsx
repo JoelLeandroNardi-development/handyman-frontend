@@ -79,16 +79,26 @@ export default function AvailabilityPage() {
 
   return (
     <Page title="Availability" subtitle="Inspect, set, and clear handyman availability by email">
-      <div style={{ display: "grid", gap: 12, gridTemplateColumns: "0.9fr 1.1fr" }}>
+      <div
+        style={{
+          display: "grid",
+          gap: 12,
+          gridTemplateColumns: "0.9fr 1.1fr",
+        }}
+      >
         <Card title="Availability actions">
           <div style={{ display: "grid", gap: 12 }}>
-            <label style={{ display: "grid", gap: 6 }}>
-              <span style={{ fontSize: 13, fontWeight: 700 }}>Email</span>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="handyman@example.com" />
+            <label className="app-label">
+              <span>Email</span>
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="handyman@example.com"
+              />
             </label>
 
-            <label style={{ display: "grid", gap: 6 }}>
-              <span style={{ fontSize: 13, fontWeight: 700 }}>Availability JSON</span>
+            <label className="app-label">
+              <span>Availability JSON</span>
               <textarea
                 value={slotsJson}
                 onChange={(e) => setSlotsJson(e.target.value)}
@@ -97,18 +107,17 @@ export default function AvailabilityPage() {
               />
             </label>
 
-            <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr 1fr 1fr" }}>
+            <div
+              style={{
+                display: "grid",
+                gap: 10,
+                gridTemplateColumns: "1fr 1fr 1fr",
+              }}
+            >
               <button
                 onClick={loadByEmail}
                 disabled={busy !== ""}
-                style={{
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  background: "#2563eb",
-                  color: "#fff",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
+                className="app-button app-button-primary"
               >
                 {busy === "load" ? "Loading…" : "Load"}
               </button>
@@ -116,14 +125,7 @@ export default function AvailabilityPage() {
               <button
                 onClick={saveByEmail}
                 disabled={busy !== ""}
-                style={{
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  background: "#16a34a",
-                  color: "#fff",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
+                className="app-button app-button-success"
               >
                 {busy === "save" ? "Saving…" : "Save"}
               </button>
@@ -131,14 +133,7 @@ export default function AvailabilityPage() {
               <button
                 onClick={clearByEmail}
                 disabled={busy !== ""}
-                style={{
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  background: "#dc2626",
-                  color: "#fff",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
+                className="app-button app-button-danger"
               >
                 {busy === "clear" ? "Clearing…" : "Clear"}
               </button>
@@ -152,26 +147,29 @@ export default function AvailabilityPage() {
               rows.map((row) => (
                 <div
                   key={row.email}
+                  className="app-panel"
                   style={{
-                    border: "1px solid #e2e8f0",
-                    borderRadius: 14,
                     padding: 14,
-                    background: "#fff",
+                    background: "var(--surface)",
                   }}
                 >
-                  <div style={{ fontWeight: 800 }}>{row.email}</div>
+                  <div style={{ fontWeight: 800, color: "var(--text)" }}>{row.email}</div>
+
                   <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
                     {(row.slots ?? []).map((slot, index) => (
-                      <div key={`${row.email}-${index}`} style={{ color: "#475569", fontSize: 14 }}>
+                      <div key={`${row.email}-${index}`} style={{ color: "var(--text-soft)", fontSize: 14 }}>
                         {formatDateTime(slot.start)} → {formatDateTime(slot.end)}
                       </div>
                     ))}
-                    {!row.slots?.length ? <div style={{ color: "#64748b" }}>No slots</div> : null}
+
+                    {!row.slots?.length ? (
+                      <div style={{ color: "var(--text-faint)" }}>No slots</div>
+                    ) : null}
                   </div>
                 </div>
               ))
             ) : (
-              <div style={{ color: "#64748b" }}>No availability data returned.</div>
+              <div style={{ color: "var(--text-faint)" }}>No availability data returned.</div>
             )}
           </div>
         </Card>

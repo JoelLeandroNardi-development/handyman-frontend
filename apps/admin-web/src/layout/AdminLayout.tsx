@@ -41,7 +41,6 @@ export default function AdminLayout() {
             padding: "0 28px",
             borderBottom: "1px solid var(--border)",
             background: "var(--surface)",
-            backdropFilter: "blur(8px)",
             position: "sticky",
             top: 0,
             zIndex: 5,
@@ -57,45 +56,20 @@ export default function AdminLayout() {
           </div>
 
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <button
-              onClick={toggle}
-              style={{
-                padding: "8px 12px",
-                borderRadius: 999,
-                border: "1px solid var(--border)",
-                background: "var(--surface-muted)",
-                color: "var(--text)",
-                fontSize: 14,
-                cursor: "pointer",
-              }}
-            >
+            <button onClick={toggle} className="app-button app-button-secondary" style={{ borderRadius: 999 }}>
               {mode === "light" ? "Dark Mode" : "Light Mode"}
             </button>
 
             <div
+              className="app-chip"
               style={{
                 background: "var(--surface)",
-                border: "1px solid var(--border)",
-                borderRadius: 999,
-                padding: "8px 12px",
-                color: "var(--text-soft)",
-                fontSize: 14,
               }}
             >
               {session?.claims?.email ?? session?.claims?.sub ?? ""}
             </div>
 
-            <button
-              onClick={logout}
-              style={{
-                padding: "10px 14px",
-                borderRadius: 12,
-                background: "var(--primary)",
-                color: "#fff",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
+            <button onClick={logout} className="app-button app-button-primary">
               Logout
             </button>
           </div>

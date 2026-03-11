@@ -57,9 +57,13 @@ export default function MatchLogsPage() {
     <Page title="Match Logs" subtitle="Inspect and delete historical matchmaking logs">
       <Card title="Filters">
         <div style={{ display: "flex", gap: 12, alignItems: "end" }}>
-          <label style={{ flex: 1, display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 700 }}>Skill</span>
-            <input value={skill} onChange={(e) => setSkill(e.target.value)} placeholder="Filter by skill" />
+          <label className="app-label" style={{ flex: 1 }}>
+            <span>Skill</span>
+            <input
+              value={skill}
+              onChange={(e) => setSkill(e.target.value)}
+              placeholder="Filter by skill"
+            />
           </label>
         </div>
       </Card>
@@ -71,49 +75,41 @@ export default function MatchLogsPage() {
           {rows.length ? (
             rows.map((row, index) => {
               const logId = row.log_id ?? row.id ?? index;
+
               return (
                 <div
                   key={String(logId)}
+                  className="app-panel"
                   style={{
-                    border: "1px solid #e2e8f0",
-                    borderRadius: 14,
                     padding: 14,
                     display: "grid",
                     gap: 10,
-                    background: "#fff",
+                    background: "var(--surface)",
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "start" }}>
                     <div>
-                      <div style={{ fontWeight: 800 }}>Log #{logId}</div>
-                      <div style={{ color: "#64748b", marginTop: 4 }}>
+                      <div style={{ fontWeight: 800, color: "var(--text)" }}>Log #{logId}</div>
+                      <div style={{ color: "var(--text-faint)", marginTop: 4 }}>
                         skill={String(row.skill ?? "-")}
                       </div>
                     </div>
 
                     {typeof logId === "number" ? (
-                      <button
-                        onClick={() => handleDelete(logId)}
-                        style={{
-                          padding: "10px 12px",
-                          borderRadius: 12,
-                          background: "#dc2626",
-                          color: "#fff",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                        }}
-                      >
+                      <button onClick={() => handleDelete(logId)} className="app-button app-button-danger">
                         Delete
                       </button>
                     ) : null}
                   </div>
 
-                  <pre>{JSON.stringify(row, null, 2)}</pre>
+                  <div className="app-code-block">
+                    <pre>{JSON.stringify(row, null, 2)}</pre>
+                  </div>
                 </div>
               );
             })
           ) : (
-            <div style={{ color: "#64748b" }}>No match logs found.</div>
+            <div style={{ color: "var(--text-faint)" }}>No match logs found.</div>
           )}
         </div>
       </Card>

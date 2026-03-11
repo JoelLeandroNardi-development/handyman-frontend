@@ -146,17 +146,7 @@ export default function BookingsPage() {
       header: "Booking",
       width: 280,
       render: (row) => (
-        <button
-          onClick={() => setSelectedId(row.booking_id ?? null)}
-          style={{
-            background: "transparent",
-            padding: 0,
-            color: "#1d4ed8",
-            fontWeight: 700,
-            cursor: "pointer",
-            textAlign: "left",
-          }}
-        >
+        <button onClick={() => setSelectedId(row.booking_id ?? null)} className="app-link-button">
           <span
             style={{
               fontFamily:
@@ -212,8 +202,8 @@ export default function BookingsPage() {
             alignItems: "end",
           }}
         >
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#334155" }}>Status</span>
+          <label className="app-label">
+            <span>Status</span>
             <select value={status} onChange={(e) => setStatus(e.target.value)}>
               {STATUS_OPTIONS.map((option) => (
                 <option key={option || "all"} value={option}>
@@ -223,13 +213,13 @@ export default function BookingsPage() {
             </select>
           </label>
 
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#334155" }}>User email</span>
+          <label className="app-label">
+            <span>User email</span>
             <input value={userEmail} onChange={(e) => setUserEmail(e.target.value)} placeholder="Filter by user email" />
           </label>
 
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#334155" }}>Handyman email</span>
+          <label className="app-label">
+            <span>Handyman email</span>
             <input
               value={handymanEmail}
               onChange={(e) => setHandymanEmail(e.target.value)}
@@ -237,18 +227,7 @@ export default function BookingsPage() {
             />
           </label>
 
-          <button
-            onClick={clearFilters}
-            style={{
-              padding: "11px 14px",
-              borderRadius: 12,
-              background: "#e2e8f0",
-              color: "#0f172a",
-              fontWeight: 700,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
+          <button onClick={clearFilters} className="app-button app-button-primary">
             Clear
           </button>
         </div>
@@ -267,9 +246,9 @@ export default function BookingsPage() {
         {listQ.error ? (
           <div
             style={{
-              background: "#fee2e2",
-              color: "#991b1b",
-              border: "1px solid #fecaca",
+              background: "var(--danger-soft)",
+              color: "var(--danger)",
+              border: "1px solid var(--danger-soft)",
               borderRadius: 14,
               padding: 14,
             }}
@@ -291,7 +270,7 @@ export default function BookingsPage() {
         onClose={() => setSelectedId(null)}
       >
         {!selected ? (
-          <div style={{ color: "#64748b" }}>{detailQ.isFetching ? "Loading…" : "Booking not found."}</div>
+          <div style={{ color: "var(--text-faint)" }}>{detailQ.isFetching ? "Loading…" : "Booking not found."}</div>
         ) : (
           <div style={{ display: "grid", gap: 16 }}>
             <Card title="Summary">
@@ -308,8 +287,8 @@ export default function BookingsPage() {
 
             <Card title="Admin update">
               <div style={{ display: "grid", gap: 12 }}>
-                <label style={{ display: "grid", gap: 6 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700 }}>Status</span>
+                <label className="app-label">
+                  <span>Status</span>
                   <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)}>
                     {STATUS_OPTIONS.filter(Boolean).map((option) => (
                       <option key={option} value={option}>
@@ -319,28 +298,17 @@ export default function BookingsPage() {
                   </select>
                 </label>
 
-                <label style={{ display: "grid", gap: 6 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700 }}>Failure reason</span>
+                <label className="app-label">
+                  <span>Failure reason</span>
                   <input value={editFailureReason} onChange={(e) => setEditFailureReason(e.target.value)} />
                 </label>
 
-                <label style={{ display: "grid", gap: 6 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700 }}>Cancellation reason</span>
+                <label className="app-label">
+                  <span>Cancellation reason</span>
                   <input value={editCancellationReason} onChange={(e) => setEditCancellationReason(e.target.value)} />
                 </label>
 
-                <button
-                  onClick={handleSaveUpdate}
-                  disabled={actionBusy !== ""}
-                  style={{
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    background: "#2563eb",
-                    color: "#fff",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
+                <button onClick={handleSaveUpdate} disabled={actionBusy !== ""} className="app-button app-button-primary">
                   {actionBusy === "save" ? "Saving…" : "Save update"}
                 </button>
               </div>
@@ -348,48 +316,15 @@ export default function BookingsPage() {
 
             <Card title="Actions">
               <div style={{ display: "grid", gap: 10 }}>
-                <button
-                  onClick={handleConfirm}
-                  disabled={actionBusy !== ""}
-                  style={{
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    background: "#16a34a",
-                    color: "#fff",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
+                <button onClick={handleConfirm} disabled={actionBusy !== ""} className="app-button app-button-success">
                   {actionBusy === "confirm" ? "Confirming…" : "Confirm booking"}
                 </button>
 
-                <button
-                  onClick={handleCancel}
-                  disabled={actionBusy !== ""}
-                  style={{
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    background: "#d97706",
-                    color: "#fff",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
+                <button onClick={handleCancel} disabled={actionBusy !== ""} className="app-button app-button-warning">
                   {actionBusy === "cancel" ? "Cancelling…" : "Cancel booking"}
                 </button>
 
-                <button
-                  onClick={handleDelete}
-                  disabled={actionBusy !== ""}
-                  style={{
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    background: "#dc2626",
-                    color: "#fff",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
+                <button onClick={handleDelete} disabled={actionBusy !== ""} className="app-button app-button-danger">
                   {actionBusy === "delete" ? "Deleting…" : "Delete booking"}
                 </button>
               </div>

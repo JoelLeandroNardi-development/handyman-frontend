@@ -78,7 +78,14 @@ export default function HandymenPage() {
       latitude: selected.latitude != null ? String(selected.latitude) : "",
       longitude: selected.longitude != null ? String(selected.longitude) : "",
     });
-  }, [selected?.email, selected?.skills, selected?.years_experience, selected?.service_radius_km, selected?.latitude, selected?.longitude]);
+  }, [
+    selected?.email,
+    selected?.skills,
+    selected?.years_experience,
+    selected?.service_radius_km,
+    selected?.latitude,
+    selected?.longitude,
+  ]);
 
   function patchDraft<K extends keyof HandymanDraft>(key: K, value: HandymanDraft[K]) {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -148,10 +155,7 @@ export default function HandymenPage() {
       key: "email",
       header: "Email",
       render: (row) => (
-        <button
-          onClick={() => setSelectedEmail(row.email)}
-          style={{ background: "transparent", padding: 0, color: "#1d4ed8", fontWeight: 700, cursor: "pointer" }}
-        >
+        <button onClick={() => setSelectedEmail(row.email)} className="app-link-button">
           {row.email}
         </button>
       ),
@@ -187,8 +191,8 @@ export default function HandymenPage() {
     <Page title="Handymen" subtitle="Create, inspect, update, and delete handyman profiles">
       <Card title="Toolbar">
         <div style={{ display: "flex", gap: 12, alignItems: "end" }}>
-          <label style={{ flex: 1, display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 700 }}>Search</span>
+          <label className="app-label" style={{ flex: 1 }}>
+            <span>Search</span>
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by email or skills" />
           </label>
 
@@ -197,15 +201,7 @@ export default function HandymenPage() {
               setDraft(emptyDraft);
               setCreateOpen(true);
             }}
-            style={{
-              padding: "11px 14px",
-              borderRadius: 12,
-              background: "#2563eb",
-              color: "#fff",
-              fontWeight: 700,
-              cursor: "pointer",
-              height: 44,
-            }}
+            className="app-button app-button-primary"
           >
             Create handyman
           </button>
@@ -222,13 +218,13 @@ export default function HandymenPage() {
         <div style={{ display: "grid", gap: 16 }}>
           <Card title="Details">
             <div style={{ display: "grid", gap: 12 }}>
-              <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: 13, fontWeight: 700 }}>Email</span>
+              <label className="app-label">
+                <span>Email</span>
                 <input value={draft.email} disabled />
               </label>
 
-              <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: 13, fontWeight: 700 }}>Skills</span>
+              <label className="app-label">
+                <span>Skills</span>
                 <input
                   value={draft.skills}
                   onChange={(e) => patchDraft("skills", e.target.value)}
@@ -237,16 +233,16 @@ export default function HandymenPage() {
               </label>
 
               <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
-                <label style={{ display: "grid", gap: 6 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700 }}>Years experience</span>
+                <label className="app-label">
+                  <span>Years experience</span>
                   <input
                     value={draft.years_experience}
                     onChange={(e) => patchDraft("years_experience", e.target.value)}
                   />
                 </label>
 
-                <label style={{ display: "grid", gap: 6 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700 }}>Service radius km</span>
+                <label className="app-label">
+                  <span>Service radius km</span>
                   <input
                     value={draft.service_radius_km}
                     onChange={(e) => patchDraft("service_radius_km", e.target.value)}
@@ -255,47 +251,25 @@ export default function HandymenPage() {
               </div>
 
               <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
-                <label style={{ display: "grid", gap: 6 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700 }}>Latitude</span>
+                <label className="app-label">
+                  <span>Latitude</span>
                   <input value={draft.latitude} onChange={(e) => patchDraft("latitude", e.target.value)} />
                 </label>
 
-                <label style={{ display: "grid", gap: 6 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700 }}>Longitude</span>
+                <label className="app-label">
+                  <span>Longitude</span>
                   <input value={draft.longitude} onChange={(e) => patchDraft("longitude", e.target.value)} />
                 </label>
               </div>
 
-              <button
-                onClick={handleSave}
-                disabled={actionBusy !== ""}
-                style={{
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  background: "#2563eb",
-                  color: "#fff",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={handleSave} disabled={actionBusy !== ""} className="app-button app-button-primary">
                 {actionBusy === "save" ? "Saving…" : "Save handyman"}
               </button>
             </div>
           </Card>
 
           <Card title="Danger zone">
-            <button
-              onClick={handleDelete}
-              disabled={actionBusy !== ""}
-              style={{
-                padding: "12px 14px",
-                borderRadius: 12,
-                background: "#dc2626",
-                color: "#fff",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
+            <button onClick={handleDelete} disabled={actionBusy !== ""} className="app-button app-button-danger">
               {actionBusy === "delete" ? "Deleting…" : "Delete handyman"}
             </button>
           </Card>
@@ -304,13 +278,13 @@ export default function HandymenPage() {
 
       <OverlayPanel open={createOpen} title="Create handyman" onClose={() => setCreateOpen(false)} width={520}>
         <div style={{ display: "grid", gap: 12 }}>
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 700 }}>Email</span>
+          <label className="app-label">
+            <span>Email</span>
             <input value={draft.email} onChange={(e) => patchDraft("email", e.target.value)} />
           </label>
 
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 700 }}>Skills</span>
+          <label className="app-label">
+            <span>Skills</span>
             <input
               value={draft.skills}
               onChange={(e) => patchDraft("skills", e.target.value)}
@@ -319,41 +293,30 @@ export default function HandymenPage() {
           </label>
 
           <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
-            <label style={{ display: "grid", gap: 6 }}>
-              <span style={{ fontSize: 13, fontWeight: 700 }}>Years experience</span>
+            <label className="app-label">
+              <span>Years experience</span>
               <input value={draft.years_experience} onChange={(e) => patchDraft("years_experience", e.target.value)} />
             </label>
 
-            <label style={{ display: "grid", gap: 6 }}>
-              <span style={{ fontSize: 13, fontWeight: 700 }}>Service radius km</span>
+            <label className="app-label">
+              <span>Service radius km</span>
               <input value={draft.service_radius_km} onChange={(e) => patchDraft("service_radius_km", e.target.value)} />
             </label>
           </div>
 
           <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
-            <label style={{ display: "grid", gap: 6 }}>
-              <span style={{ fontSize: 13, fontWeight: 700 }}>Latitude</span>
+            <label className="app-label">
+              <span>Latitude</span>
               <input value={draft.latitude} onChange={(e) => patchDraft("latitude", e.target.value)} />
             </label>
 
-            <label style={{ display: "grid", gap: 6 }}>
-              <span style={{ fontSize: 13, fontWeight: 700 }}>Longitude</span>
+            <label className="app-label">
+              <span>Longitude</span>
               <input value={draft.longitude} onChange={(e) => patchDraft("longitude", e.target.value)} />
             </label>
           </div>
 
-          <button
-            onClick={handleCreate}
-            disabled={actionBusy !== ""}
-            style={{
-              padding: "12px 14px",
-              borderRadius: 12,
-              background: "#16a34a",
-              color: "#fff",
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={handleCreate} disabled={actionBusy !== ""} className="app-button app-button-success">
             {actionBusy === "create" ? "Creating…" : "Create handyman"}
           </button>
         </div>
