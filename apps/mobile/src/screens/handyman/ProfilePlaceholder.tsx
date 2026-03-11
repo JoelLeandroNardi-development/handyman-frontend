@@ -1,13 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  SafeAreaView,
-  Text,
-  TouchableOpacity,
-  View,
-  ScrollView,
   ActivityIndicator,
   Alert,
-  TextInput,
+  Text,
+  View,
 } from "react-native";
 import * as Location from "expo-location";
 import Slider from "@react-native-community/slider";
@@ -21,6 +17,17 @@ import {
 import { createApiClient } from "../../lib/api";
 import { useTheme } from "../../theme";
 import { useSession } from "../../auth/SessionProvider";
+import {
+  AppButton,
+  AppInput,
+  ButtonRow,
+  Card,
+  CardTitle,
+  Label,
+  PageHeader,
+  Screen,
+  SkillChip,
+} from "../../ui/primitives";
 
 export default function ProfilePlaceholder() {
   const api = useMemo(() => createApiClient(), []);
@@ -36,10 +43,10 @@ export default function ProfilePlaceholder() {
   const [profile, setProfile] = useState<HandymanResponse | null>(null);
 
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [yearsExperience, setYearsExperience] = useState<string>("");
-  const [serviceRadiusKm, setServiceRadiusKm] = useState<number>(0);
-  const [latitude, setLatitude] = useState<string>("");
-  const [longitude, setLongitude] = useState<string>("");
+  const [yearsExperience, setYearsExperience] = useState("");
+  const [serviceRadiusKm, setServiceRadiusKm] = useState(0);
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
 
   useEffect(() => {
     void loadAll();
@@ -68,9 +75,7 @@ export default function ProfilePlaceholder() {
       setProfile(data);
       setSelectedSkills(data.skills ?? []);
       setYearsExperience(String(data.years_experience ?? ""));
-      setServiceRadiusKm(
-        typeof data.service_radius_km === "number" ? data.service_radius_km : 0
-      );
+      setServiceRadiusKm(typeof data.service_radius_km === "number" ? data.service_radius_km : 0);
       setLatitude(data.latitude != null ? String(data.latitude) : "");
       setLongitude(data.longitude != null ? String(data.longitude) : "");
     } catch (e) {
@@ -115,7 +120,6 @@ export default function ProfilePlaceholder() {
     }
 
     const parsedYears = Number.parseInt(yearsExperience, 10);
-
     if (Number.isNaN(parsedYears) || parsedYears < 0) {
       Alert.alert("Invalid years of experience", "Please enter a valid integer.");
       return;
@@ -156,11 +160,9 @@ export default function ProfilePlaceholder() {
       });
 
       setProfile(updated);
-      setSelectedSkills(updated.skills ?? selectedSkills);
+      setSelectedSkills(updated.skills ?? []);
       setYearsExperience(String(updated.years_experience ?? ""));
-      setServiceRadiusKm(
-        typeof updated.service_radius_km === "number" ? updated.service_radius_km : 0
-      );
+      setServiceRadiusKm(typeof updated.service_radius_km === "number" ? updated.service_radius_km : 0);
       setLatitude(updated.latitude != null ? String(updated.latitude) : "");
       setLongitude(updated.longitude != null ? String(updated.longitude) : "");
 
@@ -176,296 +178,136 @@ export default function ProfilePlaceholder() {
   const loading = loadingCatalog || loadingProfile;
 
   return (
-    <SafeAreaView style={{ flex: 1, padding: 16, backgroundColor: colors.bg }}>
-      <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-        <Text style={{ fontSize: 20, fontWeight: "700", color: colors.text }}>Profile</Text>
+    <Screen scroll>
+      <PageHeader title="Profile" />
 
-        <View
-          style={{
-            backgroundColor: colors.surface,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14,
-            gap: 6,
-          }}
-        >
-          <Text style={{ fontWeight: "700", color: colors.text }}>{session?.email ?? "-"}</Text>
-          <Text style={{ color: colors.textSoft }}>Current mode: {roleMode ?? "-"}</Text>
-          <Text style={{ color: colors.textSoft }}>Roles: {(session?.roles ?? []).join(", ") || "-"}</Text>
-        </View>
+      <Card>
+        <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>{session?.email ?? "-"}</Text>
+        <Text style={{ color: colors.textSoft, fontSize: 15 }}>Current mode: {roleMode ?? "-"}</Text>
+        <Text style={{ color: colors.textSoft, fontSize: 15 }}>
+          Roles: {(session?.roles ?? []).join(", ") || "-"}
+        </Text>
+      </Card>
 
-        <View
-          style={{
-            backgroundColor: "#fff",
-            borderWidth: 1,
-            borderColor: "#e6e8ef",
-            borderRadius: 14,
-            padding: 14,
-            gap: 10,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ fontWeight: "700" }}>Handyman details</Text>
+      <Card>
+        <CardTitle
+          title="Handyman details"
+          action={<AppButton label="Refresh" onPress={() => void loadAll()} style={{ minWidth: 110 }} />}
+        />
 
-            <TouchableOpacity
-              onPress={() => void loadAll()}
-              style={{
-                backgroundColor: colors.primary,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                borderRadius: 10,
-              }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "700" }}>Refresh</Text>
-            </TouchableOpacity>
-          </View>
-
-          {loading ? (
-            <View style={{ paddingVertical: 12 }}>
-              <ActivityIndicator />
+        {loading ? (
+          <ActivityIndicator color={colors.primary} />
+        ) : (
+          <>
+            <View style={{ gap: 8 }}>
+              <Label>Years of experience</Label>
+              <AppInput
+                value={yearsExperience}
+                onChangeText={setYearsExperience}
+                keyboardType="number-pad"
+                placeholder="e.g. 5"
+              />
             </View>
-          ) : (
-            <>
-              <View style={{ gap: 6 }}>
-                <Text style={{ fontWeight: "600" }}>Years of experience</Text>
-                <TextInput
-                  value={yearsExperience}
-                  onChangeText={setYearsExperience}
-                  keyboardType="number-pad"
-                  placeholder="e.g. 5"
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "#ddd",
-                    borderRadius: 10,
-                    padding: 12,
-                    backgroundColor: "#fff",
-                  }}
-                />
+
+            <View style={{ gap: 8 }}>
+              <Label>Service radius: {Math.round(serviceRadiusKm)} km</Label>
+              <Slider
+                minimumValue={0}
+                maximumValue={100}
+                step={1}
+                value={serviceRadiusKm}
+                onValueChange={setServiceRadiusKm}
+                minimumTrackTintColor={colors.primary}
+                maximumTrackTintColor={colors.border}
+              />
+              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                <Text style={{ color: colors.textFaint }}>0 km</Text>
+                <Text style={{ color: colors.textFaint }}>100 km</Text>
               </View>
-
-              <View style={{ gap: 6 }}>
-                <Text style={{ fontWeight: "600" }}>
-                  Service radius: {Math.round(serviceRadiusKm)} km
-                </Text>
-                <Slider
-                  minimumValue={0}
-                  maximumValue={100}
-                  step={1}
-                  value={serviceRadiusKm}
-                  onValueChange={setServiceRadiusKm}
-                />
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                  <Text style={{ opacity: 0.6, fontSize: 12 }}>0 km</Text>
-                  <Text style={{ opacity: 0.6, fontSize: 12 }}>100 km</Text>
-                </View>
-              </View>
-
-              <View style={{ gap: 6 }}>
-                <Text style={{ fontWeight: "600" }}>Location</Text>
-
-                <View style={{ flexDirection: "row", gap: 10 }}>
-                  <TextInput
-                    value={latitude}
-                    onChangeText={setLatitude}
-                    keyboardType="decimal-pad"
-                    placeholder="Latitude"
-                    style={{
-                      flex: 1,
-                      borderWidth: 1,
-                      borderColor: "#ddd",
-                      borderRadius: 10,
-                      padding: 12,
-                      backgroundColor: "#fff",
-                    }}
-                  />
-                  <TextInput
-                    value={longitude}
-                    onChangeText={setLongitude}
-                    keyboardType="decimal-pad"
-                    placeholder="Longitude"
-                    style={{
-                      flex: 1,
-                      borderWidth: 1,
-                      borderColor: "#ddd",
-                      borderRadius: 10,
-                      padding: 12,
-                      backgroundColor: "#fff",
-                    }}
-                  />
-                </View>
-
-                <TouchableOpacity
-                  onPress={useCurrentLocation}
-                  disabled={locating}
-                  style={{
-                    backgroundColor: locating ? "#9ca3af" : "#2563eb",
-                    padding: 12,
-                    borderRadius: 12,
-                    alignItems: "center",
-                  }}
-                >
-                  {locating ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <Text style={{ color: "#fff", fontWeight: "700" }}>Use current location</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-        </View>
-
-        <View
-          style={{
-            backgroundColor: "#fff",
-            borderWidth: 1,
-            borderColor: "#e6e8ef",
-            borderRadius: 14,
-            padding: 14,
-            gap: 10,
-          }}
-        >
-          <Text style={{ fontWeight: "700" }}>Skills</Text>
-
-          {loading ? (
-            <View style={{ paddingVertical: 12 }}>
-              <ActivityIndicator />
             </View>
-          ) : !catalog || catalog.categories.length === 0 ? (
-            <Text style={{ opacity: 0.7 }}>No active skills found in catalog.</Text>
-          ) : (
-            <>
-              {catalog.categories.map((category) => {
-                const skillsInCategory = category.skills.filter((s) => s.active);
-                if (skillsInCategory.length === 0) return null;
 
-                return (
-                  <View key={category.key} style={{ marginTop: 4 }}>
-                    <Text
-                      style={{
-                        fontSize: 15,
-                        fontWeight: "800",
-                        marginBottom: 8,
-                      }}
-                    >
-                      {category.label}
-                    </Text>
+            <View style={{ gap: 8 }}>
+              <Label>Location</Label>
+              <ButtonRow>
+                <AppInput
+                  value={latitude}
+                  onChangeText={setLatitude}
+                  keyboardType="decimal-pad"
+                  placeholder="Latitude"
+                  style={{ flex: 1 }}
+                />
+                <AppInput
+                  value={longitude}
+                  onChangeText={setLongitude}
+                  keyboardType="decimal-pad"
+                  placeholder="Longitude"
+                  style={{ flex: 1 }}
+                />
+              </ButtonRow>
+              <AppButton
+                label="Use current location"
+                onPress={useCurrentLocation}
+                loading={locating}
+              />
+            </View>
+          </>
+        )}
+      </Card>
 
-                    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                      {skillsInCategory.map((skill) => {
-                        const selected = selectedSkills.includes(skill.key);
+      <Card>
+        <CardTitle title="Skills" />
 
-                        return (
-                          <TouchableOpacity
-                            key={skill.key}
-                            onPress={() => toggleSkill(skill.key)}
-                            style={{
-                              paddingHorizontal: 12,
-                              paddingVertical: 10,
-                              borderRadius: 999,
-                              borderWidth: 1,
-                              borderColor: selected ? "#2563eb" : "#d1d5db",
-                              backgroundColor: selected ? "#eff6ff" : "#fff",
-                            }}
-                          >
-                            <Text
-                              style={{
-                                fontWeight: "600",
-                                color: selected ? "#1d4ed8" : "#111827",
-                              }}
-                            >
-                              {skill.label}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
+        {loading ? (
+          <ActivityIndicator color={colors.primary} />
+        ) : !catalog || catalog.categories.length === 0 ? (
+          <Text style={{ color: colors.textSoft }}>No active skills found in catalog.</Text>
+        ) : (
+          <>
+            {catalog.categories.map((category) => {
+              const skillsInCategory = category.skills.filter((s) => s.active);
+              if (skillsInCategory.length === 0) return null;
+
+              return (
+                <View key={category.key} style={{ gap: 10 }}>
+                  <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+                    {category.label}
+                  </Text>
+
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                    {skillsInCategory.map((skill) => (
+                      <SkillChip
+                        key={skill.key}
+                        label={skill.label}
+                        selected={selectedSkills.includes(skill.key)}
+                        onPress={() => toggleSkill(skill.key)}
+                      />
+                    ))}
                   </View>
-                );
-              })}
+                </View>
+              );
+            })}
 
-              <TouchableOpacity
-                onPress={saveProfile}
-                disabled={saving || loading || !profile}
-                style={{
-                  marginTop: 8,
-                  backgroundColor: saving || loading || !profile ? "#93c5fd" : "#2563eb",
-                  padding: 12,
-                  borderRadius: 12,
-                  alignItems: "center",
-                }}
-              >
-                {saving ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={{ color: "#fff", fontWeight: "700" }}>Save profile</Text>
-                )}
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
+            <AppButton
+              label="Save profile"
+              onPress={saveProfile}
+              loading={saving}
+              disabled={loading || !profile}
+            />
+          </>
+        )}
+      </Card>
 
-        {availableRoles.length > 1 ? (
-          <View
-            style={{
-              backgroundColor: "#fff",
-              borderWidth: 1,
-              borderColor: "#e6e8ef",
-              borderRadius: 14,
-              padding: 14,
-              gap: 10,
-            }}
-          >
-            <Text style={{ fontWeight: "700" }}>Switch role</Text>
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <TouchableOpacity
-                onPress={() => pickRole("user")}
-                style={{
-                  flex: 1,
-                  backgroundColor: "#e5e7eb",
-                  padding: 12,
-                  borderRadius: 12,
-                  alignItems: "center",
-                }}
-              >
-                <Text>User</Text>
-              </TouchableOpacity>
+      {availableRoles.length > 1 ? (
+        <Card>
+          <CardTitle title="Switch role" />
+          <ButtonRow>
+            <AppButton label="User" onPress={() => pickRole("user")} tone="secondary" style={{ flex: 1 }} />
+            <AppButton label="Handyman" onPress={() => pickRole("handyman")} tone="secondary" style={{ flex: 1 }} />
+          </ButtonRow>
+        </Card>
+      ) : null}
 
-              <TouchableOpacity
-                onPress={() => pickRole("handyman")}
-                style={{
-                  flex: 1,
-                  backgroundColor: "#e5e7eb",
-                  padding: 12,
-                  borderRadius: 12,
-                  alignItems: "center",
-                }}
-              >
-                <Text>Handyman</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : null}
-
-        <TouchableOpacity
-          onPress={logout}
-          style={{
-            backgroundColor: "#111827",
-            padding: 12,
-            borderRadius: 12,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ color: "#fff", fontWeight: "700" }}>Logout</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+      <AppButton label="Logout" onPress={logout} />
+    </Screen>
   );
 }

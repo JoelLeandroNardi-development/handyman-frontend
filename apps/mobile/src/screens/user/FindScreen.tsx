@@ -1,20 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  SafeAreaView,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  ScrollView,
   Text,
   View,
-  TouchableOpacity,
-  ActivityIndicator,
-  FlatList,
-  Alert,
-  Modal,
-  ScrollView,
 } from "react-native";
-import { useTheme } from "../../theme";
 import * as Location from "expo-location";
 import { WebView } from "react-native-webview";
 import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
-
 import {
   createBooking,
   getSkillsCatalogFlat,
@@ -23,7 +18,23 @@ import {
   type SkillCatalogFlatResponse,
 } from "@smart/api";
 import { createApiClient } from "../../lib/api";
+import {
+  combineDateAndTime,
+  formatDateLabel,
+  formatTimeLabel,
+} from "../../lib/dateTime";
 import { useSession } from "../../auth/SessionProvider";
+import { useTheme } from "../../theme";
+import {
+  AppButton,
+  BottomSheet,
+  ButtonRow,
+  Card,
+  InputButton,
+  Label,
+  PageHeader,
+  Screen,
+} from "../../ui/primitives";
 
 type Coords = { latitude: number; longitude: number };
 type PickerTarget = "date" | "start" | "end" | null;
@@ -72,10 +83,7 @@ function buildMapHtml(userCoords: Coords | null, results: MatchResult[]) {
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
       html, body, #map {
         height: 100%;
@@ -84,20 +92,15 @@ function buildMapHtml(userCoords: Coords | null, results: MatchResult[]) {
         padding: 0;
         background: #f6f7fb;
       }
-      .leaflet-container {
-        font-family: sans-serif;
-      }
+      .leaflet-container { font-family: sans-serif; }
     </style>
   </head>
   <body>
     <div id="map"></div>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-      const map = L.map("map", {
-        zoomControl: true,
-        attributionControl: true
-      }).setView([${center.latitude}, ${center.longitude}], ${results.length > 0 ? 12 : 10});
+      const map = L.map("map", { zoomControl: true, attributionControl: true })
+        .setView([${center.latitude}, ${center.longitude}], ${results.length > 0 ? 12 : 10});
 
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
@@ -107,15 +110,8 @@ function buildMapHtml(userCoords: Coords | null, results: MatchResult[]) {
       ${markersJs}
 
       const allPoints = [];
-      ${
-        userCoords
-          ? `allPoints.push([${userCoords.latitude}, ${userCoords.longitude}]);`
-          : ""
-      }
-
-      ${results
-        .map((m) => `allPoints.push([${m.latitude}, ${m.longitude}]);`)
-        .join("\n")}
+      ${userCoords ? `allPoints.push([${userCoords.latitude}, ${userCoords.longitude}]);` : ""}
+      ${results.map((m) => `allPoints.push([${m.latitude}, ${m.longitude}]);`).join("\n")}
 
       if (allPoints.length > 1) {
         map.fitBounds(allPoints, { padding: [30, 30] });
@@ -124,28 +120,6 @@ function buildMapHtml(userCoords: Coords | null, results: MatchResult[]) {
   </body>
 </html>
   `;
-}
-
-function formatDateLabel(value: Date) {
-  return value.toLocaleDateString(undefined, {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function formatTimeLabel(value: Date) {
-  return value.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function combineDateAndTime(datePart: Date, timePart: Date) {
-  const next = new Date(datePart);
-  next.setHours(timePart.getHours(), timePart.getMinutes(), 0, 0);
-  return next;
 }
 
 type SkillOption = {
@@ -183,15 +157,15 @@ export default function FindScreen() {
 
   const [loadingCatalog, setLoadingCatalog] = useState(false);
   const [catalog, setCatalog] = useState<SkillCatalogFlatResponse | null>(null);
-  const [selectedSkillKey, setSelectedSkillKey] = useState<string>("");
+  const [selectedSkillKey, setSelectedSkillKey] = useState("");
 
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [startTime, setStartTime] = useState<Date>(() => {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [startTime, setStartTime] = useState(() => {
     const d = new Date();
     d.setHours(d.getHours() + 1, 0, 0, 0);
     return d;
   });
-  const [endTime, setEndTime] = useState<Date>(() => {
+  const [endTime, setEndTime] = useState(() => {
     const d = new Date();
     d.setHours(d.getHours() + 2, 0, 0, 0);
     return d;
@@ -209,14 +183,8 @@ export default function FindScreen() {
   const currentUserEmail = session?.email ?? "";
   const selected = results.find((r) => r.email === selectedEmail) ?? null;
 
-  const desiredStartDate = useMemo(
-    () => combineDateAndTime(selectedDate, startTime),
-    [selectedDate, startTime]
-  );
-  const desiredEndDate = useMemo(
-    () => combineDateAndTime(selectedDate, endTime),
-    [selectedDate, endTime]
-  );
+  const desiredStartDate = useMemo(() => combineDateAndTime(selectedDate, startTime), [selectedDate, startTime]);
+  const desiredEndDate = useMemo(() => combineDateAndTime(selectedDate, endTime), [selectedDate, endTime]);
 
   const skillOptions = useMemo(() => flattenSkills(catalog), [catalog]);
   const selectedSkill = useMemo(
@@ -227,7 +195,7 @@ export default function FindScreen() {
   const mapHtml = useMemo(() => buildMapHtml(userCoords, results), [userCoords, results]);
 
   useEffect(() => {
-    loadCatalog();
+    void loadCatalog();
   }, []);
 
   async function loadCatalog() {
@@ -254,9 +222,11 @@ export default function FindScreen() {
         Alert.alert("Location permission", "Permission denied.");
         return;
       }
+
       const pos = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
+
       setUserCoords({
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
@@ -269,22 +239,15 @@ export default function FindScreen() {
   }
 
   function onPickerChange(event: DateTimePickerEvent, value?: Date) {
-    if (event.type === "dismissed") {
-      setPickerTarget(null);
-      return;
-    }
-    if (!value) {
+    if (event.type === "dismissed" || !value) {
       setPickerTarget(null);
       return;
     }
 
-    if (pickerTarget === "date") {
-      setSelectedDate(value);
-    } else if (pickerTarget === "start") {
-      setStartTime(value);
-    } else if (pickerTarget === "end") {
-      setEndTime(value);
-    }
+    if (pickerTarget === "date") setSelectedDate(value);
+    if (pickerTarget === "start") setStartTime(value);
+    if (pickerTarget === "end") setEndTime(value);
+
     setPickerTarget(null);
   }
 
@@ -344,6 +307,7 @@ export default function FindScreen() {
 
       setBookingSuccess(`Booking created: ${booking.booking_id}`);
       setSelectedEmail(null);
+
       Alert.alert(
         "Booking created",
         `Status: ${booking.status}\nBooking ID: ${booking.booking_id}`
@@ -356,416 +320,253 @@ export default function FindScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
-      <View style={{ padding: 12, gap: 10 }}>
-        <Text style={{ fontSize: 20, fontWeight: "700", color: colors.text }}>Find a handyman</Text>
-        <Text style={{ color: colors.textSoft, opacity: 0.9 }}>Choose a skill, time window, and search nearby pros.</Text>
+    <>
+      <Screen>
+        {pickerTarget ? (
+          <DateTimePicker
+            value={pickerTarget === "date" ? selectedDate : pickerTarget === "start" ? startTime : endTime}
+            mode={pickerTarget === "date" ? "date" : "time"}
+            is24Hour
+            onChange={onPickerChange}
+          />
+        ) : null}
 
-        <View
-          style={{
-            backgroundColor: colors.surface,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: colors.border,
-            padding: 12,
-            gap: 10,
-          }}
-        >
-          <View style={{ gap: 6 }}>
-            <Text style={{ fontWeight: "600", color: colors.text }}>Skill</Text>
-            <TouchableOpacity
-              onPress={() => setSkillModalOpen(true)}
-              style={{
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: 10,
-                padding: 12,
-                backgroundColor: colors.surface,
-              }}
-            >
-              <Text style={{ fontWeight: selectedSkill ? "600" : "400" }}>
-                {loadingCatalog
-                  ? "Loading skills..."
-                  : selectedSkill
-                    ? `${selectedSkill.categoryLabel} • ${selectedSkill.label}`
-                    : "Choose a skill"}
-              </Text>
-            </TouchableOpacity>
-          </View>
+        <View style={{ padding: 16, gap: 12 }}>
+          <PageHeader
+            title="Find a handyman"
+            subtitle="Choose a skill, time window, and search nearby pros."
+          />
 
-          <View style={{ gap: 6 }}>
-            <Text style={{ fontWeight: "600", color: colors.text }}>Date</Text>
-            <TouchableOpacity
-              onPress={() => setPickerTarget("date")}
-              style={{
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: 10,
-                padding: 12,
-                backgroundColor: colors.surface,
-              }}
-            >
-              <Text>{formatDateLabel(selectedDate)}</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <View style={{ flex: 1, gap: 6 }}>
-              <Text style={{ fontWeight: "600" }}>Start</Text>
-              <TouchableOpacity
-                onPress={() => setPickerTarget("start")}
-                style={{
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: 10,
-                  padding: 12,
-                  backgroundColor: colors.surface,
-                }}
-              >
-                <Text>{formatTimeLabel(startTime)}</Text>
-              </TouchableOpacity>
+          <Card>
+            <View style={{ gap: 8 }}>
+              <Label>Skill</Label>
+              <InputButton
+                label={
+                  loadingCatalog
+                    ? "Loading skills..."
+                    : selectedSkill
+                      ? `${selectedSkill.categoryLabel} • ${selectedSkill.label}`
+                      : "Choose a skill"
+                }
+                onPress={() => setSkillModalOpen(true)}
+              />
             </View>
 
-            <View style={{ flex: 1, gap: 6 }}>
-              <Text style={{ fontWeight: "600", color: colors.text }}>End</Text>
-              <TouchableOpacity
-                onPress={() => setPickerTarget("end")}
-                style={{
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: 10,
-                  padding: 12,
-                  backgroundColor: colors.surface,
-                }}
-              >
-                <Text>{formatTimeLabel(endTime)}</Text>
-              </TouchableOpacity>
+            <View style={{ gap: 8 }}>
+              <Label>Date</Label>
+              <InputButton label={formatDateLabel(selectedDate)} onPress={() => setPickerTarget("date")} />
             </View>
-          </View>
 
-          <View
-            style={{
-              backgroundColor: colors.surfaceMuted,
-              borderRadius: 10,
-              borderWidth: 1,
-              borderColor: colors.border,
-              padding: 10,
-            }}
-          >
-            <Text style={{ color: colors.textSoft }}>
-              Requested window: {desiredStartDate.toLocaleString()} → {desiredEndDate.toLocaleString()}
-            </Text>
-          </View>
+            <ButtonRow>
+              <View style={{ flex: 1, gap: 8 }}>
+                <Label>Start</Label>
+                <InputButton label={formatTimeLabel(startTime)} onPress={() => setPickerTarget("start")} />
+              </View>
 
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <TouchableOpacity
-              onPress={getLocation}
-              style={{
-                flex: 1,
-                backgroundColor: colors.primary,
-                padding: 12,
-                borderRadius: 12,
-                alignItems: "center",
-              }}
-            >
-              {loadingLocation ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={{ color: "#fff", fontWeight: "700" }}>
-                  {userCoords ? "Update location" : "Use my location"}
-                </Text>
-              )}
-            </TouchableOpacity>
+              <View style={{ flex: 1, gap: 8 }}>
+                <Label>End</Label>
+                <InputButton label={formatTimeLabel(endTime)} onPress={() => setPickerTarget("end")} />
+              </View>
+            </ButtonRow>
 
-            <TouchableOpacity
-              onPress={runMatch}
-              style={{
-                flex: 1,
-                backgroundColor: userCoords && selectedSkillKey ? colors.primary : colors.primarySoft,
-                padding: 12,
-                borderRadius: 12,
-                alignItems: "center",
-              }}
-              disabled={!userCoords || !selectedSkillKey || loadingMatch}
-            >
-              {loadingMatch ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={{ color: "#fff", fontWeight: "700" }}>Match</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          {bookingSuccess ? (
             <View
               style={{
-                backgroundColor: "#ecfdf5",
+                backgroundColor: colors.surfaceMuted,
+                borderRadius: 16,
                 borderWidth: 1,
-                borderColor: "#a7f3d0",
-                borderRadius: 10,
-                padding: 10,
-              }}
-            >
-              <Text style={{ color: "#065f46", fontWeight: "600" }}>{bookingSuccess}</Text>
-            </View>
-          ) : null}
-        </View>
-      </View>
-
-      {pickerTarget ? (
-        <DateTimePicker
-          value={
-            pickerTarget === "date"
-              ? selectedDate
-              : pickerTarget === "start"
-                ? startTime
-                : endTime
-          }
-          mode={pickerTarget === "date" ? "date" : "time"}
-          is24Hour
-          onChange={onPickerChange}
-        />
-      ) : null}
-
-      <View style={{ flex: 1 }}>
-        <View
-          style={{
-            flex: 1,
-            marginHorizontal: 12,
-            borderRadius: 16,
-            overflow: "hidden",
-            borderWidth: 1,
-            borderColor: colors.border,
-            backgroundColor: colors.surface,
-          }}
-        >
-          <WebView
-            originWhitelist={["*"]}
-            source={{ html: mapHtml }}
-            javaScriptEnabled
-            domStorageEnabled
-            startInLoadingState
-            renderLoading={() => (
-              <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                <ActivityIndicator />
-              </View>
-            )}
-          />
-        </View>
-
-        <View
-          style={{
-            position: "absolute",
-            left: 12,
-            right: 12,
-            bottom: 12,
-            backgroundColor: colors.surface,
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: colors.border,
-            padding: 12,
-            maxHeight: 260,
-          }}
-        >
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
-            <Text style={{ fontWeight: "800" }}>Top matches</Text>
-            <Text style={{ opacity: 0.6, fontSize: 12 }}>{results.length} results</Text>
-          </View>
-
-          {!userCoords ? (
-            <Text style={{ marginTop: 10, opacity: 0.7 }}>Tap “Use my location” to start.</Text>
-          ) : loadingMatch ? (
-            <View style={{ marginTop: 12 }}>
-              <ActivityIndicator />
-            </View>
-          ) : results.length === 0 ? (
-            <Text style={{ marginTop: 10, opacity: 0.7 }}>No results yet. Tap Match.</Text>
-          ) : (
-            <FlatList
-              style={{ marginTop: 10 }}
-              data={results}
-              keyExtractor={(item) => item.email}
-              renderItem={({ item }) => {
-                const isSelected = item.email === selectedEmail;
-                return (
-                  <TouchableOpacity
-                    onPress={() => setSelectedEmail(item.email)}
-                    style={{
-                      padding: 10,
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: isSelected ? colors.primary : colors.border,
-                      backgroundColor: isSelected ? colors.primarySoft : colors.surface,
-                      marginBottom: 8,
-                    }}
-                  >
-                    <Text style={{ fontWeight: "700" }}>{item.email}</Text>
-                    <Text style={{ opacity: 0.75, marginTop: 2 }}>
-                      {item.distance_km.toFixed(1)} km • {item.years_experience} yrs
-                      {item.availability_unknown ? " • availability unknown" : ""}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              }}
-            />
-          )}
-        </View>
-      </View>
-
-      <Modal visible={skillModalOpen} transparent animationType="slide" onRequestClose={() => setSkillModalOpen(false)}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "flex-end",
-            backgroundColor: "rgba(0,0,0,0.25)",
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: colors.surface,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              maxHeight: "70%",
-              padding: 16,
-            }}
-          >
-            <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 10 }}>Choose a skill</Text>
-
-            <ScrollView>
-              {catalog?.categories.map((category) => {
-                const activeSkills = category.skills.filter((s) => s.active);
-                if (activeSkills.length === 0) return null;
-
-                return (
-                  <View key={category.key} style={{ marginBottom: 16 }}>
-                    <Text style={{ fontWeight: "800", marginBottom: 8 }}>{category.label}</Text>
-
-                    {activeSkills.map((skill) => {
-                      const selectedRow = selectedSkillKey === skill.key;
-                      return (
-                        <TouchableOpacity
-                          key={skill.key}
-                          onPress={() => {
-                            setSelectedSkillKey(skill.key);
-                            setSkillModalOpen(false);
-                          }}
-                          style={{
-                            padding: 12,
-                            borderWidth: 1,
-                            borderColor: selectedRow ? colors.primary : colors.border,
-                            backgroundColor: selectedRow ? colors.primarySoft : colors.surface,
-                            borderRadius: 12,
-                            marginBottom: 8,
-                          }}
-                        >
-                          <Text style={{ fontWeight: "600" }}>{skill.label}</Text>
-                          <Text style={{ opacity: 0.65, marginTop: 2 }}>{skill.key}</Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                );
-              })}
-            </ScrollView>
-
-            <TouchableOpacity
-              onPress={() => setSkillModalOpen(false)}
-              style={{
-                marginTop: 8,
-                backgroundColor: colors.primary,
+                borderColor: colors.border,
                 padding: 12,
-                borderRadius: 12,
-                alignItems: "center",
               }}
             >
-              <Text style={{ color: "#fff", fontWeight: "700" }}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+              <Text style={{ color: colors.textSoft }}>
+                Requested window: {desiredStartDate.toLocaleString()} → {desiredEndDate.toLocaleString()}
+              </Text>
+            </View>
 
-      <Modal visible={!!selected} transparent animationType="slide" onRequestClose={() => setSelectedEmail(null)}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "flex-end",
-            backgroundColor: "rgba(0,0,0,0.25)",
-          }}
-        >
+            <ButtonRow>
+              <AppButton
+                label={userCoords ? "Update location" : "Use my location"}
+                onPress={getLocation}
+                loading={loadingLocation}
+                style={{ flex: 1 }}
+              />
+              <AppButton
+                label="Match"
+                onPress={runMatch}
+                loading={loadingMatch}
+                disabled={!userCoords || !selectedSkillKey}
+                style={{ flex: 1 }}
+              />
+            </ButtonRow>
+
+            {bookingSuccess ? (
+              <View
+                style={{
+                  backgroundColor: colors.successSoft,
+                  borderColor: colors.success,
+                  borderWidth: 1,
+                  borderRadius: 16,
+                  padding: 12,
+                }}
+              >
+                <Text style={{ color: colors.success, fontWeight: "700" }}>{bookingSuccess}</Text>
+              </View>
+            ) : null}
+          </Card>
+        </View>
+
+        <View style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
           <View
             style={{
+              flex: 1,
+              borderRadius: 20,
+              overflow: "hidden",
+              borderWidth: 1,
+              borderColor: colors.border,
               backgroundColor: colors.surface,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              padding: 16,
-              gap: 10,
             }}
           >
-            <Text style={{ fontSize: 18, fontWeight: "800" }}>Confirm booking</Text>
-
-            {selected ? (
-              <>
-                <Text style={{ opacity: 0.8 }}>Handyman: {selected.email}</Text>
-                <Text style={{ opacity: 0.8 }}>
-                  Skill: {selectedSkill ? `${selectedSkill.categoryLabel} • ${selectedSkill.label}` : selectedSkillKey}
-                </Text>
-                <Text style={{ opacity: 0.8 }}>Distance: {selected.distance_km.toFixed(1)} km</Text>
-                <Text style={{ opacity: 0.8 }}>Experience: {selected.years_experience} yrs</Text>
-                <Text style={{ opacity: 0.8 }}>
-                  Availability: {selected.availability_unknown ? "Unknown" : "Known"}
-                </Text>
-
-                <View
-                  style={{
-                    backgroundColor: colors.surfaceMuted,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    borderRadius: 12,
-                    padding: 12,
-                  }}
-                >
-                  <Text style={{ fontWeight: "700", marginBottom: 6 }}>Requested window</Text>
-                  <Text>{desiredStartDate.toLocaleString()}</Text>
-                  <Text>{desiredEndDate.toLocaleString()}</Text>
+            <WebView
+              originWhitelist={["*"]}
+              source={{ html: mapHtml }}
+              javaScriptEnabled
+              domStorageEnabled
+              startInLoadingState
+              renderLoading={() => (
+                <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                  <ActivityIndicator color={colors.primary} />
                 </View>
-              </>
-            ) : null}
+              )}
+            />
+          </View>
 
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <TouchableOpacity
-                onPress={() => setSelectedEmail(null)}
-                style={{
-                  flex: 1,
-                  backgroundColor: colors.surfaceMuted,
-                  padding: 12,
-                  borderRadius: 12,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ fontWeight: "700" }}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={onConfirmBooking}
-                disabled={creatingBooking}
-                style={{
-                  flex: 1,
-                  backgroundColor: colors.primary,
-                  padding: 12,
-                  borderRadius: 12,
-                  alignItems: "center",
-                }}
-              >
-                {creatingBooking ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={{ color: "#fff", fontWeight: "800" }}>Confirm request</Text>
-                )}
-              </TouchableOpacity>
+          <View
+            style={{
+              position: "absolute",
+              left: 16,
+              right: 16,
+              bottom: 16,
+              backgroundColor: colors.surface,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: colors.border,
+              padding: 14,
+              maxHeight: 260,
+            }}
+          >
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
+              <Text style={{ fontWeight: "800", color: colors.text, fontSize: 16 }}>Top matches</Text>
+              <Text style={{ color: colors.textFaint }}>{results.length} results</Text>
             </View>
+
+            {!userCoords ? (
+              <Text style={{ marginTop: 10, color: colors.textSoft }}>Tap “Use my location” to start.</Text>
+            ) : loadingMatch ? (
+              <View style={{ marginTop: 12 }}>
+                <ActivityIndicator color={colors.primary} />
+              </View>
+            ) : results.length === 0 ? (
+              <Text style={{ marginTop: 10, color: colors.textSoft }}>No results yet. Tap Match.</Text>
+            ) : (
+              <FlatList
+                style={{ marginTop: 10 }}
+                data={results}
+                keyExtractor={(item) => item.email}
+                renderItem={({ item }) => {
+                  const isSelected = item.email === selectedEmail;
+
+                  return (
+                    <View style={{ marginBottom: 8 }}>
+                      <AppButton
+                        label={`${item.email} • ${item.distance_km.toFixed(1)} km • ${item.years_experience} yrs${item.availability_unknown ? " • unknown availability" : ""}`}
+                        onPress={() => setSelectedEmail(item.email)}
+                        tone={isSelected ? "primary" : "secondary"}
+                      />
+                    </View>
+                  );
+                }}
+              />
+            )}
           </View>
         </View>
-      </Modal>
-    </SafeAreaView>
+      </Screen>
+
+      <BottomSheet visible={skillModalOpen} onClose={() => setSkillModalOpen(false)} title="Choose a skill">
+        <ScrollView>
+          {catalog?.categories.map((category) => {
+            const activeSkills = category.skills.filter((s) => s.active);
+            if (activeSkills.length === 0) return null;
+
+            return (
+              <View key={category.key} style={{ marginBottom: 16, gap: 8 }}>
+                <Text style={{ fontWeight: "800", color: colors.text, fontSize: 16 }}>{category.label}</Text>
+
+                {activeSkills.map((skill) => {
+                  const selectedRow = selectedSkillKey === skill.key;
+                  return (
+                    <AppButton
+                      key={skill.key}
+                      label={skill.label}
+                      onPress={() => {
+                        setSelectedSkillKey(skill.key);
+                        setSkillModalOpen(false);
+                      }}
+                      tone={selectedRow ? "primary" : "secondary"}
+                    />
+                  );
+                })}
+              </View>
+            );
+          })}
+        </ScrollView>
+
+        <AppButton label="Close" onPress={() => setSkillModalOpen(false)} tone="secondary" />
+      </BottomSheet>
+
+      <BottomSheet visible={!!selected} onClose={() => setSelectedEmail(null)} title="Confirm booking">
+        {selected ? (
+          <>
+            <Text style={{ color: colors.textSoft }}>Handyman: {selected.email}</Text>
+            <Text style={{ color: colors.textSoft }}>
+              Skill: {selectedSkill ? `${selectedSkill.categoryLabel} • ${selectedSkill.label}` : selectedSkillKey}
+            </Text>
+            <Text style={{ color: colors.textSoft }}>Distance: {selected.distance_km.toFixed(1)} km</Text>
+            <Text style={{ color: colors.textSoft }}>Experience: {selected.years_experience} yrs</Text>
+            <Text style={{ color: colors.textSoft }}>
+              Availability: {selected.availability_unknown ? "Unknown" : "Known"}
+            </Text>
+
+            <View
+              style={{
+                backgroundColor: colors.surfaceMuted,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 16,
+                padding: 12,
+              }}
+            >
+              <Text style={{ fontWeight: "700", color: colors.text, marginBottom: 6 }}>Requested window</Text>
+              <Text style={{ color: colors.textSoft }}>{desiredStartDate.toLocaleString()}</Text>
+              <Text style={{ color: colors.textSoft }}>{desiredEndDate.toLocaleString()}</Text>
+            </View>
+
+            <ButtonRow>
+              <AppButton
+                label="Cancel"
+                onPress={() => setSelectedEmail(null)}
+                tone="secondary"
+                style={{ flex: 1 }}
+              />
+              <AppButton
+                label="Confirm request"
+                onPress={onConfirmBooking}
+                loading={creatingBooking}
+                style={{ flex: 1 }}
+              />
+            </ButtonRow>
+          </>
+        ) : null}
+      </BottomSheet>
+    </>
   );
 }

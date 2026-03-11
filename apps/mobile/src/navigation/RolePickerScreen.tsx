@@ -1,62 +1,42 @@
 import React from "react";
-import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
+import { Text, View } from "react-native";
 import { useSession } from "../auth/SessionProvider";
 import { useTheme } from "../theme";
+import { AppButton, Card, PageHeader, Screen } from "../ui/primitives";
 
 export default function RolePickerScreen() {
   const { pickRole } = useSession();
-  const { colors, toggle, mode } = useTheme();
+  const { toggle, mode, colors } = useTheme();
 
   return (
-    <SafeAreaView style={{ flex: 1, padding: 16, gap: 12, backgroundColor: colors.bg }}>
-      <Text style={{ fontSize: 22, fontWeight: "700", color: colors.text }}>Choose mode</Text>
-      <Text style={{ opacity: 0.7, color: colors.textSoft }}>
-        Your account supports both roles. Pick how you want to use the app right now.
-      </Text>
+    <Screen scroll contentContainerStyle={{ gap: 16 }}>
+      <PageHeader
+        title="Choose mode"
+        subtitle="Your account supports both roles. Pick how you want to use the app right now."
+      />
 
-      <TouchableOpacity
+      <AppButton
+        label={mode === "light" ? "Switch to dark" : "Switch to light"}
         onPress={toggle}
-        style={{
-          borderRadius: 12,
-          padding: 10,
-          borderWidth: 1,
-          borderColor: colors.border,
-          backgroundColor: colors.surface,
-          alignSelf: "flex-start",
-        }}
-      >
-        <Text style={{ color: colors.text }}>{mode === "light" ? "Switch to dark" : "Switch to light"}</Text>
-      </TouchableOpacity>
+        tone="secondary"
+        style={{ alignSelf: "flex-start", minWidth: 170 }}
+      />
 
-      <View style={{ gap: 12, marginTop: 12 }}>
-        <TouchableOpacity
-          onPress={() => pickRole("user")}
-          style={{
-            backgroundColor: colors.surface,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14
-          }}
-        >
-          <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>Continue as User</Text>
-          <Text style={{ opacity: 0.7, marginTop: 6 }}>Find handymen, request bookings</Text>
-        </TouchableOpacity>
+      <Card>
+        <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>Continue as User</Text>
+        <Text style={{ color: colors.textSoft, fontSize: 15 }}>
+          Find handymen and request bookings.
+        </Text>
+        <AppButton label="Open user app" onPress={() => pickRole("user")} />
+      </Card>
 
-        <TouchableOpacity
-          onPress={() => pickRole("handyman")}
-          style={{
-            backgroundColor: colors.surface,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14
-          }}
-        >
-          <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>Continue as Handyman</Text>
-          <Text style={{ opacity: 0.7, marginTop: 6 }}>Manage jobs, confirm requests</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+      <Card>
+        <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>Continue as Handyman</Text>
+        <Text style={{ color: colors.textSoft, fontSize: 15 }}>
+          Manage jobs, availability, and profile.
+        </Text>
+        <AppButton label="Open handyman app" onPress={() => pickRole("handyman")} />
+      </Card>
+    </Screen>
   );
 }

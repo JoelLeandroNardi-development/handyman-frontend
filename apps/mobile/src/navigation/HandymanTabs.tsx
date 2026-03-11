@@ -1,14 +1,68 @@
 import React from "react";
+import { Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import JobsScreen from "../screens/handyman/JobsScreen";
 import AvailabilityPlaceholder from "../screens/handyman/AvailabilityPlaceholder";
 import ProfilePlaceholder from "../screens/handyman/ProfilePlaceholder";
+import { useTheme } from "../theme";
 
 const Tab = createBottomTabNavigator();
 
-export default function HandymanTabs() {
+function TabIcon({
+  label,
+  focused,
+  color,
+}: {
+  label: string;
+  focused: boolean;
+  color: string;
+}) {
   return (
-    <Tab.Navigator>
+    <Text
+      style={{
+        fontSize: 13,
+        fontWeight: focused ? "800" : "600",
+        color,
+        marginTop: 2,
+      }}
+    >
+      {label}
+    </Text>
+  );
+}
+
+export default function HandymanTabs() {
+  const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+
+  const tabBarHeight = 64 + Math.max(insets.bottom, 8);
+
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarHideOnKeyboard: true,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textFaint,
+        tabBarStyle: {
+          height: tabBarHeight,
+          paddingTop: 8,
+          paddingBottom: Math.max(insets.bottom, 8),
+          backgroundColor: colors.surface,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        },
+        tabBarLabelStyle: {
+          fontSize: 13,
+          fontWeight: "700",
+          marginBottom: 2,
+        },
+        tabBarIcon: ({ focused, color }) => (
+          <TabIcon label={route.name} focused={focused} color={color} />
+        ),
+      })}
+    >
       <Tab.Screen name="Jobs" component={JobsScreen} />
       <Tab.Screen name="Availability" component={AvailabilityPlaceholder} />
       <Tab.Screen name="Profile" component={ProfilePlaceholder} />
