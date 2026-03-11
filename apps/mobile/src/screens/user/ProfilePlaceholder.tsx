@@ -20,6 +20,7 @@ import {
   PageHeader,
   Screen,
 } from "../../ui/primitives";
+import ThemeToggleCard from "../../ui/ThemeToggleCard";
 
 export default function ProfilePlaceholder() {
   const api = useMemo(() => createApiClient(), []);
@@ -114,6 +115,8 @@ export default function ProfilePlaceholder() {
           Roles: {(session?.roles ?? []).join(", ") || "-"}
         </Text>
       </Card>
+
+      <ThemeToggleCard />
 
       <Card>
         <CardTitle title="User details" />

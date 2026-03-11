@@ -1,12 +1,28 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 import { useSession } from "../auth/SessionProvider";
 import { useTheme } from "../theme";
 import { AppButton, Card, PageHeader, Screen } from "../ui/primitives";
+import ThemeToggleCard from "../ui/ThemeToggleCard";
+
+const ROLE_OPTIONS = [
+  {
+    key: "user" as const,
+    title: "Continue as User",
+    description: "Find handymen and request bookings.",
+    buttonLabel: "Open user app",
+  },
+  {
+    key: "handyman" as const,
+    title: "Continue as Handyman",
+    description: "Manage jobs, availability, and profile.",
+    buttonLabel: "Open handyman app",
+  },
+];
 
 export default function RolePickerScreen() {
   const { pickRole } = useSession();
-  const { toggle, mode, colors } = useTheme();
+  const { colors } = useTheme();
 
   return (
     <Screen scroll contentContainerStyle={{ gap: 16 }}>
@@ -15,28 +31,24 @@ export default function RolePickerScreen() {
         subtitle="Your account supports both roles. Pick how you want to use the app right now."
       />
 
-      <AppButton
-        label={mode === "light" ? "Switch to dark" : "Switch to light"}
-        onPress={toggle}
-        tone="secondary"
-        style={{ alignSelf: "flex-start", minWidth: 170 }}
-      />
+      <ThemeToggleCard />
 
-      <Card>
-        <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>Continue as User</Text>
-        <Text style={{ color: colors.textSoft, fontSize: 15 }}>
-          Find handymen and request bookings.
-        </Text>
-        <AppButton label="Open user app" onPress={() => pickRole("user")} />
-      </Card>
+      {ROLE_OPTIONS.map((role) => (
+        <Card key={role.key}>
+          <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
+            {role.title}
+          </Text>
 
-      <Card>
-        <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>Continue as Handyman</Text>
-        <Text style={{ color: colors.textSoft, fontSize: 15 }}>
-          Manage jobs, availability, and profile.
-        </Text>
-        <AppButton label="Open handyman app" onPress={() => pickRole("handyman")} />
-      </Card>
+          <Text style={{ color: colors.textSoft, fontSize: 15 }}>
+            {role.description}
+          </Text>
+
+          <AppButton
+            label={role.buttonLabel}
+            onPress={() => pickRole(role.key)}
+          />
+        </Card>
+      ))}
     </Screen>
   );
 }

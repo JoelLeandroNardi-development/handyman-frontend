@@ -1,25 +1,21 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Appearance, type ColorSchemeName } from "react-native";
+import { Appearance } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { palettes, type ThemeMode, type ThemePalette } from "@smart/theme";
 
 const STORAGE_KEY = "handyman-theme-mode";
 
-const fallbackMode: ThemeMode = "light";
-
-function castMode(value: string | null): ThemeMode {
-  if (value === "dark" || value === "light") return value;
-  return fallbackMode;
+function isThemeMode(value: string | null): value is ThemeMode {
+  return value === "light" || value === "dark";
 }
 
-async function loadStoredMode(): Promise<ThemeMode> {
+async function loadStoredMode(): Promise<ThemeMode | null> {
   try {
     const raw = await SecureStore.getItemAsync(STORAGE_KEY);
-    if (raw === "light" || raw === "dark") return raw;
+    return isThemeMode(raw) ? raw : null;
   } catch {
-    // ignore
+    return null;
   }
-  return fallbackMode;
 }
 
 async function saveMode(mode: ThemeMode) {
@@ -31,9 +27,7 @@ async function saveMode(mode: ThemeMode) {
 }
 
 function getPreferredMode(): ThemeMode {
-  const appearance = Appearance.getColorScheme();
-  if (appearance === "dark") return "dark";
-  return "light";
+  return Appearance.getColorScheme() === "dark" ? "dark" : "light";
 }
 
 function getThemeData(mode: ThemeMode): ThemePalette {
@@ -50,42 +44,50 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>(fallbackMode);
+  const [mode, setModeState] = useState<ThemeMode>(getPreferredMode);
+  const [hasStoredPreference, setHasStoredPreference] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
 
     (async () => {
       const stored = await loadStoredMode();
-      const preferred = getPreferredMode();
-      if (isMounted) {
-        setModeState(stored || preferred);
+      if (!isMounted) return;
+
+      if (stored) {
+        setModeState(stored);
+        setHasStoredPreference(true);
+      } else {
+        setModeState(getPreferredMode());
+        setHasStoredPreference(false);
       }
     })();
 
     const listener = Appearance.addChangeListener(({ colorScheme }) => {
-      setModeState((current) => {
-        if (current === "light" || current === "dark") return current;
-        return colorScheme === "dark" ? "dark" : "light";
-      });
+      if (!hasStoredPreference) {
+        setModeState(colorScheme === "dark" ? "dark" : "light");
+      }
     });
 
     return () => {
       isMounted = false;
       listener.remove();
     };
-  }, []);
-
-  useEffect(() => {
-    saveMode(mode);
-  }, [mode]);
+  }, [hasStoredPreference]);
 
   const setMode = useCallback((nextMode: ThemeMode) => {
     setModeState(nextMode);
+    setHasStoredPreference(true);
+    void saveMode(nextMode);
   }, []);
 
   const toggle = useCallback(() => {
-    setModeState((prev) => (prev === "light" ? "dark" : "light"));
+    setModeState((prev) => {
+      const nextMode = prev === "light" ? "dark" : "light";
+      setHasStoredPreference(true);
+      void saveMode(nextMode);
+      return nextMode;
+    });
   }, []);
 
   const value = useMemo(
