@@ -1,62 +1,54 @@
 import React from "react";
-import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
+import { Text } from "react-native";
 import { useSession } from "../auth/SessionProvider";
 import { useTheme } from "../theme";
+import { AppButton, Card, PageHeader, Screen } from "../ui/primitives";
+import ThemeToggleCard from "../ui/ThemeToggleCard";
+
+const ROLE_OPTIONS = [
+  {
+    key: "user" as const,
+    title: "Continue as User",
+    description: "Find handymen and request bookings.",
+    buttonLabel: "Open user app",
+  },
+  {
+    key: "handyman" as const,
+    title: "Continue as Handyman",
+    description: "Manage jobs, availability, and profile.",
+    buttonLabel: "Open handyman app",
+  },
+];
 
 export default function RolePickerScreen() {
   const { pickRole } = useSession();
-  const { colors, toggle, mode } = useTheme();
+  const { colors } = useTheme();
 
   return (
-    <SafeAreaView style={{ flex: 1, padding: 16, gap: 12, backgroundColor: colors.bg }}>
-      <Text style={{ fontSize: 22, fontWeight: "700", color: colors.text }}>Choose mode</Text>
-      <Text style={{ opacity: 0.7, color: colors.textSoft }}>
-        Your account supports both roles. Pick how you want to use the app right now.
-      </Text>
+    <Screen scroll contentContainerStyle={{ gap: 16 }}>
+      <PageHeader
+        title="Choose mode"
+        subtitle="Your account supports both roles. Pick how you want to use the app right now."
+      />
 
-      <TouchableOpacity
-        onPress={toggle}
-        style={{
-          borderRadius: 12,
-          padding: 10,
-          borderWidth: 1,
-          borderColor: colors.border,
-          backgroundColor: colors.surface,
-          alignSelf: "flex-start",
-        }}
-      >
-        <Text style={{ color: colors.text }}>{mode === "light" ? "Switch to dark" : "Switch to light"}</Text>
-      </TouchableOpacity>
+      <ThemeToggleCard />
 
-      <View style={{ gap: 12, marginTop: 12 }}>
-        <TouchableOpacity
-          onPress={() => pickRole("user")}
-          style={{
-            backgroundColor: colors.surface,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14
-          }}
-        >
-          <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>Continue as User</Text>
-          <Text style={{ opacity: 0.7, marginTop: 6 }}>Find handymen, request bookings</Text>
-        </TouchableOpacity>
+      {ROLE_OPTIONS.map((role) => (
+        <Card key={role.key}>
+          <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
+            {role.title}
+          </Text>
 
-        <TouchableOpacity
-          onPress={() => pickRole("handyman")}
-          style={{
-            backgroundColor: colors.surface,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14
-          }}
-        >
-          <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>Continue as Handyman</Text>
-          <Text style={{ opacity: 0.7, marginTop: 6 }}>Manage jobs, confirm requests</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+          <Text style={{ color: colors.textSoft, fontSize: 15 }}>
+            {role.description}
+          </Text>
+
+          <AppButton
+            label={role.buttonLabel}
+            onPress={() => pickRole(role.key)}
+          />
+        </Card>
+      ))}
+    </Screen>
   );
 }

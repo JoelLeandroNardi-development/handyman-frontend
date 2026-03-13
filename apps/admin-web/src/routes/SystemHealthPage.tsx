@@ -59,8 +59,8 @@ export default function SystemHealthPage() {
       header: "Service",
       render: (row) => (
         <div>
-          <div style={{ fontWeight: 700, color: "#0f172a" }}>{row.service ?? "-"}</div>
-          <div style={{ color: "#64748b", fontSize: 12, marginTop: 4 }}>{row.url ?? "-"}</div>
+          <div style={{ fontWeight: 700, color: "var(--text)" }}>{row.service ?? "-"}</div>
+          <div style={{ color: "var(--text-faint)", fontSize: 12, marginTop: 4 }}>{row.url ?? "-"}</div>
         </div>
       ),
     },
@@ -91,7 +91,7 @@ export default function SystemHealthPage() {
       render: (row) => (
         <div>
           <div style={{ fontWeight: 700 }}>{row.service ?? "-"}</div>
-          <div style={{ color: "#64748b", fontSize: 12, marginTop: 4 }}>{row.url ?? "-"}</div>
+          <div style={{ color: "var(--text-faint)", fontSize: 12, marginTop: 4 }}>{row.url ?? "-"}</div>
         </div>
       ),
     },
@@ -177,14 +177,7 @@ export default function SystemHealthPage() {
 
   return (
     <Page title="System Health" subtitle="Service fanout, messaging, and outbox diagnostics">
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-          gap: 12,
-          marginBottom: 18,
-        }}
-      >
+      <div className="app-page-grid-5" style={{ marginBottom: 18 }}>
         <StatCard label="Services up" value={servicesUp} hint={`${servicesDown} degraded or down`} />
         <StatCard label="Rabbit connected" value={rabbitConnected} hint={`${rabbitRows.length} services checked`} />
         <StatCard label="Outbox pending" value={outboxPending} hint="Queued messages" />
@@ -197,9 +190,9 @@ export default function SystemHealthPage() {
           {healthQ.error ? (
             <div
               style={{
-                background: "#fee2e2",
-                color: "#991b1b",
-                border: "1px solid #fecaca",
+                background: "var(--danger-soft)",
+                color: "var(--danger)",
+                border: "1px solid color-mix(in srgb, var(--danger) 30%, transparent)",
                 borderRadius: 14,
                 padding: 14,
               }}
@@ -219,9 +212,9 @@ export default function SystemHealthPage() {
           {rabbitQ.error ? (
             <div
               style={{
-                background: "#fee2e2",
-                color: "#991b1b",
-                border: "1px solid #fecaca",
+                background: "var(--danger-soft)",
+                color: "var(--danger)",
+                border: "1px solid color-mix(in srgb, var(--danger) 30%, transparent)",
                 borderRadius: 14,
                 padding: 14,
               }}
@@ -241,9 +234,9 @@ export default function SystemHealthPage() {
           {outboxQ.error ? (
             <div
               style={{
-                background: "#fee2e2",
-                color: "#991b1b",
-                border: "1px solid #fecaca",
+                background: "var(--danger-soft)",
+                color: "var(--danger)",
+                border: "1px solid color-mix(in srgb, var(--danger) 30%, transparent)",
                 borderRadius: 14,
                 padding: 14,
               }}
@@ -262,23 +255,23 @@ export default function SystemHealthPage() {
 
       <div style={{ height: 12 }} />
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-          gap: 12,
-        }}
-      >
+      <div className="app-page-grid-3">
         <Card title="Raw health payload">
-          <pre>{JSON.stringify(healthData ?? {}, null, 2)}</pre>
+          <div className="app-code-block">
+            <pre>{JSON.stringify(healthData ?? {}, null, 2)}</pre>
+          </div>
         </Card>
 
         <Card title="Raw rabbit payload">
-          <pre>{JSON.stringify(rabbitData ?? {}, null, 2)}</pre>
+          <div className="app-code-block">
+            <pre>{JSON.stringify(rabbitData ?? {}, null, 2)}</pre>
+          </div>
         </Card>
 
         <Card title="Raw outbox payload">
-          <pre>{JSON.stringify(outboxData ?? {}, null, 2)}</pre>
+          <div className="app-code-block">
+            <pre>{JSON.stringify(outboxData ?? {}, null, 2)}</pre>
+          </div>
         </Card>
       </div>
     </Page>

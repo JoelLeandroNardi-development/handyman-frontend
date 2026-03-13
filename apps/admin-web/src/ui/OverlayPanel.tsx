@@ -21,10 +21,11 @@ export default function OverlayPanel({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(15, 23, 42, 0.28)",
+        background: "rgba(2, 8, 20, 0.56)",
         display: "flex",
         justifyContent: "flex-end",
         zIndex: 30,
+        backdropFilter: "blur(6px)",
       }}
     >
       <div
@@ -35,7 +36,7 @@ export default function OverlayPanel({
           height: "100%",
           background: "var(--surface)",
           borderLeft: "1px solid var(--border)",
-          boxShadow: "-12px 0 32px rgba(15,23,42,0.12)",
+          boxShadow: "var(--shadow-md)",
           display: "flex",
           flexDirection: "column",
         }}
@@ -47,20 +48,15 @@ export default function OverlayPanel({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            gap: 12,
           }}
         >
           <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text)" }}>{title}</div>
 
           <button
             onClick={onClose}
-            style={{
-              padding: "10px 12px",
-              borderRadius: 10,
-              background: "var(--surface-muted)",
-              color: "var(--text)",
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
+            className="app-button app-button-secondary"
+            style={{ minHeight: 38 }}
           >
             Close
           </button>

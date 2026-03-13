@@ -8,15 +8,7 @@ export default function StatCard({
   hint?: string;
 }) {
   return (
-    <div
-      style={{
-        background: "var(--surface)",
-        border: "1px solid var(--border)",
-        borderRadius: 18,
-        padding: 18,
-        boxShadow: "var(--shadow-sm)",
-      }}
-    >
+    <div className="app-card" style={{ padding: 18 }}>
       <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-faint)" }}>{label}</div>
       <div
         style={{
@@ -31,7 +23,7 @@ export default function StatCard({
         {value}
       </div>
       {hint ? (
-        <div style={{ marginTop: 8, fontSize: 13, color: "#64748b" }}>{hint}</div>
+        <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-faint)" }}>{hint}</div>
       ) : null}
     </div>
   );

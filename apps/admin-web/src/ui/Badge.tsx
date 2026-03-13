@@ -6,30 +6,30 @@ function getToneStyles(tone: Tone) {
       return {
         background: "var(--success-soft)",
         color: "var(--success)",
-        border: "var(--success-soft)",
+        border: "color-mix(in srgb, var(--success) 30%, transparent)",
       };
     case "warning":
       return {
         background: "var(--warning-soft)",
         color: "var(--warning)",
-        border: "var(--warning-soft)",
+        border: "color-mix(in srgb, var(--warning) 30%, transparent)",
       };
     case "danger":
       return {
         background: "var(--danger-soft)",
         color: "var(--danger)",
-        border: "var(--danger-soft)",
+        border: "color-mix(in srgb, var(--danger) 30%, transparent)",
       };
     case "info":
       return {
         background: "var(--primary-soft)",
         color: "var(--primary)",
-        border: "var(--primary-soft)",
+        border: "color-mix(in srgb, var(--primary) 30%, transparent)",
       };
     default:
       return {
         background: "var(--surface-muted)",
-        color: "var(--text)",
+        color: "var(--text-soft)",
         border: "var(--border)",
       };
   }
@@ -50,7 +50,8 @@ export default function Badge({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "4px 10px",
+        minHeight: 24,
+        padding: "0 10px",
         borderRadius: 999,
         border: `1px solid ${styles.border}`,
         background: styles.background,

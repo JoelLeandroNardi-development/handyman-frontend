@@ -9,7 +9,7 @@ const baseLinkStyle: React.CSSProperties = {
   borderRadius: 14,
   textDecoration: "none",
   color: "var(--text)",
-  fontWeight: 600,
+  fontWeight: 700,
 };
 
 export default function Sidebar() {
@@ -39,8 +39,10 @@ export default function Sidebar() {
           S
         </div>
 
-        <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.02em" }}>Back Office</div>
-        <div style={{ color: "#64748b", fontSize: 14, marginTop: 4 }}>
+        <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.02em", color: "var(--text)" }}>
+          Back Office
+        </div>
+        <div style={{ color: "var(--text-faint)", fontSize: 14, marginTop: 4 }}>
           Admin dashboard and operations
         </div>
       </div>
@@ -73,10 +75,9 @@ export default function Sidebar() {
 
       <div style={{ marginTop: "auto", padding: 6 }}>
         <div
+          className="app-panel"
           style={{
-            border: "1px solid var(--border)",
             background: "var(--surface-muted)",
-            borderRadius: 16,
             padding: 14,
           }}
         >

@@ -1,30 +1,40 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { palettes, type ThemeMode, type ThemePalette } from "@smart/theme";
+import { themes, type ThemeMode } from "@smart/theme";
 
 const THEME_KEY = "handyman-theme-mode";
 
 function getInitialMode(): ThemeMode {
   if (typeof window === "undefined") return "light";
 
-  const stored = localStorage.getItem(THEME_KEY) as ThemeMode | null;
+  const stored = localStorage.getItem(THEME_KEY);
   if (stored === "light" || stored === "dark") return stored;
 
-  if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    return "dark";
-  }
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
 
-  return "light";
+function toCssVarName(key: string) {
+  return key.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
 }
 
 function applyTheme(mode: ThemeMode) {
-  const palette: ThemePalette = palettes[mode];
-
+  const theme = themes[mode];
   const root = document.documentElement;
+
   root.dataset.theme = mode;
 
-  Object.entries(palette).forEach(([key, color]) => {
-    root.style.setProperty(`--${key}`, color);
+  Object.entries(theme.colors).forEach(([key, value]) => {
+    root.style.setProperty(`--${toCssVarName(key)}`, value);
   });
+
+  Object.entries(theme.radius).forEach(([key, value]) => {
+    root.style.setProperty(`--radius-${toCssVarName(key)}`, value);
+  });
+
+  Object.entries(theme.shadow).forEach(([key, value]) => {
+    root.style.setProperty(`--shadow-${toCssVarName(key)}`, value);
+  });
+
+  root.style.setProperty("--control-height", theme.control.height);
 }
 
 type ThemeContextValue = {

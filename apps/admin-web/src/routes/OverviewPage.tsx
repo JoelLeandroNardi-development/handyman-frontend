@@ -129,8 +129,8 @@ export default function OverviewPage() {
       header: "Service",
       render: (row) => (
         <div>
-          <div style={{ fontWeight: 700, color: "#0f172a" }}>{row.service ?? "-"}</div>
-          <div style={{ color: "#64748b", fontSize: 12, marginTop: 4 }}>{row.url ?? "-"}</div>
+          <div style={{ fontWeight: 700, color: "var(--text)" }}>{row.service ?? "-"}</div>
+          <div style={{ color: "var(--text-faint)", fontSize: 12, marginTop: 4 }}>{row.url ?? "-"}</div>
         </div>
       ),
     },
@@ -147,7 +147,7 @@ export default function OverviewPage() {
       header: "HTTP",
       width: 100,
       render: (row) => (
-        <span style={{ color: "#334155", fontWeight: 600 }}>{formatHttpStatus(row.http_status)}</span>
+        <span style={{ color: "var(--text-soft)", fontWeight: 600 }}>{formatHttpStatus(row.http_status)}</span>
       ),
     },
     {
@@ -155,7 +155,7 @@ export default function OverviewPage() {
       header: "Latency",
       width: 120,
       render: (row) => (
-        <span style={{ color: "#334155", fontWeight: 600 }}>{formatLatency(row.latency_ms)}</span>
+        <span style={{ color: "var(--text-soft)", fontWeight: 600 }}>{formatLatency(row.latency_ms)}</span>
       ),
     },
   ];
@@ -209,14 +209,7 @@ export default function OverviewPage() {
 
   return (
     <Page title="Overview" subtitle="Operational snapshot">
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-          gap: 12,
-          marginBottom: 18,
-        }}
-      >
+      <div className="app-page-grid-4" style={{ marginBottom: 18 }}>
         <StatCard label="Services up" value={servicesUp} hint={`${servicesDown} not healthy`} />
         <StatCard label="Open breakers" value={openBreakers} hint={`${breakers.length} total breakers`} />
         <StatCard label="Outbox pending" value={pendingOutbox} hint="Pending messages across services" />
@@ -232,7 +225,7 @@ export default function OverviewPage() {
       >
         <Card title="Service health" right={healthQ.isFetching ? "Refreshing…" : `${services.length} services`}>
           {healthQ.error ? (
-            <div style={{ color: "#dc2626" }}>{String((healthQ.error as Error).message)}</div>
+            <div style={{ color: "var(--danger)" }}>{String((healthQ.error as Error).message)}</div>
           ) : (
             <DataTable
               rows={services}
@@ -244,7 +237,7 @@ export default function OverviewPage() {
 
         <Card title="Breakers" right={breakersQ.isFetching ? "Refreshing…" : `${breakers.length} breakers`}>
           {breakersQ.error ? (
-            <div style={{ color: "#dc2626" }}>{String((breakersQ.error as Error).message)}</div>
+            <div style={{ color: "var(--danger)" }}>{String((breakersQ.error as Error).message)}</div>
           ) : (
             <DataTable
               rows={breakers}
@@ -257,19 +250,17 @@ export default function OverviewPage() {
 
       <div style={{ height: 12 }} />
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: 12,
-        }}
-      >
+      <div className="app-page-grid-2">
         <Card title="Raw health payload">
-          <pre>{JSON.stringify(healthData ?? {}, null, 2)}</pre>
+          <div className="app-code-block">
+            <pre>{JSON.stringify(healthData ?? {}, null, 2)}</pre>
+          </div>
         </Card>
 
         <Card title="Raw breaker payload">
-          <pre>{JSON.stringify(breakersData ?? {}, null, 2)}</pre>
+          <div className="app-code-block">
+            <pre>{JSON.stringify(breakersData ?? {}, null, 2)}</pre>
+          </div>
         </Card>
       </div>
     </Page>

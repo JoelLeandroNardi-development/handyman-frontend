@@ -1,19 +1,26 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  SafeAreaView,
-  Text,
-  TouchableOpacity,
-  View,
-  ScrollView,
   ActivityIndicator,
   Alert,
-  TextInput,
+  Text,
+  View,
 } from "react-native";
 import * as Location from "expo-location";
 import { getMeUser, updateMe } from "@smart/api";
 import { createApiClient } from "../../lib/api";
 import { useTheme } from "../../theme";
 import { useSession } from "../../auth/SessionProvider";
+import {
+  AppButton,
+  AppInput,
+  ButtonRow,
+  Card,
+  CardTitle,
+  Label,
+  PageHeader,
+  Screen,
+} from "../../ui/primitives";
+import ThemeToggleCard from "../../ui/ThemeToggleCard";
 
 export default function ProfilePlaceholder() {
   const api = useMemo(() => createApiClient(), []);
@@ -36,11 +43,12 @@ export default function ProfilePlaceholder() {
 
     try {
       const data = await getMeUser(api);
-
       setFullName(data.full_name ?? "");
 
-      if (data.latitude && data.longitude) {
+      if (data.latitude != null && data.longitude != null) {
         setLocationLabel(`${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)}`);
+      } else {
+        setLocationLabel("Location not set");
       }
     } catch (e) {
       Alert.alert("Failed to load profile", (e as Error).message);
@@ -54,7 +62,6 @@ export default function ProfilePlaceholder() {
 
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-
       if (status !== "granted") {
         Alert.alert("Permission denied", "Location permission is required.");
         return;
@@ -70,12 +77,8 @@ export default function ProfilePlaceholder() {
         longitude: pos.coords.longitude,
       });
 
-      setLocationLabel(
-        `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`
-      );
-
+      setLocationLabel(`${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
       await refresh();
-
       Alert.alert("Location updated");
     } catch (e) {
       Alert.alert("Location error", (e as Error).message);
@@ -93,7 +96,6 @@ export default function ProfilePlaceholder() {
       });
 
       await refresh();
-
       Alert.alert("Profile updated");
     } catch (e) {
       Alert.alert("Save failed", (e as Error).message);
@@ -102,165 +104,63 @@ export default function ProfilePlaceholder() {
     }
   }
 
-  const loading = loadingProfile;
-
   return (
-    <SafeAreaView style={{ flex: 1, padding: 16, backgroundColor: colors.bg }}>
-      <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-        <Text style={{ fontSize: 20, fontWeight: "700", color: colors.text }}>Profile</Text>
+    <Screen scroll>
+      <PageHeader title="Profile" />
 
-        <View
-          style={{
-            backgroundColor: colors.surface,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14,
-            gap: 6,
-          }}
-        >
-          <Text style={{ fontWeight: "700", color: colors.text }}>{session?.email ?? "-"}</Text>
-          <Text style={{ color: colors.textSoft }}>Current mode: {roleMode ?? "-"}</Text>
-          <Text style={{ color: colors.textSoft }}>
-            Roles: {(session?.roles ?? []).join(", ") || "-"}
-          </Text>
-        </View>
+      <Card>
+        <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>{session?.email ?? "-"}</Text>
+        <Text style={{ color: colors.textSoft, fontSize: 15 }}>Current mode: {roleMode ?? "-"}</Text>
+        <Text style={{ color: colors.textSoft, fontSize: 15 }}>
+          Roles: {(session?.roles ?? []).join(", ") || "-"}
+        </Text>
+      </Card>
 
-        <View
-          style={{
-            backgroundColor: colors.surface,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14,
-            gap: 10,
-          }}
-        >
-          <Text style={{ fontWeight: "700" }}>User details</Text>
+      <ThemeToggleCard />
 
-          {loading ? (
-            <ActivityIndicator />
-          ) : (
-            <>
-              <View style={{ gap: 6 }}>
-                <Text style={{ fontWeight: "600" }}>Full name</Text>
+      <Card>
+        <CardTitle title="User details" />
 
-                <TextInput
-                  value={fullName}
-                  onChangeText={setFullName}
-                  placeholder="Your full name"
-                  style={{
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    borderRadius: 10,
-                    padding: 12,
-                    backgroundColor: colors.surface,
-                  }}
-                />
-              </View>
-
-              <View style={{ gap: 6 }}>
-                <Text style={{ fontWeight: "600" }}>Current location</Text>
-
-                <Text style={{ opacity: 0.7 }}>{locationLabel}</Text>
-
-                <TouchableOpacity
-                  onPress={useCurrentLocation}
-                  disabled={locating}
-                  style={{
-                    backgroundColor: locating ? colors.border : colors.primary,
-                    padding: 12,
-                    borderRadius: 12,
-                    alignItems: "center",
-                  }}
-                >
-                  {locating ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <Text style={{ color: "#fff", fontWeight: "700" }}>
-                      Use current location
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-
-              <TouchableOpacity
-                onPress={saveProfile}
-                disabled={saving}
-                style={{
-                  backgroundColor: saving ? colors.primarySoft : colors.primary,
-                  padding: 12,
-                  borderRadius: 12,
-                  alignItems: "center",
-                }}
-              >
-                {saving ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={{ color: "#fff", fontWeight: "700" }}>
-                    Save profile
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-
-        {availableRoles.length > 1 && (
-          <View
-            style={{
-              backgroundColor: colors.surface,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 14,
-              padding: 14,
-              gap: 10,
-            }}
-          >
-            <Text style={{ fontWeight: "700" }}>Switch role</Text>
-
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <TouchableOpacity
-                onPress={() => pickRole("user")}
-                style={{
-                  flex: 1,
-                  backgroundColor: "#e5e7eb",
-                  padding: 12,
-                  borderRadius: 12,
-                  alignItems: "center",
-                }}
-              >
-                <Text>User</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => pickRole("handyman")}
-                style={{
-                  flex: 1,
-                  backgroundColor: "#e5e7eb",
-                  padding: 12,
-                  borderRadius: 12,
-                  alignItems: "center",
-                }}
-              >
-                <Text>Handyman</Text>
-              </TouchableOpacity>
+        {loadingProfile ? (
+          <ActivityIndicator color={colors.primary} />
+        ) : (
+          <>
+            <View style={{ gap: 8 }}>
+              <Label>Full name</Label>
+              <AppInput
+                value={fullName}
+                onChangeText={setFullName}
+                placeholder="Your full name"
+              />
             </View>
-          </View>
-        )}
 
-        <TouchableOpacity
-          onPress={logout}
-          style={{
-            backgroundColor: colors.primary,
-            padding: 12,
-            borderRadius: 12,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ color: "#fff", fontWeight: "700" }}>Logout</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+            <View style={{ gap: 8 }}>
+              <Label>Current location</Label>
+              <Text style={{ color: colors.textSoft, fontSize: 15 }}>{locationLabel}</Text>
+
+              <AppButton
+                label="Use current location"
+                onPress={useCurrentLocation}
+                loading={locating}
+              />
+            </View>
+
+            <AppButton label="Save profile" onPress={saveProfile} loading={saving} />
+          </>
+        )}
+      </Card>
+
+      {availableRoles.length > 1 ? (
+        <Card>
+          <CardTitle title="Switch role" />
+          <ButtonRow>
+            <AppButton label="User" onPress={() => pickRole("user")} tone="secondary" style={{ flex: 1 }} />
+            <AppButton label="Handyman" onPress={() => pickRole("handyman")} tone="secondary" style={{ flex: 1 }} />
+          </ButtonRow>
+        </Card>
+      ) : null}
+
+      <AppButton label="Logout" onPress={logout} />
+    </Screen>
   );
 }

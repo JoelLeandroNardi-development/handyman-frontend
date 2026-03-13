@@ -86,17 +86,16 @@ export default function SkillsCatalogPage() {
             {(catalog?.categories ?? []).map((category) => (
               <div
                 key={category.key}
+                className="app-panel"
                 style={{
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 14,
                   padding: 14,
-                  background: "#f8fafc",
+                  background: "var(--surface)",
                 }}
               >
-                <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
-                  <div style={{ fontWeight: 800 }}>{category.label}</div>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
+                  <div style={{ fontWeight: 800, color: "var(--text)" }}>{category.label}</div>
                   <Badge label={category.active ? "active" : "inactive"} tone={category.active ? "success" : "neutral"} />
-                  <span style={{ color: "#64748b", fontSize: 13 }}>{category.key}</span>
+                  <span style={{ color: "var(--text-faint)", fontSize: 13 }}>{category.key}</span>
                 </div>
 
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -104,15 +103,16 @@ export default function SkillsCatalogPage() {
                     <div
                       key={skill.key}
                       style={{
-                        border: "1px solid #e2e8f0",
-                        background: "#fff",
+                        border: "1px solid var(--border)",
+                        background: "var(--surface-muted)",
                         borderRadius: 999,
                         padding: "8px 10px",
                         fontSize: 13,
+                        color: "var(--text)",
                       }}
                     >
                       <strong>{skill.label}</strong> · {skill.key} ·{" "}
-                      <span style={{ color: skill.active ? "#166534" : "#64748b" }}>
+                      <span style={{ color: skill.active ? "var(--success)" : "var(--text-faint)" }}>
                         {skill.active ? "active" : "inactive"}
                       </span>
                     </div>
@@ -132,18 +132,7 @@ export default function SkillsCatalogPage() {
                 rows={14}
                 style={{ resize: "vertical" }}
               />
-              <button
-                onClick={onPatch}
-                disabled={busy !== ""}
-                style={{
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  background: "#2563eb",
-                  color: "#fff",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={onPatch} disabled={busy !== ""} className="app-button app-button-primary">
                 {busy === "patch" ? "Applying patch…" : "Apply patch"}
               </button>
             </div>
@@ -157,18 +146,7 @@ export default function SkillsCatalogPage() {
                 rows={10}
                 style={{ resize: "vertical" }}
               />
-              <button
-                onClick={onReplace}
-                disabled={busy !== ""}
-                style={{
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  background: "#d97706",
-                  color: "#fff",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={onReplace} disabled={busy !== ""} className="app-button app-button-warning">
                 {busy === "replace" ? "Replacing…" : "Replace catalog"}
               </button>
             </div>
@@ -184,25 +162,24 @@ export default function SkillsCatalogPage() {
             {invalid.items.map((item) => (
               <div
                 key={item.email}
+                className="app-panel"
                 style={{
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 14,
                   padding: 14,
-                  background: "#fff",
+                  background: "var(--surface)",
                 }}
               >
-                <div style={{ fontWeight: 800 }}>{item.email}</div>
-                <div style={{ marginTop: 8, color: "#64748b" }}>
+                <div style={{ fontWeight: 800, color: "var(--text)" }}>{item.email}</div>
+                <div style={{ marginTop: 8, color: "var(--text-faint)" }}>
                   Invalid: {item.invalid_skills.join(", ") || "-"}
                 </div>
-                <div style={{ marginTop: 4, color: "#64748b" }}>
+                <div style={{ marginTop: 4, color: "var(--text-faint)" }}>
                   Valid: {item.valid_skills.join(", ") || "-"}
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div style={{ color: "#64748b" }}>No invalid handyman skills found.</div>
+          <div style={{ color: "var(--text-faint)" }}>No invalid handyman skills found.</div>
         )}
       </Card>
     </Page>

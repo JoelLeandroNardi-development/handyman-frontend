@@ -19,6 +19,35 @@ export type ThemePalette = {
   dangerSoft: string;
 };
 
+export type ThemeTokens = {
+  colors: ThemePalette;
+  radius: {
+    sm: string;
+    md: string;
+    lg: string;
+    pill: string;
+  };
+  shadow: {
+    sm: string;
+    md: string;
+  };
+  control: {
+    height: string;
+  };
+};
+
+const shared = {
+  radius: {
+    sm: "10px",
+    md: "14px",
+    lg: "18px",
+    pill: "999px",
+  },
+  control: {
+    height: "44px",
+  },
+} satisfies Omit<ThemeTokens, "colors" | "shadow">;
+
 export const lightPalette: ThemePalette = {
   bg: "#f3f5f9",
   surface: "#ffffff",
@@ -28,7 +57,7 @@ export const lightPalette: ThemePalette = {
   text: "#0f172a",
   textSoft: "#475569",
   textFaint: "#64748b",
-  primary: "#2563eb", // blue
+  primary: "#2563eb",
   primarySoft: "#dbeafe",
   success: "#16a34a",
   successSoft: "#dcfce7",
@@ -39,22 +68,41 @@ export const lightPalette: ThemePalette = {
 };
 
 export const darkPalette: ThemePalette = {
-  bg: "#0f172a",
-  surface: "#111827",
-  surfaceMuted: "#1f2937",
-  border: "#334155",
-  borderStrong: "#475569",
+  bg: "#081224",
+  surface: "#0d1a2f",
+  surfaceMuted: "#12233d",
+  border: "#233653",
+  borderStrong: "#34507a",
   text: "#f8fafc",
-  textSoft: "#e2e8f0",
-  textFaint: "#cbd5e1",
-  primary: "#f97316", // orange
-  primarySoft: "#fed7aa",
-  success: "#4ade80",
-  successSoft: "#dcfce7",
+  textSoft: "#d7e3f4",
+  textFaint: "#9fb2cf",
+  primary: "#fb7a21",
+  primarySoft: "rgba(251, 122, 33, 0.18)",
+  success: "#22c55e",
+  successSoft: "rgba(34, 197, 94, 0.18)",
   warning: "#f59e0b",
-  warningSoft: "#fef3c7",
-  danger: "#f87171",
-  dangerSoft: "#fecaca",
+  warningSoft: "rgba(245, 158, 11, 0.18)",
+  danger: "#ef4444",
+  dangerSoft: "rgba(239, 68, 68, 0.18)",
+};
+
+export const themes: Record<ThemeMode, ThemeTokens> = {
+  light: {
+    colors: lightPalette,
+    shadow: {
+      sm: "0 1px 2px rgba(15, 23, 42, 0.04)",
+      md: "0 10px 30px rgba(15, 23, 42, 0.08)",
+    },
+    ...shared,
+  },
+  dark: {
+    colors: darkPalette,
+    shadow: {
+      sm: "0 1px 2px rgba(0, 0, 0, 0.25)",
+      md: "0 14px 38px rgba(0, 0, 0, 0.34)",
+    },
+    ...shared,
+  },
 };
 
 export const palettes: Record<ThemeMode, ThemePalette> = {

@@ -1,44 +1,37 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  SafeAreaView,
+  ActivityIndicator,
+  Alert,
+  FlatList,
   Text,
   View,
-  TouchableOpacity,
-  ActivityIndicator,
-  FlatList,
-  Alert,
-  Modal,
-  TextInput,
 } from "react-native";
 import { cancelBooking, getMyBookings, type BookingResponse } from "@smart/api";
+import {
+  getBookingDisplayStatus,
+  getBookingStatusTone,
+  isPendingLikeBookingStatus,
+  normalizeBookingStatus,
+} from "@smart/core";
 import { createApiClient } from "../../lib/api";
+import { formatDateTime } from "../../lib/dateTime";
 import { useTheme } from "../../theme";
-
-function formatDate(value?: string) {
-  if (!value) return "-";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleString();
-}
-
-function statusColor(status?: string) {
-  switch ((status ?? "").toLowerCase()) {
-    case "confirmed":
-      return { bg: "#ecfdf5", border: "#a7f3d0", text: "#065f46" };
-    case "pending":
-      return { bg: "#fffbeb", border: "#fde68a", text: "#92400e" };
-    case "cancelled":
-      return { bg: "#fef2f2", border: "#fecaca", text: "#991b1b" };
-    case "failed":
-      return { bg: "#f3f4f6", border: "#d1d5db", text: "#374151" };
-    default:
-      return { bg: "#f8fafc", border: "#e5e7eb", text: "#334155" };
-  }
-}
+import {
+  AppButton,
+  AppInput,
+  BottomSheet,
+  ButtonRow,
+  Card,
+  EmptyState,
+  PageHeader,
+  Screen,
+  StatusBadge,
+} from "../../ui/primitives";
 
 export default function BookingsPlaceholder() {
   const api = useMemo(() => createApiClient(), []);
-  const { colors: theme } = useTheme();
+  const { colors } = useTheme();
+
   const [loading, setLoading] = useState(false);
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [selected, setSelected] = useState<BookingResponse | null>(null);
@@ -58,11 +51,12 @@ export default function BookingsPlaceholder() {
   }
 
   useEffect(() => {
-    loadBookings();
+    void loadBookings();
   }, []);
 
   async function onCancel() {
     if (!selected) return;
+
     setCancelling(true);
     try {
       const res = await cancelBooking(api, selected.booking_id, {
@@ -79,222 +73,142 @@ export default function BookingsPlaceholder() {
   }
 
   const grouped = {
-    Pending: bookings.filter((b) => (b.status ?? "").toLowerCase() === "pending"),
-    Confirmed: bookings.filter((b) => (b.status ?? "").toLowerCase() === "confirmed"),
-    Cancelled: bookings.filter((b) => (b.status ?? "").toLowerCase() === "cancelled"),
-    Failed: bookings.filter((b) => (b.status ?? "").toLowerCase() === "failed"),
+    Pending: bookings.filter((b) => isPendingLikeBookingStatus(b.status)),
+    Confirmed: bookings.filter((b) => normalizeBookingStatus(b.status) === "confirmed"),
+    Cancelled: bookings.filter((b) => normalizeBookingStatus(b.status) === "cancelled"),
+    Failed: bookings.filter((b) => normalizeBookingStatus(b.status) === "failed"),
   };
 
   function renderCard(item: BookingResponse) {
-    const colors = statusColor(item.status);
-
     return (
-      <TouchableOpacity
-        key={item.booking_id}
-        onPress={() => {
-          setCancelReason(item.cancellation_reason ?? "user_requested");
-          setSelected(item);
-        }}
-        style={{
-          backgroundColor: theme.surface,
-          borderRadius: 14,
-          borderWidth: 1,
-          borderColor: theme.border,
-          padding: 14,
-          marginBottom: 10,
-        }}
-      >
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <View style={{ flex: 1, paddingRight: 10 }}>
-            <Text style={{ fontWeight: "800" }}>{item.handyman_email}</Text>
-            <Text style={{ opacity: 0.65, marginTop: 4, fontFamily: "monospace" }}>
+      <Card key={item.booking_id} style={{ marginBottom: 10 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+              {item.handyman_email}
+            </Text>
+            <Text
+              style={{
+                marginTop: 4,
+                color: colors.textFaint,
+                fontFamily: "monospace",
+                fontSize: 13,
+              }}
+            >
               {item.booking_id}
             </Text>
           </View>
 
-          <View
-            style={{
-              backgroundColor: colors.bg,
-              borderColor: colors.border,
-              borderWidth: 1,
-              borderRadius: 999,
-              paddingHorizontal: 10,
-              paddingVertical: 4,
-            }}
-          >
-            <Text style={{ color: colors.text, fontSize: 12, fontWeight: "700" }}>{item.status}</Text>
-          </View>
+          <StatusBadge
+            label={getBookingDisplayStatus(item.status, "user")}
+            tone={getBookingStatusTone(item.status)}
+          />
         </View>
 
-        <View style={{ marginTop: 10, gap: 4 }}>
-          <Text style={{ opacity: 0.8 }}>Start: {formatDate(item.desired_start)}</Text>
-          <Text style={{ opacity: 0.8 }}>End: {formatDate(item.desired_end)}</Text>
-          {item.cancellation_reason ? (
-            <Text style={{ opacity: 0.7 }}>Cancel reason: {item.cancellation_reason}</Text>
-          ) : null}
-          {item.failure_reason ? (
-            <Text style={{ opacity: 0.7 }}>Failure reason: {item.failure_reason}</Text>
-          ) : null}
+        <View style={{ gap: 4 }}>
+          <Text style={{ color: colors.textSoft }}>Start: {formatDateTime(item.desired_start)}</Text>
+          <Text style={{ color: colors.textSoft }}>End: {formatDateTime(item.desired_end)}</Text>
         </View>
 
-        <Text style={{ marginTop: 10, color: "#2563eb", fontWeight: "700" }}>Open details</Text>
-      </TouchableOpacity>
+        <AppButton
+          label="Open details"
+          onPress={() => {
+            setCancelReason(item.cancellation_reason ?? "user_requested");
+            setSelected(item);
+          }}
+          tone="secondary"
+        />
+      </Card>
     );
   }
 
+  const cancelDisabled =
+    !selected || ["cancelled", "failed"].includes(normalizeBookingStatus(selected.status));
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <View style={{ padding: 16, gap: 12 }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <View>
-            <Text style={{ fontSize: 20, fontWeight: "700" }}>Bookings</Text>
-            <Text style={{ opacity: 0.7 }}>Your booking requests and status</Text>
-          </View>
-
-          <TouchableOpacity
-            onPress={loadBookings}
-            style={{
-              backgroundColor: theme.primary,
-              paddingHorizontal: 12,
-              paddingVertical: 10,
-              borderRadius: 12,
-            }}
-          >
-            <Text style={{ color: "#fff", fontWeight: "700" }}>Refresh</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {loading ? (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <ActivityIndicator />
-        </View>
-      ) : (
+    <>
+      <Screen>
         <FlatList
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
+          contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
           data={Object.entries(grouped)}
           keyExtractor={([section]) => section}
+          ListHeaderComponent={
+            <View style={{ marginBottom: 14 }}>
+              <PageHeader
+                title="Bookings"
+                subtitle="Your booking requests and status"
+                action={<AppButton label="Refresh" onPress={loadBookings} style={{ minWidth: 120 }} />}
+              />
+            </View>
+          }
           renderItem={({ item: [section, items] }) => (
             <View style={{ marginBottom: 18 }}>
-              <Text style={{ fontSize: 16, fontWeight: "800", marginBottom: 10 }}>{section}</Text>
+              <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text, marginBottom: 10 }}>
+                {section}
+              </Text>
 
               {items.length === 0 ? (
-                <View
-                  style={{
-                    backgroundColor: theme.surface,
-                    borderWidth: 1,
-                    borderColor: theme.border,
-                    borderRadius: 14,
-                    padding: 14,
-                  }}
-                >
-                  <Text style={{ color: theme.textSoft }}>No bookings in this section.</Text>
-                </View>
+                <EmptyState text="No bookings in this section." />
               ) : (
                 items.map(renderCard)
               )}
             </View>
           )}
+          ListEmptyComponent={
+            loading ? (
+              <View style={{ paddingVertical: 40, alignItems: "center" }}>
+                <ActivityIndicator color={colors.primary} />
+              </View>
+            ) : null
+          }
         />
-      )}
+      </Screen>
 
-      <Modal visible={!!selected} transparent animationType="slide" onRequestClose={() => setSelected(null)}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "flex-end",
-            backgroundColor: "rgba(0,0,0,0.25)",
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: theme.surface,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              padding: 16,
-              gap: 10,
-            }}
-          >
-            <Text style={{ fontSize: 18, fontWeight: "800" }}>Booking details</Text>
-
-            {selected ? (
-              <>
-                <Text style={{ opacity: 0.85 }}>Handyman: {selected.handyman_email}</Text>
-                <Text style={{ opacity: 0.85 }}>Booking ID: {selected.booking_id}</Text>
-                <Text style={{ opacity: 0.85 }}>Start: {formatDate(selected.desired_start)}</Text>
-                <Text style={{ opacity: 0.85 }}>End: {formatDate(selected.desired_end)}</Text>
-                <Text style={{ opacity: 0.85 }}>Status: {selected.status}</Text>
-                {selected.cancellation_reason ? (
-                  <Text style={{ opacity: 0.75 }}>Cancel reason: {selected.cancellation_reason}</Text>
-                ) : null}
-                {selected.failure_reason ? (
-                  <Text style={{ opacity: 0.75 }}>Failure reason: {selected.failure_reason}</Text>
-                ) : null}
-
-                <View
-                  style={{
-                    backgroundColor: "#f8fafc",
-                    borderWidth: 1,
-                    borderColor: "#e6e8ef",
-                    borderRadius: 12,
-                    padding: 12,
-                    gap: 6,
-                  }}
-                >
-                  <Text style={{ fontWeight: "700" }}>Cancel reason</Text>
-                  <TextInput
-                    value={cancelReason}
-                    onChangeText={setCancelReason}
-                    placeholder="user_requested"
-                    style={{
-                      borderWidth: 1,
-                      borderColor: "#ddd",
-                      borderRadius: 10,
-                      padding: 10,
-                    }}
-                  />
-                </View>
-              </>
+      <BottomSheet visible={!!selected} onClose={() => setSelected(null)} title="Booking details">
+        {selected ? (
+          <>
+            <Text style={{ color: colors.textSoft }}>Handyman: {selected.handyman_email}</Text>
+            <Text style={{ color: colors.textSoft }}>Booking ID: {selected.booking_id}</Text>
+            <Text style={{ color: colors.textSoft }}>Start: {formatDateTime(selected.desired_start)}</Text>
+            <Text style={{ color: colors.textSoft }}>End: {formatDateTime(selected.desired_end)}</Text>
+            <Text style={{ color: colors.textSoft }}>
+              Status: {getBookingDisplayStatus(selected.status, "user")}
+            </Text>
+            {selected.cancellation_reason ? (
+              <Text style={{ color: colors.textSoft }}>Cancel reason: {selected.cancellation_reason}</Text>
+            ) : null}
+            {selected.failure_reason ? (
+              <Text style={{ color: colors.textSoft }}>Failure reason: {selected.failure_reason}</Text>
             ) : null}
 
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <TouchableOpacity
-                onPress={() => setSelected(null)}
-                style={{
-                  flex: 1,
-                  backgroundColor: "#e5e7eb",
-                  padding: 12,
-                  borderRadius: 12,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ fontWeight: "700" }}>Close</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={onCancel}
-                disabled={cancelling || !selected || ["cancelled", "failed"].includes((selected.status ?? "").toLowerCase())}
-                style={{
-                  flex: 1,
-                  backgroundColor:
-                    !selected || ["cancelled", "failed"].includes((selected.status ?? "").toLowerCase())
-                      ? "#fca5a5"
-                      : "#dc2626",
-                  padding: 12,
-                  borderRadius: 12,
-                  alignItems: "center",
-                }}
-              >
-                {cancelling ? (
-                  <ActivityIndicator />
-                ) : (
-                  <Text style={{ color: "#fff", fontWeight: "800" }}>Cancel booking</Text>
-                )}
-              </TouchableOpacity>
+            <View style={{ gap: 8 }}>
+              <Text style={{ fontWeight: "700", color: colors.text }}>Cancel reason</Text>
+              <AppInput
+                value={cancelReason}
+                onChangeText={setCancelReason}
+                placeholder="user_requested"
+              />
             </View>
-          </View>
-        </View>
-      </Modal>
-    </SafeAreaView>
+
+            <ButtonRow>
+              <AppButton
+                label="Close"
+                onPress={() => setSelected(null)}
+                tone="secondary"
+                style={{ flex: 1 }}
+              />
+              <AppButton
+                label="Cancel booking"
+                onPress={onCancel}
+                tone="danger"
+                loading={cancelling}
+                disabled={cancelDisabled}
+                style={{ flex: 1 }}
+              />
+            </ButtonRow>
+          </>
+        ) : null}
+      </BottomSheet>
+    </>
   );
 }

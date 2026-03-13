@@ -45,7 +45,7 @@ export default function DataTable<T>({
                 colSpan={columns.length}
                 style={{
                   padding: "16px 12px",
-                  color: "#64748b",
+                  color: "var(--text-faint)",
                 }}
               >
                 {emptyText}

@@ -11,15 +11,16 @@ const styles = {
     display: "grid",
     placeItems: "center",
     padding: 24,
-    background: "radial-gradient(circle at top, rgba(37,99,235,0.08), transparent 30%), #f3f5f9",
+    background:
+      "radial-gradient(circle at top, color-mix(in srgb, var(--primary) 14%, transparent), transparent 30%), var(--bg)",
   } as const,
   card: {
     width: "100%",
     maxWidth: 460,
-    background: "#fff",
-    border: "1px solid #e2e8f0",
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
     borderRadius: 24,
-    boxShadow: "0 16px 40px rgba(15,23,42,0.08)",
+    boxShadow: "var(--shadow-md)",
     padding: 28,
   } as const,
 };
@@ -61,7 +62,7 @@ export default function LoginPage() {
               width: 44,
               height: 44,
               borderRadius: 14,
-              background: "#2563eb",
+              background: "var(--primary)",
               color: "#fff",
               display: "grid",
               placeItems: "center",
@@ -79,28 +80,29 @@ export default function LoginPage() {
               lineHeight: 1.1,
               fontWeight: 800,
               letterSpacing: "-0.03em",
+              color: "var(--text)",
             }}
           >
             Admin
           </h1>
 
-          <div style={{ marginTop: 8, color: "#64748b", fontSize: 14 }}>
+          <div style={{ marginTop: 8, color: "var(--text-soft)", fontSize: 14 }}>
             Sign in to the Smart back office.
           </div>
 
-          <div style={{ marginTop: 8, color: "#94a3b8", fontSize: 13 }}>
+          <div style={{ marginTop: 8, color: "var(--text-faint)", fontSize: 13 }}>
             API: {API_BASE_URL}
           </div>
         </div>
 
         <div style={{ display: "grid", gap: 14 }}>
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#334155" }}>Email</span>
+          <label className="app-label">
+            <span>Email</span>
             <input value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" />
           </label>
 
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#334155" }}>Password</span>
+          <label className="app-label">
+            <span>Password</span>
             <input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -109,19 +111,7 @@ export default function LoginPage() {
             />
           </label>
 
-          <button
-            onClick={onLogin}
-            style={{
-              marginTop: 4,
-              padding: "12px 14px",
-              borderRadius: 12,
-              background: "#2563eb",
-              color: "#fff",
-              fontWeight: 700,
-              cursor: "pointer",
-              boxShadow: "0 8px 20px rgba(37,99,235,0.18)",
-            }}
-          >
+          <button onClick={onLogin} className="app-button app-button-primary" style={{ marginTop: 4 }}>
             Login
           </button>
 
@@ -129,7 +119,7 @@ export default function LoginPage() {
             style={{
               minHeight: 22,
               fontSize: 13,
-              color: status.startsWith("Login failed") ? "#dc2626" : "#475569",
+              color: status.startsWith("Login failed") ? "var(--danger)" : "var(--text-soft)",
             }}
           >
             {status}
