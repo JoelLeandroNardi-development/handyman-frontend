@@ -7,9 +7,7 @@
   "paths": {
     "/health": {
       "get": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "Health",
         "operationId": "health_health_get",
         "responses": {
@@ -17,9 +15,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           }
@@ -28,9 +24,7 @@
     },
     "/system/health": {
       "get": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "System Health",
         "operationId": "system_health_system_health_get",
         "responses": {
@@ -38,9 +32,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           }
@@ -54,9 +46,7 @@
     },
     "/system/rabbit": {
       "get": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "System Rabbit",
         "operationId": "system_rabbit_system_rabbit_get",
         "responses": {
@@ -64,9 +54,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           }
@@ -80,9 +68,7 @@
     },
     "/system/outbox": {
       "get": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "System Outbox",
         "operationId": "system_outbox_system_outbox_get",
         "responses": {
@@ -90,9 +76,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           }
@@ -106,9 +90,7 @@
     },
     "/system/breakers": {
       "get": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "Breakers Status",
         "operationId": "breakers_status_system_breakers_get",
         "responses": {
@@ -116,9 +98,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           }
@@ -132,9 +112,7 @@
     },
     "/system/breakers/{name}/close": {
       "post": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "Breaker Close",
         "operationId": "breaker_close_system_breakers__name__close_post",
         "security": [
@@ -158,9 +136,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -179,9 +155,7 @@
     },
     "/system/breakers/{name}/open": {
       "post": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "Breaker Open",
         "operationId": "breaker_open_system_breakers__name__open_post",
         "security": [
@@ -205,9 +179,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -226,9 +198,7 @@
     },
     "/register": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Register",
         "operationId": "register_register_post",
         "requestBody": {
@@ -246,9 +216,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -267,9 +235,7 @@
     },
     "/login": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Login",
         "operationId": "login_login_post",
         "requestBody": {
@@ -308,9 +274,7 @@
     },
     "/auth-users": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Admin List Auth Users",
         "operationId": "admin_list_auth_users_auth_users_get",
         "security": [
@@ -373,9 +337,7 @@
     },
     "/auth-users/{user_id}": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Admin Get Auth User",
         "operationId": "admin_get_auth_user_auth_users__user_id__get",
         "security": [
@@ -418,9 +380,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Admin Update Auth User",
         "operationId": "admin_update_auth_user_auth_users__user_id__put",
         "security": [
@@ -473,9 +433,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Admin Delete Auth User",
         "operationId": "admin_delete_auth_user_auth_users__user_id__delete",
         "security": [
@@ -499,9 +457,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -520,9 +476,7 @@
     },
     "/auth-users/by-email/{email}": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Admin Get Auth User By Email",
         "operationId": "admin_get_auth_user_by_email_auth_users_by_email__email__get",
         "security": [
@@ -565,11 +519,126 @@
         }
       }
     },
+    "/onboarding/user": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Onboarding User",
+        "operationId": "onboarding_user_onboarding_user_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingUserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/onboarding/handyman": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Onboarding Handyman",
+        "operationId": "onboarding_handyman_onboarding_handyman_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingHandymanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingHandymanResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/onboarding/combined": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Onboarding Combined",
+        "operationId": "onboarding_combined_onboarding_combined_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingCombinedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingCombinedResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/me": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Get Me",
         "operationId": "get_me_me_get",
         "responses": {
@@ -591,9 +660,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Update Me",
         "operationId": "update_me_me_put",
         "requestBody": {
@@ -637,9 +704,7 @@
     },
     "/users": {
       "post": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Create User Endpoint",
         "operationId": "create_user_endpoint_users_post",
         "security": [
@@ -662,9 +727,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -681,9 +744,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Admin List Users",
         "operationId": "admin_list_users_users_get",
         "security": [
@@ -746,9 +807,7 @@
     },
     "/users/{email}/location": {
       "put": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Update User Location Endpoint",
         "operationId": "update_user_location_endpoint_users__email__location_put",
         "security": [
@@ -782,9 +841,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -803,9 +860,7 @@
     },
     "/users/{email}": {
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Get User Endpoint",
         "operationId": "get_user_endpoint_users__email__get",
         "security": [
@@ -829,9 +884,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -848,9 +901,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Admin Update User Endpoint",
         "operationId": "admin_update_user_endpoint_users__email__put",
         "security": [
@@ -903,9 +954,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Admin Delete User Endpoint",
         "operationId": "admin_delete_user_endpoint_users__email__delete",
         "security": [
@@ -929,9 +978,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -950,9 +997,7 @@
     },
     "/me/user": {
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Get Me User",
         "operationId": "get_me_user_me_user_get",
         "responses": {
@@ -976,9 +1021,7 @@
     },
     "/handymen": {
       "get": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "List Handymen Endpoint",
         "operationId": "list_handymen_endpoint_handymen_get",
         "security": [
@@ -1016,9 +1059,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1035,9 +1076,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Create Handyman Endpoint",
         "operationId": "create_handyman_endpoint_handymen_post",
         "security": [
@@ -1060,9 +1099,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1081,9 +1118,7 @@
     },
     "/handymen/{email}": {
       "get": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Get Handyman Endpoint",
         "operationId": "get_handyman_endpoint_handymen__email__get",
         "security": [
@@ -1107,9 +1142,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1126,9 +1159,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Admin Update Handyman Endpoint",
         "operationId": "admin_update_handyman_endpoint_handymen__email__put",
         "security": [
@@ -1181,9 +1212,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Admin Delete Handyman Endpoint",
         "operationId": "admin_delete_handyman_endpoint_handymen__email__delete",
         "security": [
@@ -1207,9 +1236,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1228,9 +1255,7 @@
     },
     "/handymen/{email}/location": {
       "put": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Update Handyman Location Endpoint",
         "operationId": "update_handyman_location_endpoint_handymen__email__location_put",
         "security": [
@@ -1264,9 +1289,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1285,9 +1308,7 @@
     },
     "/me/handyman": {
       "get": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Get Me Handyman",
         "operationId": "get_me_handyman_me_handyman_get",
         "responses": {
@@ -1309,9 +1330,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Update Me Handyman",
         "operationId": "update_me_handyman_me_handyman_put",
         "requestBody": {
@@ -1353,11 +1372,81 @@
         ]
       }
     },
+    "/handymen/{email}/reviews": {
+      "get": {
+        "tags": ["Handymen"],
+        "summary": "List Handyman Reviews Endpoint",
+        "operationId": "list_handyman_reviews_endpoint_handymen__email__reviews_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Email"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HandymanReviewResponse"
+                  },
+                  "title": "Response List Handyman Reviews Endpoint Handymen  Email  Reviews Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/skills-catalog": {
       "get": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Get Skills Catalog Endpoint",
         "operationId": "get_skills_catalog_endpoint_skills_catalog_get",
         "security": [
@@ -1382,9 +1471,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1403,9 +1490,7 @@
     },
     "/skills-catalog/flat": {
       "get": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Get Skills Catalog Flat Endpoint",
         "operationId": "get_skills_catalog_flat_endpoint_skills_catalog_flat_get",
         "security": [
@@ -1451,9 +1536,7 @@
     },
     "/admin/skills-catalog": {
       "put": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Replace Skills Catalog Endpoint",
         "operationId": "replace_skills_catalog_endpoint_admin_skills_catalog_put",
         "requestBody": {
@@ -1471,9 +1554,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1495,9 +1576,7 @@
         ]
       },
       "patch": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Patch Skills Catalog Endpoint",
         "operationId": "patch_skills_catalog_endpoint_admin_skills_catalog_patch",
         "requestBody": {
@@ -1515,9 +1594,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1541,9 +1618,7 @@
     },
     "/admin/handymen/invalid-skills": {
       "get": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Invalid Handymen Skills Endpoint",
         "operationId": "invalid_handymen_skills_endpoint_admin_handymen_invalid_skills_get",
         "responses": {
@@ -1567,9 +1642,7 @@
     },
     "/availability/{email}": {
       "post": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Set Availability Endpoint",
         "operationId": "set_availability_endpoint_availability__email__post",
         "security": [
@@ -1603,9 +1676,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1622,9 +1693,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Get Availability Endpoint",
         "operationId": "get_availability_endpoint_availability__email__get",
         "security": [
@@ -1648,9 +1717,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1667,9 +1734,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Clear Availability Endpoint",
         "operationId": "clear_availability_endpoint_availability__email__delete",
         "security": [
@@ -1693,9 +1758,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1714,9 +1777,7 @@
     },
     "/availability": {
       "get": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Admin List All Availability",
         "operationId": "admin_list_all_availability_availability_get",
         "security": [
@@ -1754,9 +1815,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1775,9 +1834,7 @@
     },
     "/me/availability": {
       "get": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Get My Availability",
         "operationId": "get_my_availability_me_availability_get",
         "responses": {
@@ -1785,9 +1842,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           }
@@ -1799,9 +1854,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Set My Availability",
         "operationId": "set_my_availability_me_availability_post",
         "requestBody": {
@@ -1819,9 +1872,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1843,9 +1894,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Clear My Availability",
         "operationId": "clear_my_availability_me_availability_delete",
         "responses": {
@@ -1853,9 +1902,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           }
@@ -1869,9 +1916,7 @@
     },
     "/match": {
       "post": {
-        "tags": [
-          "Match"
-        ],
+        "tags": ["Match"],
         "summary": "Match Endpoint",
         "operationId": "match_endpoint_match_post",
         "requestBody": {
@@ -1919,9 +1964,7 @@
     },
     "/match-logs": {
       "get": {
-        "tags": [
-          "Match"
-        ],
+        "tags": ["Match"],
         "summary": "Admin List Match Logs",
         "operationId": "admin_list_match_logs_match_logs_get",
         "security": [
@@ -1975,9 +2018,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -1996,9 +2037,7 @@
     },
     "/match-logs/{log_id}": {
       "delete": {
-        "tags": [
-          "Match"
-        ],
+        "tags": ["Match"],
         "summary": "Admin Delete Match Log",
         "operationId": "admin_delete_match_log_match_logs__log_id__delete",
         "security": [
@@ -2022,9 +2061,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -2043,9 +2080,7 @@
     },
     "/bookings": {
       "post": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Create Booking Endpoint",
         "operationId": "create_booking_endpoint_bookings_post",
         "security": [
@@ -2087,9 +2122,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Admin List Bookings",
         "operationId": "admin_list_bookings_bookings_get",
         "security": [
@@ -2175,9 +2208,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -2196,9 +2227,7 @@
     },
     "/bookings/{booking_id}": {
       "get": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Get Booking Endpoint",
         "operationId": "get_booking_endpoint_bookings__booking_id__get",
         "security": [
@@ -2241,9 +2270,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Admin Update Booking Endpoint",
         "operationId": "admin_update_booking_endpoint_bookings__booking_id__put",
         "security": [
@@ -2277,9 +2304,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -2296,9 +2321,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Admin Delete Booking Endpoint",
         "operationId": "admin_delete_booking_endpoint_bookings__booking_id__delete",
         "security": [
@@ -2322,9 +2345,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -2343,9 +2364,7 @@
     },
     "/bookings/{booking_id}/confirm": {
       "post": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Confirm Booking Endpoint",
         "operationId": "confirm_booking_endpoint_bookings__booking_id__confirm_post",
         "security": [
@@ -2390,9 +2409,7 @@
     },
     "/bookings/{booking_id}/cancel": {
       "post": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Cancel Booking Endpoint",
         "operationId": "cancel_booking_endpoint_bookings__booking_id__cancel_post",
         "security": [
@@ -2445,11 +2462,209 @@
         }
       }
     },
+    "/bookings/{booking_id}/complete/user": {
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "Complete Booking User Endpoint",
+        "operationId": "complete_booking_user_endpoint_bookings__booking_id__complete_user_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Booking Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteBookingResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/{booking_id}/complete/handyman": {
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "Complete Booking Handyman Endpoint",
+        "operationId": "complete_booking_handyman_endpoint_bookings__booking_id__complete_handyman_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Booking Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteBookingResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/{booking_id}/reject": {
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "Reject Booking Completion Endpoint",
+        "operationId": "reject_booking_completion_endpoint_bookings__booking_id__reject_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Booking Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectBookingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectBookingResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/{booking_id}/review": {
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "Create Booking Review Endpoint",
+        "operationId": "create_booking_review_endpoint_bookings__booking_id__review_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Booking Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHandymanReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HandymanReviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/me/bookings": {
       "get": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Get My Bookings",
         "operationId": "get_my_bookings_me_bookings_get",
         "security": [
@@ -2528,9 +2743,7 @@
     },
     "/me/jobs": {
       "get": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Get My Jobs",
         "operationId": "get_my_jobs_me_jobs_get",
         "security": [
@@ -2629,11 +2842,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "id",
-          "email",
-          "roles"
-        ],
+        "required": ["id", "email", "roles"],
         "title": "AuthUserResponse"
       },
       "AvailabilitySlot": {
@@ -2648,10 +2857,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "start",
-          "end"
-        ],
+        "required": ["start", "end"],
         "title": "AvailabilitySlot"
       },
       "BookingResponse": {
@@ -2681,6 +2887,55 @@
             "type": "string",
             "format": "date-time",
             "title": "Desired End"
+          },
+          "job_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Description"
+          },
+          "completed_by_user": {
+            "type": "boolean",
+            "title": "Completed By User",
+            "default": false
+          },
+          "completed_by_handyman": {
+            "type": "boolean",
+            "title": "Completed By Handyman",
+            "default": false
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "rejected_by_handyman": {
+            "type": "boolean",
+            "title": "Rejected By Handyman",
+            "default": false
+          },
+          "rejection_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection Reason"
           },
           "failure_reason": {
             "anyOf": [
@@ -2757,11 +3012,48 @@
           }
         },
         "type": "object",
+        "required": ["booking_id", "status"],
+        "title": "CancelBookingResponse"
+      },
+      "CompleteBookingResponse": {
+        "properties": {
+          "booking_id": {
+            "type": "string",
+            "title": "Booking Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "completed_by_user": {
+            "type": "boolean",
+            "title": "Completed By User"
+          },
+          "completed_by_handyman": {
+            "type": "boolean",
+            "title": "Completed By Handyman"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          }
+        },
+        "type": "object",
         "required": [
           "booking_id",
-          "status"
+          "status",
+          "completed_by_user",
+          "completed_by_handyman"
         ],
-        "title": "CancelBookingResponse"
+        "title": "CompleteBookingResponse"
       },
       "ConfirmBookingResponse": {
         "properties": {
@@ -2775,10 +3067,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "booking_id",
-          "status"
-        ],
+        "required": ["booking_id", "status"],
         "title": "ConfirmBookingResponse"
       },
       "CreateBookingRequest": {
@@ -2800,6 +3089,17 @@
             "type": "string",
             "format": "date-time",
             "title": "Desired End"
+          },
+          "job_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Description"
           }
         },
         "type": "object",
@@ -2816,6 +3116,94 @@
           "email": {
             "type": "string",
             "title": "Email"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "national_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "National Id"
+          },
+          "address_line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Line"
+          },
+          "postal_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postal Code"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
           },
           "skills": {
             "items": {
@@ -2864,13 +3252,38 @@
         ],
         "title": "CreateHandyman"
       },
+      "CreateHandymanReviewRequest": {
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "maximum": 5,
+            "minimum": 1,
+            "title": "Rating"
+          },
+          "review_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Text"
+          }
+        },
+        "type": "object",
+        "required": ["rating"],
+        "title": "CreateHandymanReviewRequest"
+      },
       "CreateUser": {
         "properties": {
           "email": {
             "type": "string",
             "title": "Email"
           },
-          "full_name": {
+          "first_name": {
             "anyOf": [
               {
                 "type": "string"
@@ -2879,7 +3292,84 @@
                 "type": "null"
               }
             ],
-            "title": "Full Name"
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "national_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "National Id"
+          },
+          "address_line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Line"
+          },
+          "postal_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postal Code"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
           },
           "latitude": {
             "anyOf": [
@@ -2905,9 +3395,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "title": "CreateUser"
       },
       "HTTPValidationError": {
@@ -2928,6 +3416,94 @@
           "email": {
             "type": "string",
             "title": "Email"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "national_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "National Id"
+          },
+          "address_line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Line"
+          },
+          "postal_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postal Code"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
           },
           "skills": {
             "items": {
@@ -2966,6 +3542,16 @@
             ],
             "title": "Longitude"
           },
+          "avg_rating": {
+            "type": "number",
+            "title": "Avg Rating",
+            "default": 0
+          },
+          "rating_count": {
+            "type": "integer",
+            "title": "Rating Count",
+            "default": 0
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -2981,6 +3567,56 @@
           "created_at"
         ],
         "title": "HandymanResponse"
+      },
+      "HandymanReviewResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "booking_id": {
+            "type": "string",
+            "title": "Booking Id"
+          },
+          "handyman_email": {
+            "type": "string",
+            "title": "Handyman Email"
+          },
+          "user_email": {
+            "type": "string",
+            "title": "User Email"
+          },
+          "rating": {
+            "type": "integer",
+            "title": "Rating"
+          },
+          "review_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Text"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "booking_id",
+          "handyman_email",
+          "user_email",
+          "rating",
+          "created_at"
+        ],
+        "title": "HandymanReviewResponse"
       },
       "InvalidHandymanSkillsItem": {
         "properties": {
@@ -3034,10 +3670,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "items",
-          "count"
-        ],
+        "required": ["items", "count"],
         "title": "InvalidHandymanSkillsResponse"
       },
       "Login": {
@@ -3052,10 +3685,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "title": "Login"
       },
       "MatchRequest": {
@@ -3071,6 +3701,17 @@
           "skill": {
             "type": "string",
             "title": "Skill"
+          },
+          "job_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Description"
           },
           "desired_start": {
             "type": "string",
@@ -3166,11 +3807,363 @@
           }
         },
         "type": "object",
+        "required": ["email", "roles"],
+        "title": "MeResponse"
+      },
+      "OnboardingCombinedRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Roles"
+          },
+          "user_profile": {
+            "$ref": "#/components/schemas/CreateUser"
+          },
+          "handyman_profile": {
+            "$ref": "#/components/schemas/CreateHandyman"
+          }
+        },
+        "type": "object",
+        "required": ["email", "password", "user_profile", "handyman_profile"],
+        "title": "OnboardingCombinedRequest"
+      },
+      "OnboardingCombinedResponse": {
+        "properties": {
+          "auth_user": {
+            "$ref": "#/components/schemas/AuthUserResponse"
+          },
+          "user_profile": {
+            "$ref": "#/components/schemas/UserResponse"
+          },
+          "handyman_profile": {
+            "$ref": "#/components/schemas/HandymanResponse"
+          }
+        },
+        "type": "object",
+        "required": ["auth_user", "user_profile", "handyman_profile"],
+        "title": "OnboardingCombinedResponse"
+      },
+      "OnboardingHandymanRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Roles"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "national_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "National Id"
+          },
+          "address_line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Line"
+          },
+          "postal_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postal Code"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "skills": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "years_experience": {
+            "type": "integer",
+            "title": "Years Experience"
+          },
+          "service_radius_km": {
+            "type": "integer",
+            "title": "Service Radius Km"
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latitude"
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longitude"
+          }
+        },
+        "type": "object",
         "required": [
           "email",
-          "roles"
+          "password",
+          "skills",
+          "years_experience",
+          "service_radius_km"
         ],
-        "title": "MeResponse"
+        "title": "OnboardingHandymanRequest"
+      },
+      "OnboardingHandymanResponse": {
+        "properties": {
+          "auth_user": {
+            "$ref": "#/components/schemas/AuthUserResponse"
+          },
+          "handyman_profile": {
+            "$ref": "#/components/schemas/HandymanResponse"
+          }
+        },
+        "type": "object",
+        "required": ["auth_user", "handyman_profile"],
+        "title": "OnboardingHandymanResponse"
+      },
+      "OnboardingUserRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Roles"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "national_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "National Id"
+          },
+          "address_line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Line"
+          },
+          "postal_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postal Code"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latitude"
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longitude"
+          }
+        },
+        "type": "object",
+        "required": ["email", "password"],
+        "title": "OnboardingUserRequest"
+      },
+      "OnboardingUserResponse": {
+        "properties": {
+          "auth_user": {
+            "$ref": "#/components/schemas/AuthUserResponse"
+          },
+          "user_profile": {
+            "$ref": "#/components/schemas/UserResponse"
+          }
+        },
+        "type": "object",
+        "required": ["auth_user", "user_profile"],
+        "title": "OnboardingUserResponse"
       },
       "Register": {
         "properties": {
@@ -3191,11 +4184,60 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "title": "Register"
+      },
+      "RejectBookingRequest": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": ["reason"],
+        "title": "RejectBookingRequest"
+      },
+      "RejectBookingResponse": {
+        "properties": {
+          "booking_id": {
+            "type": "string",
+            "title": "Booking Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "rejected_by_handyman": {
+            "type": "boolean",
+            "title": "Rejected By Handyman"
+          },
+          "rejection_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection Reason"
+          },
+          "completed_by_user": {
+            "type": "boolean",
+            "title": "Completed By User",
+            "default": false
+          },
+          "completed_by_handyman": {
+            "type": "boolean",
+            "title": "Completed By Handyman",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": ["booking_id", "status", "rejected_by_handyman"],
+        "title": "RejectBookingResponse"
       },
       "SetAvailability": {
         "properties": {
@@ -3208,9 +4250,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "slots"
-        ],
+        "required": ["slots"],
         "title": "SetAvailability"
       },
       "SkillCatalogCategoryItem": {
@@ -3240,13 +4280,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "key",
-          "label",
-          "active",
-          "sort_order",
-          "skills"
-        ],
+        "required": ["key", "label", "active", "sort_order", "skills"],
         "title": "SkillCatalogCategoryItem"
       },
       "SkillCatalogFlatResponse": {
@@ -3267,10 +4301,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "categories",
-          "allowed_skill_keys"
-        ],
+        "required": ["categories", "allowed_skill_keys"],
         "title": "SkillCatalogFlatResponse"
       },
       "SkillCatalogPatchRequest": {
@@ -3331,9 +4362,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "catalog"
-        ],
+        "required": ["catalog"],
         "title": "SkillCatalogReplaceRequest"
       },
       "SkillCatalogSkillItem": {
@@ -3356,12 +4385,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "key",
-          "label",
-          "active",
-          "sort_order"
-        ],
+        "required": ["key", "label", "active", "sort_order"],
         "title": "SkillCatalogSkillItem"
       },
       "TokenResponse": {
@@ -3372,9 +4396,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "access_token"
-        ],
+        "required": ["access_token"],
         "title": "TokenResponse"
       },
       "UpdateAuthUser": {
@@ -3443,6 +4465,17 @@
               }
             ],
             "title": "Cancellation Reason"
+          },
+          "job_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Description"
           }
         },
         "type": "object",
@@ -3450,6 +4483,94 @@
       },
       "UpdateHandyman": {
         "properties": {
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "national_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "National Id"
+          },
+          "address_line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Line"
+          },
+          "postal_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postal Code"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
           "skills": {
             "anyOf": [
               {
@@ -3524,15 +4645,12 @@
           }
         },
         "type": "object",
-        "required": [
-          "latitude",
-          "longitude"
-        ],
+        "required": ["latitude", "longitude"],
         "title": "UpdateHandymanLocation"
       },
       "UpdateUser": {
         "properties": {
-          "full_name": {
+          "first_name": {
             "anyOf": [
               {
                 "type": "string"
@@ -3541,7 +4659,84 @@
                 "type": "null"
               }
             ],
-            "title": "Full Name"
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "national_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "National Id"
+          },
+          "address_line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Line"
+          },
+          "postal_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postal Code"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
           },
           "latitude": {
             "anyOf": [
@@ -3581,10 +4776,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "latitude",
-          "longitude"
-        ],
+        "required": ["latitude", "longitude"],
         "title": "UpdateUserLocation"
       },
       "UserResponse": {
@@ -3593,7 +4785,7 @@
             "type": "string",
             "title": "Email"
           },
-          "full_name": {
+          "first_name": {
             "anyOf": [
               {
                 "type": "string"
@@ -3602,7 +4794,84 @@
                 "type": "null"
               }
             ],
-            "title": "Full Name"
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "national_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "National Id"
+          },
+          "address_line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Line"
+          },
+          "postal_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postal Code"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
           },
           "latitude": {
             "anyOf": [
@@ -3633,10 +4902,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "created_at"
-        ],
+        "required": ["email", "created_at"],
         "title": "UserResponse"
       },
       "ValidationError": {
@@ -3665,11 +4931,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
+        "required": ["loc", "msg", "type"],
         "title": "ValidationError"
       }
     },

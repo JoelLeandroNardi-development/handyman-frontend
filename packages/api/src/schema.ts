@@ -210,6 +210,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/onboarding/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Onboarding User */
+        post: operations["onboarding_user_onboarding_user_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/onboarding/handyman": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Onboarding Handyman */
+        post: operations["onboarding_handyman_onboarding_handyman_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/onboarding/combined": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Onboarding Combined */
+        post: operations["onboarding_combined_onboarding_combined_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/me": {
         parameters: {
             query?: never;
@@ -364,6 +415,23 @@ export interface paths {
         get: operations["get_me_handyman_me_handyman_get"];
         /** Update Me Handyman */
         put: operations["update_me_handyman_me_handyman_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/handymen/{email}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Handyman Reviews Endpoint */
+        get: operations["list_handyman_reviews_endpoint_handymen__email__reviews_get"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -617,6 +685,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bookings/{booking_id}/complete/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete Booking User Endpoint */
+        post: operations["complete_booking_user_endpoint_bookings__booking_id__complete_user_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{booking_id}/complete/handyman": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete Booking Handyman Endpoint */
+        post: operations["complete_booking_handyman_endpoint_bookings__booking_id__complete_handyman_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{booking_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject Booking Completion Endpoint */
+        post: operations["reject_booking_completion_endpoint_bookings__booking_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{booking_id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Booking Review Endpoint */
+        post: operations["create_booking_review_endpoint_bookings__booking_id__review_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/me/bookings": {
         parameters: {
             query?: never;
@@ -691,6 +827,27 @@ export interface components {
              * Format: date-time
              */
             desired_end: string;
+            /** Job Description */
+            job_description?: string | null;
+            /**
+             * Completed By User
+             * @default false
+             */
+            completed_by_user: boolean;
+            /**
+             * Completed By Handyman
+             * @default false
+             */
+            completed_by_handyman: boolean;
+            /** Completed At */
+            completed_at?: string | null;
+            /**
+             * Rejected By Handyman
+             * @default false
+             */
+            rejected_by_handyman: boolean;
+            /** Rejection Reason */
+            rejection_reason?: string | null;
             /** Failure Reason */
             failure_reason?: string | null;
             /** Cancellation Reason */
@@ -712,6 +869,19 @@ export interface components {
             status: string;
             /** Cancellation Reason */
             cancellation_reason?: string | null;
+        };
+        /** CompleteBookingResponse */
+        CompleteBookingResponse: {
+            /** Booking Id */
+            booking_id: string;
+            /** Status */
+            status: string;
+            /** Completed By User */
+            completed_by_user: boolean;
+            /** Completed By Handyman */
+            completed_by_handyman: boolean;
+            /** Completed At */
+            completed_at?: string | null;
         };
         /** ConfirmBookingResponse */
         ConfirmBookingResponse: {
@@ -736,11 +906,29 @@ export interface components {
              * Format: date-time
              */
             desired_end: string;
+            /** Job Description */
+            job_description?: string | null;
         };
         /** CreateHandyman */
         CreateHandyman: {
             /** Email */
             email: string;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** National Id */
+            national_id?: string | null;
+            /** Address Line */
+            address_line?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** City */
+            city?: string | null;
+            /** Country */
+            country?: string | null;
             /** Skills */
             skills: string[];
             /** Years Experience */
@@ -752,12 +940,33 @@ export interface components {
             /** Longitude */
             longitude?: number | null;
         };
+        /** CreateHandymanReviewRequest */
+        CreateHandymanReviewRequest: {
+            /** Rating */
+            rating: number;
+            /** Review Text */
+            review_text?: string | null;
+        };
         /** CreateUser */
         CreateUser: {
             /** Email */
             email: string;
-            /** Full Name */
-            full_name?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** National Id */
+            national_id?: string | null;
+            /** Address Line */
+            address_line?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** City */
+            city?: string | null;
+            /** Country */
+            country?: string | null;
             /** Latitude */
             latitude?: number | null;
             /** Longitude */
@@ -772,6 +981,22 @@ export interface components {
         HandymanResponse: {
             /** Email */
             email: string;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** National Id */
+            national_id?: string | null;
+            /** Address Line */
+            address_line?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** City */
+            city?: string | null;
+            /** Country */
+            country?: string | null;
             /** Skills */
             skills: string[];
             /** Years Experience */
@@ -782,6 +1007,36 @@ export interface components {
             latitude?: number | null;
             /** Longitude */
             longitude?: number | null;
+            /**
+             * Avg Rating
+             * @default 0
+             */
+            avg_rating: number;
+            /**
+             * Rating Count
+             * @default 0
+             */
+            rating_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** HandymanReviewResponse */
+        HandymanReviewResponse: {
+            /** Id */
+            id: number;
+            /** Booking Id */
+            booking_id: string;
+            /** Handyman Email */
+            handyman_email: string;
+            /** User Email */
+            user_email: string;
+            /** Rating */
+            rating: number;
+            /** Review Text */
+            review_text?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -821,6 +1076,8 @@ export interface components {
             longitude: number;
             /** Skill */
             skill: string;
+            /** Job Description */
+            job_description?: string | null;
             /**
              * Desired Start
              * Format: date-time
@@ -859,6 +1116,97 @@ export interface components {
             user_profile?: components["schemas"]["UserResponse"] | null;
             handyman_profile?: components["schemas"]["HandymanResponse"] | null;
         };
+        /** OnboardingCombinedRequest */
+        OnboardingCombinedRequest: {
+            /** Email */
+            email: string;
+            /** Password */
+            password: string;
+            /** Roles */
+            roles?: string[];
+            user_profile: components["schemas"]["CreateUser"];
+            handyman_profile: components["schemas"]["CreateHandyman"];
+        };
+        /** OnboardingCombinedResponse */
+        OnboardingCombinedResponse: {
+            auth_user: components["schemas"]["AuthUserResponse"];
+            user_profile: components["schemas"]["UserResponse"];
+            handyman_profile: components["schemas"]["HandymanResponse"];
+        };
+        /** OnboardingHandymanRequest */
+        OnboardingHandymanRequest: {
+            /** Email */
+            email: string;
+            /** Password */
+            password: string;
+            /** Roles */
+            roles?: string[];
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** National Id */
+            national_id?: string | null;
+            /** Address Line */
+            address_line?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** City */
+            city?: string | null;
+            /** Country */
+            country?: string | null;
+            /** Skills */
+            skills: string[];
+            /** Years Experience */
+            years_experience: number;
+            /** Service Radius Km */
+            service_radius_km: number;
+            /** Latitude */
+            latitude?: number | null;
+            /** Longitude */
+            longitude?: number | null;
+        };
+        /** OnboardingHandymanResponse */
+        OnboardingHandymanResponse: {
+            auth_user: components["schemas"]["AuthUserResponse"];
+            handyman_profile: components["schemas"]["HandymanResponse"];
+        };
+        /** OnboardingUserRequest */
+        OnboardingUserRequest: {
+            /** Email */
+            email: string;
+            /** Password */
+            password: string;
+            /** Roles */
+            roles?: string[];
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** National Id */
+            national_id?: string | null;
+            /** Address Line */
+            address_line?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** City */
+            city?: string | null;
+            /** Country */
+            country?: string | null;
+            /** Latitude */
+            latitude?: number | null;
+            /** Longitude */
+            longitude?: number | null;
+        };
+        /** OnboardingUserResponse */
+        OnboardingUserResponse: {
+            auth_user: components["schemas"]["AuthUserResponse"];
+            user_profile: components["schemas"]["UserResponse"];
+        };
         /** Register */
         Register: {
             /** Email */
@@ -867,6 +1215,32 @@ export interface components {
             password: string;
             /** Roles */
             roles?: string[];
+        };
+        /** RejectBookingRequest */
+        RejectBookingRequest: {
+            /** Reason */
+            reason: string;
+        };
+        /** RejectBookingResponse */
+        RejectBookingResponse: {
+            /** Booking Id */
+            booking_id: string;
+            /** Status */
+            status: string;
+            /** Rejected By Handyman */
+            rejected_by_handyman: boolean;
+            /** Rejection Reason */
+            rejection_reason?: string | null;
+            /**
+             * Completed By User
+             * @default false
+             */
+            completed_by_user: boolean;
+            /**
+             * Completed By Handyman
+             * @default false
+             */
+            completed_by_handyman: boolean;
         };
         /** SetAvailability */
         SetAvailability: {
@@ -946,9 +1320,27 @@ export interface components {
             failure_reason?: string | null;
             /** Cancellation Reason */
             cancellation_reason?: string | null;
+            /** Job Description */
+            job_description?: string | null;
         };
         /** UpdateHandyman */
         UpdateHandyman: {
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** National Id */
+            national_id?: string | null;
+            /** Address Line */
+            address_line?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** City */
+            city?: string | null;
+            /** Country */
+            country?: string | null;
             /** Skills */
             skills?: string[] | null;
             /** Years Experience */
@@ -969,8 +1361,22 @@ export interface components {
         };
         /** UpdateUser */
         UpdateUser: {
-            /** Full Name */
-            full_name?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** National Id */
+            national_id?: string | null;
+            /** Address Line */
+            address_line?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** City */
+            city?: string | null;
+            /** Country */
+            country?: string | null;
             /** Latitude */
             latitude?: number | null;
             /** Longitude */
@@ -987,8 +1393,22 @@ export interface components {
         UserResponse: {
             /** Email */
             email: string;
-            /** Full Name */
-            full_name?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** National Id */
+            national_id?: string | null;
+            /** Address Line */
+            address_line?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** City */
+            city?: string | null;
+            /** Country */
+            country?: string | null;
             /** Latitude */
             latitude?: number | null;
             /** Longitude */
@@ -1392,6 +1812,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthUserResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    onboarding_user_onboarding_user_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OnboardingUserRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnboardingUserResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    onboarding_handyman_onboarding_handyman_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OnboardingHandymanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnboardingHandymanResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    onboarding_combined_onboarding_combined_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OnboardingCombinedRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnboardingCombinedResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1912,6 +2431,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HandymanResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_handyman_reviews_endpoint_handymen__email__reviews_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                email: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HandymanReviewResponse"][];
                 };
             };
             /** @description Validation Error */
@@ -2590,6 +3143,138 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CancelBookingResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    complete_booking_user_endpoint_bookings__booking_id__complete_user_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompleteBookingResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    complete_booking_handyman_endpoint_bookings__booking_id__complete_handyman_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompleteBookingResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reject_booking_completion_endpoint_bookings__booking_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectBookingRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectBookingResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_booking_review_endpoint_bookings__booking_id__review_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateHandymanReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HandymanReviewResponse"];
                 };
             };
             /** @description Validation Error */
