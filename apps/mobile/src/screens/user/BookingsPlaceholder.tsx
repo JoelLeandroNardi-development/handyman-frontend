@@ -48,6 +48,16 @@ function canReviewBooking(booking: BookingResponse) {
   return status === BOOKING_STATUS_NORMALIZED.COMPLETED || (!!booking.completed_by_user && !!booking.completed_by_handyman);
 }
 
+function groupBookingsByStatus(bookings: BookingResponse[]) {
+  return {
+    Pending: bookings.filter((b) => isPendingLikeBookingStatus(b.status)),
+    Confirmed: bookings.filter((b) => normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.CONFIRMED),
+    Completed: bookings.filter((b) => normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.COMPLETED),
+    Cancelled: bookings.filter((b) => normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.CANCELLED),
+    Failed: bookings.filter((b) => normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.FAILED),
+  };
+}
+
 function StarRating({
   value,
   onChange,
@@ -187,7 +197,7 @@ export default function BookingsPlaceholder() {
       setReviewRating(5);
       setReviewComment("");
       loadBookings(async () => {
-        const data = await getMyBookings(api, { limit: 100, offset: 0 });
+        const data = await getMyBookings(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
         setBookings(data);
       });
     },
@@ -212,13 +222,7 @@ export default function BookingsPlaceholder() {
     });
   };
 
-  const grouped = {
-    Pending: bookings.filter((b) => isPendingLikeBookingStatus(b.status)),
-    Confirmed: bookings.filter((b) => normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.CONFIRMED),
-    Completed: bookings.filter((b) => normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.COMPLETED),
-    Cancelled: bookings.filter((b) => normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.CANCELLED),
-    Failed: bookings.filter((b) => normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.FAILED),
-  };
+  const grouped = groupBookingsByStatus(bookings);
 
   function renderCard(item: BookingResponse) {
     return (
