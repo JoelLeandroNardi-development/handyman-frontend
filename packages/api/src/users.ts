@@ -1,5 +1,6 @@
 import type { components } from "./schema";
 import { ApiClient } from "./client";
+import { buildQueryString } from "./utils/queryBuilder";
 
 export type CreateUser = components["schemas"]["CreateUser"];
 export type UpdateUser = components["schemas"]["UpdateUser"];
@@ -14,10 +15,7 @@ export async function adminListUsers(
   api: ApiClient,
   params?: { limit?: number; offset?: number }
 ): Promise<UserResponse[]> {
-  const qs = new URLSearchParams();
-  if (params?.limit != null) qs.set("limit", String(params.limit));
-  if (params?.offset != null) qs.set("offset", String(params.offset));
-  const suffix = qs.toString() ? `?${qs}` : "";
+  const suffix = buildQueryString(params || {});
   return api.request<UserResponse[]>(`/users${suffix}`, { method: "GET" });
 }
 

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { breakersStatus, systemHealth } from "@smart/api";
+import { SYSTEM_STATUS } from "@smart/core";
 import { createApiClient } from "../lib/api";
 import Badge from "../ui/Badge";
 import Card from "../ui/Card";
@@ -117,8 +118,8 @@ export default function OverviewPage() {
   const services = Array.isArray(healthData.services) ? healthData.services : [];
   const breakers = Array.isArray(breakersData.breakers) ? breakersData.breakers : [];
 
-  const servicesUp = services.filter((service) => (service.status ?? "").toLowerCase() === "up").length;
-  const servicesDown = services.filter((service) => (service.status ?? "").toLowerCase() !== "up").length;
+  const servicesUp = services.filter((service) => (service.status ?? "").toLowerCase() === SYSTEM_STATUS.UP).length;
+  const servicesDown = services.filter((service) => (service.status ?? "").toLowerCase() !== SYSTEM_STATUS.UP).length;
   const pendingOutbox = getPendingOutboxCount(services);
   const processingOutbox = getProcessingOutboxCount(services);
   const openBreakers = getOpenBreakersCount(breakers);

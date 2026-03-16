@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { adminDeleteMatchLog, adminListMatchLogs } from "@smart/api";
+import { PAGINATION_DEFAULTS } from "@smart/core";
 import { createApiClient } from "../lib/api";
 import Card from "../ui/Card";
 import Page from "../ui/Page";
@@ -37,8 +38,8 @@ export default function MatchLogsPage() {
     queryKey: ["match-logs", skill],
     queryFn: () =>
       adminListMatchLogs(api, {
-        limit: 100,
-        offset: 0,
+        limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
+        offset: PAGINATION_DEFAULTS.OFFSET,
         skill: skill || undefined,
       }),
   });

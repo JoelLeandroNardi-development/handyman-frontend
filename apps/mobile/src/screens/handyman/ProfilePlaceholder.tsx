@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Text,
   View,
 } from "react-native";
@@ -17,6 +16,7 @@ import {
 import { createApiClient } from "../../lib/api";
 import { useTheme } from "../../theme";
 import { useSession } from "../../auth/SessionProvider";
+import { useAsyncOperation } from "../../hooks/useAsyncOperation";
 import {
   AppButton,
   AppInput,
@@ -35,56 +35,55 @@ export default function ProfilePlaceholder() {
   const { colors } = useTheme();
   const { session, availableRoles, pickRole, roleMode, logout, refresh } = useSession();
 
-  const [loadingCatalog, setLoadingCatalog] = useState(false);
-  const [loadingProfile, setLoadingProfile] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [locating, setLocating] = useState(false);
+  const [catalog, setCatalog] = React.useState<SkillCatalogFlatResponse | null>(null);
+  const [profile, setProfile] = React.useState<HandymanResponse | null>(null);
 
-  const [catalog, setCatalog] = useState<SkillCatalogFlatResponse | null>(null);
-  const [profile, setProfile] = useState<HandymanResponse | null>(null);
+  const [selectedSkills, setSelectedSkills] = React.useState<string[]>([]);
+  const [yearsExperience, setYearsExperience] = React.useState("");
+  const [serviceRadiusKm, setServiceRadiusKm] = React.useState(0);
+  const [latitude, setLatitude] = React.useState("");
+  const [longitude, setLongitude] = React.useState("");
 
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [yearsExperience, setYearsExperience] = useState("");
-  const [serviceRadiusKm, setServiceRadiusKm] = useState(0);
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+  const { execute: loadCatalog, loading: loadingCatalog } = useAsyncOperation({
+    alertTitle: "Load Skills Catalog",
+  });
+
+  const { execute: loadProfile, loading: loadingProfile } = useAsyncOperation({
+    alertTitle: "Load Profile",
+  });
+
+  const { execute: handleLocationUpdate, loading: locating } = useAsyncOperation({
+    alertTitle: "Get Current Location",
+  });
+
+  const { execute: handleProfileSave, loading: saving } = useAsyncOperation({
+    alertTitle: "Save Profile",
+    onSuccess: () => {
+      refresh();
+    },
+  });
+
+  async function loadAll() {
+    await Promise.all([
+      loadCatalog(async () => {
+        const data = await getSkillsCatalogFlat(api, { active_only: true });
+        setCatalog(data);
+      }),
+      loadProfile(async () => {
+        const data = await getMeHandyman(api);
+        setProfile(data);
+        setSelectedSkills(data.skills ?? []);
+        setYearsExperience(String(data.years_experience ?? ""));
+        setServiceRadiusKm(typeof data.service_radius_km === "number" ? data.service_radius_km : 0);
+        setLatitude(data.latitude != null ? String(data.latitude) : "");
+        setLongitude(data.longitude != null ? String(data.longitude) : "");
+      }),
+    ]);
+  }
 
   useEffect(() => {
     void loadAll();
   }, []);
-
-  async function loadAll() {
-    await Promise.all([loadCatalog(), loadProfile()]);
-  }
-
-  async function loadCatalog() {
-    setLoadingCatalog(true);
-    try {
-      const data = await getSkillsCatalogFlat(api, { active_only: true });
-      setCatalog(data);
-    } catch (e) {
-      Alert.alert("Failed to load skills catalog", (e as Error).message);
-    } finally {
-      setLoadingCatalog(false);
-    }
-  }
-
-  async function loadProfile() {
-    setLoadingProfile(true);
-    try {
-      const data = await getMeHandyman(api);
-      setProfile(data);
-      setSelectedSkills(data.skills ?? []);
-      setYearsExperience(String(data.years_experience ?? ""));
-      setServiceRadiusKm(typeof data.service_radius_km === "number" ? data.service_radius_km : 0);
-      setLatitude(data.latitude != null ? String(data.latitude) : "");
-      setLongitude(data.longitude != null ? String(data.longitude) : "");
-    } catch (e) {
-      Alert.alert("Failed to load handyman profile", (e as Error).message);
-    } finally {
-      setLoadingProfile(false);
-    }
-  }
 
   function toggleSkill(skillKey: string) {
     setSelectedSkills((prev) =>
@@ -93,37 +92,27 @@ export default function ProfilePlaceholder() {
   }
 
   async function useCurrentLocation() {
-    setLocating(true);
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert("Location permission", "Permission denied.");
-        return;
-      }
-
-      const pos = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-
-      setLatitude(String(pos.coords.latitude));
-      setLongitude(String(pos.coords.longitude));
-    } catch (e) {
-      Alert.alert("Location error", (e as Error).message);
-    } finally {
-      setLocating(false);
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      throw new Error("Location permission denied.");
     }
+
+    const pos = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced,
+    });
+
+    setLatitude(String(pos.coords.latitude));
+    setLongitude(String(pos.coords.longitude));
   }
 
   async function saveProfile() {
     if (!profile) {
-      Alert.alert("Missing profile", "Could not load your handyman profile.");
-      return;
+      throw new Error("Could not load your handyman profile.");
     }
 
     const parsedYears = Number.parseInt(yearsExperience, 10);
     if (Number.isNaN(parsedYears) || parsedYears < 0) {
-      Alert.alert("Invalid years of experience", "Please enter a valid integer.");
-      return;
+      throw new Error("Please enter a valid integer for years of experience.");
     }
 
     let parsedLatitude: number | null = null;
@@ -132,48 +121,35 @@ export default function ProfilePlaceholder() {
     if (latitude.trim() !== "") {
       parsedLatitude = Number.parseFloat(latitude);
       if (Number.isNaN(parsedLatitude)) {
-        Alert.alert("Invalid latitude", "Latitude must be a valid number.");
-        return;
+        throw new Error("Latitude must be a valid number.");
       }
     }
 
     if (longitude.trim() !== "") {
       parsedLongitude = Number.parseFloat(longitude);
       if (Number.isNaN(parsedLongitude)) {
-        Alert.alert("Invalid longitude", "Longitude must be a valid number.");
-        return;
+        throw new Error("Longitude must be a valid number.");
       }
     }
 
     if ((parsedLatitude === null) !== (parsedLongitude === null)) {
-      Alert.alert("Invalid location", "Latitude and longitude must both be set or both be empty.");
-      return;
+      throw new Error("Latitude and longitude must both be set or both be empty.");
     }
 
-    setSaving(true);
-    try {
-      const updated = await updateMeHandyman(api, {
-        skills: selectedSkills,
-        years_experience: parsedYears,
-        service_radius_km: Math.round(serviceRadiusKm),
-        latitude: parsedLatitude,
-        longitude: parsedLongitude,
-      });
+    const updated = await updateMeHandyman(api, {
+      skills: selectedSkills,
+      years_experience: parsedYears,
+      service_radius_km: Math.round(serviceRadiusKm),
+      latitude: parsedLatitude,
+      longitude: parsedLongitude,
+    });
 
-      setProfile(updated);
-      setSelectedSkills(updated.skills ?? []);
-      setYearsExperience(String(updated.years_experience ?? ""));
-      setServiceRadiusKm(typeof updated.service_radius_km === "number" ? updated.service_radius_km : 0);
-      setLatitude(updated.latitude != null ? String(updated.latitude) : "");
-      setLongitude(updated.longitude != null ? String(updated.longitude) : "");
-
-      await refresh();
-      Alert.alert("Profile updated", "Your profile was saved.");
-    } catch (e) {
-      Alert.alert("Save failed", (e as Error).message);
-    } finally {
-      setSaving(false);
-    }
+    setProfile(updated);
+    setSelectedSkills(updated.skills ?? []);
+    setYearsExperience(String(updated.years_experience ?? ""));
+    setServiceRadiusKm(typeof updated.service_radius_km === "number" ? updated.service_radius_km : 0);
+    setLatitude(updated.latitude != null ? String(updated.latitude) : "");
+    setLongitude(updated.longitude != null ? String(updated.longitude) : "");
   }
 
   const loading = loadingCatalog || loadingProfile;
@@ -249,7 +225,7 @@ export default function ProfilePlaceholder() {
               </ButtonRow>
               <AppButton
                 label="Use current location"
-                onPress={useCurrentLocation}
+                onPress={() => handleLocationUpdate(useCurrentLocation)}
                 loading={locating}
               />
             </View>
@@ -292,7 +268,7 @@ export default function ProfilePlaceholder() {
 
             <AppButton
               label="Save profile"
-              onPress={saveProfile}
+              onPress={() => handleProfileSave(saveProfile)}
               loading={saving}
               disabled={loading || !profile}
             />

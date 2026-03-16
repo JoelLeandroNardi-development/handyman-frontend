@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { systemHealth, systemOutbox, systemRabbit } from "@smart/api";
+import { SYSTEM_STATUS } from "@smart/core";
 import { createApiClient } from "../lib/api";
 import Badge from "../ui/Badge";
 import Card from "../ui/Card";
@@ -44,8 +45,8 @@ export default function SystemHealthPage() {
   const rabbitRows = normalizeRabbitRows(rabbitData);
   const outboxRows = normalizeOutboxRows(outboxData);
 
-  const servicesUp = healthRows.filter((row) => (row.status ?? "").toLowerCase() === "up").length;
-  const servicesDown = healthRows.filter((row) => (row.status ?? "").toLowerCase() !== "up").length;
+  const servicesUp = healthRows.filter((row) => (row.status ?? "").toLowerCase() === SYSTEM_STATUS.UP).length;
+  const servicesDown = healthRows.filter((row) => (row.status ?? "").toLowerCase() !== SYSTEM_STATUS.UP).length;
 
   const rabbitConnected = rabbitRows.filter((row) => row.data?.connected === true).length;
 

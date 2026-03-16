@@ -8,6 +8,7 @@ import {
   confirmBooking,
   getBooking,
 } from "@smart/api";
+import { BOOKING_STATUS, PAGINATION_DEFAULTS } from "@smart/core";
 import { createApiClient } from "../lib/api";
 import { formatDateTime, getStatusTone } from "../lib/adminFormat";
 import Badge from "../ui/Badge";
@@ -27,7 +28,7 @@ type AnyBooking = {
   cancellation_reason?: string | null;
 };
 
-const STATUS_OPTIONS = ["", "PENDING", "CONFIRMED", "FAILED", "CANCELLED"];
+const STATUS_OPTIONS = ["", BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.FAILED, BOOKING_STATUS.CANCELLED];
 
 export default function BookingsPage() {
   const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
@@ -46,8 +47,8 @@ export default function BookingsPage() {
     queryKey: ["admin-bookings", status, userEmail, handymanEmail],
     queryFn: () =>
       adminListBookings(api, {
-        limit: 50,
-        offset: 0,
+        limit: PAGINATION_DEFAULTS.LIMIT_SMALL,
+        offset: PAGINATION_DEFAULTS.OFFSET,
         status: status || undefined,
         user_email: userEmail || undefined,
         handyman_email: handymanEmail || undefined,

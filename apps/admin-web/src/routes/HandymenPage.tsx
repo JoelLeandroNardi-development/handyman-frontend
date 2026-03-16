@@ -8,6 +8,7 @@ import {
   listHandymen,
   type HandymanResponse,
 } from "@smart/api";
+import { PAGINATION_DEFAULTS } from "@smart/core";
 import { createApiClient } from "../lib/api";
 import { formatDateTime } from "../lib/adminFormat";
 import Card from "../ui/Card";
@@ -50,7 +51,7 @@ export default function HandymenPage() {
 
   const listQ = useQuery({
     queryKey: ["admin-handymen"],
-    queryFn: () => listHandymen(api, { limit: 200, offset: 0 }),
+    queryFn: () => listHandymen(api, { limit: PAGINATION_DEFAULTS.LIMIT_LARGE, offset: PAGINATION_DEFAULTS.OFFSET }),
   });
 
   const detailQ = useQuery({

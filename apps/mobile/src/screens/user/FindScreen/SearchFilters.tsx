@@ -1,0 +1,251 @@
+import React, { useState } from "react";
+import { Alert, Text, View } from "react-native";
+import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import * as Location from "expo-location";
+import { getSkillsCatalogFlat, type SkillCatalogFlatResponse } from "@smart/api";
+import {
+  combineDateAndTime,
+  formatDateLabel,
+  formatTimeLabel,
+} from "../../../lib/dateTime";
+import { useTheme } from "../../../theme";
+import {
+  AppButton,
+  AppInput,
+  ButtonRow,
+  Card,
+  InputButton,
+  Label,
+} from "../../../ui/primitives";
+import { flattenSkills, type Coords, type SkillOption } from "./utils";
+
+type PickerTarget = "date" | "start" | "end" | null;
+
+export interface SearchFiltersProps {
+  api: any;
+  catalog: SkillCatalogFlatResponse | null;
+  selectedSkillKey: string;
+  selectedDate: Date;
+  startTime: Date;
+  endTime: Date;
+  jobDescription: string;
+  userCoords: Coords | null;
+  loadingLocation: boolean;
+  loadingMatch: boolean;
+  bookingSuccess: string | null;
+  
+  onCatalogLoaded: (catalog: SkillCatalogFlatResponse) => void;
+  onSkillKeySelected: (skillKey: string) => void;
+  onDateChanged: (date: Date) => void;
+  onStartTimeChanged: (time: Date) => void;
+  onEndTimeChanged: (time: Date) => void;
+  onJobDescriptionChanged: (desc: string) => void;
+  onLocationReceived: (coords: Coords) => void;
+  onMatch: () => void;
+  onSkillModalOpen: () => void;
+}
+
+export function SearchFilters({
+  api,
+  catalog,
+  selectedSkillKey,
+  selectedDate,
+  startTime,
+  endTime,
+  jobDescription,
+  userCoords,
+  loadingLocation,
+  loadingMatch,
+  bookingSuccess,
+  onCatalogLoaded,
+  onSkillKeySelected,
+  onDateChanged,
+  onStartTimeChanged,
+  onEndTimeChanged,
+  onJobDescriptionChanged,
+  onLocationReceived,
+  onMatch,
+  onSkillModalOpen,
+}: SearchFiltersProps) {
+  const { colors } = useTheme();
+  const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
+
+  const desiredStartDate = combineDateAndTime(selectedDate, startTime);
+  const desiredEndDate = combineDateAndTime(selectedDate, endTime);
+  const skillOptions = flattenSkills(catalog);
+  const selectedSkill = skillOptions.find((s) => s.key === selectedSkillKey) ?? null;
+
+  async function loadCatalog() {
+    try {
+      const data = await getSkillsCatalogFlat(api, { active_only: true });
+      onCatalogLoaded(data);
+
+      if (!selectedSkillKey && data.allowed_skill_keys.length > 0) {
+        onSkillKeySelected(data.allowed_skill_keys[0]);
+      }
+    } catch (e) {
+      Alert.alert("Could not load skills", (e as Error).message);
+    }
+  }
+
+  React.useEffect(() => {
+    void loadCatalog();
+  }, []);
+
+  async function handleGetLocation() {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Location permission", "Permission denied.");
+        return;
+      }
+
+      const pos = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      onLocationReceived({
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+      });
+    } catch (e) {
+      Alert.alert("Location error", (e as Error).message);
+    }
+  }
+
+  function onPickerChange(event: DateTimePickerEvent, value?: Date) {
+    if (event.type === "dismissed" || !value) {
+      setPickerTarget(null);
+      return;
+    }
+
+    if (pickerTarget === "date") onDateChanged(value);
+    if (pickerTarget === "start") onStartTimeChanged(value);
+    if (pickerTarget === "end") onEndTimeChanged(value);
+
+    setPickerTarget(null);
+  }
+
+  function handleMatch() {
+    if (!userCoords) {
+      Alert.alert("Location required", 'Tap "Use my location" first.');
+      return;
+    }
+    if (!selectedSkillKey) {
+      Alert.alert("Missing skill", "Please choose a skill.");
+      return;
+    }
+    if (desiredEndDate <= desiredStartDate) {
+      Alert.alert("Invalid time range", "End time must be after start time.");
+      return;
+    }
+
+    onMatch();
+  }
+
+  return (
+    <>
+      {pickerTarget ? (
+        <DateTimePicker
+          value={pickerTarget === "date" ? selectedDate : pickerTarget === "start" ? startTime : endTime}
+          mode={pickerTarget === "date" ? "date" : "time"}
+          is24Hour
+          onChange={onPickerChange}
+        />
+      ) : null}
+
+      <Card>
+        <View style={{ gap: 8 }}>
+          <Label>Search (prototype)</Label>
+          <AppInput
+            placeholder="Search by name, city, or skill..."
+          />
+        </View>
+
+        <View style={{ gap: 8 }}>
+          <Label>Skill</Label>
+          <InputButton
+            label={
+              !catalog
+                ? "Loading skills..."
+                : selectedSkill
+                  ? `${selectedSkill.categoryLabel} • ${selectedSkill.label}`
+                  : "Choose a skill"
+            }
+            onPress={onSkillModalOpen}
+          />
+        </View>
+
+        <View style={{ gap: 8 }}>
+          <Label>Job description</Label>
+          <AppInput
+            value={jobDescription}
+            onChangeText={onJobDescriptionChanged}
+            placeholder="Describe what needs to be fixed..."
+          />
+        </View>
+
+        <View style={{ gap: 8 }}>
+          <Label>Date</Label>
+          <InputButton label={formatDateLabel(selectedDate)} onPress={() => setPickerTarget("date")} />
+        </View>
+
+        <ButtonRow>
+          <View style={{ flex: 1, gap: 8 }}>
+            <Label>Start</Label>
+            <InputButton label={formatTimeLabel(startTime)} onPress={() => setPickerTarget("start")} />
+          </View>
+
+          <View style={{ flex: 1, gap: 8 }}>
+            <Label>End</Label>
+            <InputButton label={formatTimeLabel(endTime)} onPress={() => setPickerTarget("end")} />
+          </View>
+        </ButtonRow>
+
+        <View
+          style={{
+            backgroundColor: colors.surfaceMuted,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: colors.border,
+            padding: 12,
+          }}
+        >
+          <Text style={{ color: colors.textSoft }}>
+            Requested window: {desiredStartDate.toLocaleString()} → {desiredEndDate.toLocaleString()}
+          </Text>
+        </View>
+
+        <ButtonRow>
+          <AppButton
+            label={userCoords ? "Update location" : "Use my location"}
+            onPress={handleGetLocation}
+            loading={loadingLocation}
+            style={{ flex: 1 }}
+          />
+          <AppButton
+            label="Match"
+            onPress={handleMatch}
+            loading={loadingMatch}
+            disabled={!userCoords || !selectedSkillKey}
+            style={{ flex: 1 }}
+          />
+        </ButtonRow>
+
+        {bookingSuccess ? (
+          <View
+            style={{
+              backgroundColor: colors.successSoft,
+              borderColor: colors.success,
+              borderWidth: 1,
+              borderRadius: 16,
+              padding: 12,
+            }}
+          >
+            <Text style={{ color: colors.success, fontWeight: "700" }}>{bookingSuccess}</Text>
+          </View>
+        ) : null}
+      </Card>
+    </>
+  );
+}

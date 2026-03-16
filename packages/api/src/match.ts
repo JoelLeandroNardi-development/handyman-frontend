@@ -1,5 +1,6 @@
 import type { components } from "./schema";
 import { ApiClient } from "./client";
+import { buildQueryString } from "./utils/queryBuilder";
 
 export type MatchRequest = components["schemas"]["MatchRequest"];
 export type MatchResult = components["schemas"]["MatchResult"];
@@ -15,14 +16,7 @@ export async function adminListMatchLogs(
   api: ApiClient,
   params?: { limit?: number; offset?: number; skill?: string }
 ): Promise<unknown> {
-  const qs = new URLSearchParams();
-
-  if (params?.limit != null) qs.set("limit", String(params.limit));
-  if (params?.offset != null) qs.set("offset", String(params.offset));
-  if (params?.skill) qs.set("skill", params.skill);
-
-  const suffix = qs.toString() ? `?${qs}` : "";
-
+  const suffix = buildQueryString(params || {});
   return api.request(`/match-logs${suffix}`, {
     method: "GET",
   });

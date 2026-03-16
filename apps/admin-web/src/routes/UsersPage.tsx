@@ -8,6 +8,7 @@ import {
   getUser,
   type UserResponse,
 } from "@smart/api";
+import { PAGINATION_DEFAULTS } from "@smart/core";
 import { createApiClient } from "../lib/api";
 import { formatDateTime } from "../lib/adminFormat";
 import Card from "../ui/Card";
@@ -39,7 +40,7 @@ export default function UsersPage() {
 
   const listQ = useQuery({
     queryKey: ["admin-users"],
-    queryFn: () => adminListUsers(api, { limit: 200, offset: 0 }),
+    queryFn: () => adminListUsers(api, { limit: PAGINATION_DEFAULTS.LIMIT_LARGE, offset: PAGINATION_DEFAULTS.OFFSET }),
   });
 
   const detailQ = useQuery({

@@ -1,5 +1,6 @@
 import { ApiClient } from './client';
 import type { components } from './schema';
+import { buildQueryString } from './utils/queryBuilder';
 
 export type BookingResponse = components['schemas']['BookingResponse'];
 export type CreateBookingRequest =
@@ -45,14 +46,7 @@ export async function adminListBookings(
     handyman_email?: string | null;
   },
 ): Promise<BookingResponse[]> {
-  const qs = new URLSearchParams();
-  if (params?.limit != null) qs.set('limit', String(params.limit));
-  if (params?.offset != null) qs.set('offset', String(params.offset));
-  if (params?.status) qs.set('status', params.status);
-  if (params?.user_email) qs.set('user_email', params.user_email);
-  if (params?.handyman_email) qs.set('handyman_email', params.handyman_email);
-
-  const suffix = qs.toString() ? `?${qs.toString()}` : '';
+  const suffix = buildQueryString(params || {});
   return api.request<BookingResponse[]>(`/bookings${suffix}`, {
     method: 'GET',
   });

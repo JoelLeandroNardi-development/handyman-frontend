@@ -7,5 +7,6 @@ export * from "./users";
 export * from "./handymen";
 export * from "./availability";
 export * from "./skills";
+export * from "./utils/queryBuilder";
 
 export type { paths, components } from "./schema";

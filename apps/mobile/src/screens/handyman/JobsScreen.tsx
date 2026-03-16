@@ -7,12 +7,16 @@ import {
   View,
 } from "react-native";
 import {
-  cancelBooking,
+  completeBookingHandyman,
   confirmBooking,
   getMyJobs,
+  rejectBookingCompletion,
   type BookingResponse,
 } from "@smart/api";
+import { useAsyncOperation } from "../../hooks/useAsyncOperation";
 import {
+  BOOKING_STATUS_NORMALIZED,
+  PAGINATION_DEFAULTS,
   getBookingDisplayStatus,
   getBookingStatusTone,
   isIncomingLikeBookingStatus,
@@ -35,74 +39,137 @@ import {
 } from "../../ui/primitives";
 import { useTheme } from "../../theme";
 
+function canRejectJob(booking: BookingResponse) {
+  const status = normalizeBookingStatus(booking.status);
+  return (
+    (status === BOOKING_STATUS_NORMALIZED.PENDING ||
+      status === BOOKING_STATUS_NORMALIZED.RESERVED ||
+      status === BOOKING_STATUS_NORMALIZED.CONFIRMED) &&
+    !booking.rejected_by_handyman
+  );
+}
+
+function canCompleteJob(booking: BookingResponse) {
+  const status = normalizeBookingStatus(booking.status);
+  return (
+    status === BOOKING_STATUS_NORMALIZED.CONFIRMED &&
+    !booking.completed_by_handyman &&
+    !booking.rejected_by_handyman
+  );
+}
+
 export default function JobsScreen() {
   const api = useMemo(() => createApiClient(), []);
   const { session } = useSession();
   const { colors } = useTheme();
 
-  const [loading, setLoading] = useState(false);
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [selected, setSelected] = useState<BookingResponse | null>(null);
-  const [cancelReason, setCancelReason] = useState("handyman_unavailable");
-  const [confirming, setConfirming] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
+  const [rejectReason, setRejectReason] = useState("Job rejected after inspection");
 
-  async function loadBookings() {
-    setLoading(true);
-    try {
-      const data = await getMyJobs(api, { limit: 100, offset: 0 });
-      setBookings(data);
-    } catch (e) {
-      Alert.alert("Could not load jobs", (e as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    void loadBookings();
-  }, [session?.email]);
-
-  const incoming = bookings.filter((b) => isIncomingLikeBookingStatus(b.status));
-  const active = bookings.filter((b) => normalizeBookingStatus(b.status) === "confirmed");
-  const other = bookings.filter((b) => {
-    const s = normalizeBookingStatus(b.status);
-    return s !== "pending" && s !== "reserved" && s !== "confirmed";
+  const { execute: loadBookings, loading } = useAsyncOperation({
+    onSuccess: () => {},
+    alertTitle: "Load Jobs",
   });
 
-  async function onConfirm() {
+  useEffect(() => {
+    loadBookings(async () => {
+      const data = await getMyJobs(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
+      setBookings(data);
+    });
+  }, [session?.email]);
+
+  const { execute: executeConfirm, loading: confirming } = useAsyncOperation({
+    onSuccess: () => {
+      setSelected(null);
+      loadBookings(async () => {
+        const data = await getMyJobs(api, { limit: 100, offset: 0 });
+        setBookings(data);
+      });
+    },
+    alertTitle: "Confirm Booking",
+  });
+
+  const onConfirm = () => {
     if (!selected) return;
 
-    setConfirming(true);
-    try {
+    executeConfirm(async () => {
       const res = await confirmBooking(api, selected.booking_id);
       Alert.alert("Booking confirmed", `Booking ${res.booking_id} is now ${res.status}.`);
-      setSelected(null);
-      await loadBookings();
-    } catch (e) {
-      Alert.alert("Confirm failed", (e as Error).message);
-    } finally {
-      setConfirming(false);
-    }
-  }
+    });
+  };
 
-  async function onCancel() {
+  const { execute: executeReject, loading: rejecting } = useAsyncOperation({
+    onSuccess: () => {
+      setSelected(null);
+      loadBookings(async () => {
+        const data = await getMyJobs(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
+        setBookings(data);
+      });
+    },
+    alertTitle: "Reject Job",
+  });
+
+  const onReject = () => {
+    if (!selected) return;
+    if (!rejectReason.trim()) {
+      Alert.alert("Reason required", "Please add a reason.");
+      return;
+    }
+
+    executeReject(async () => {
+      const res = await rejectBookingCompletion(api, selected.booking_id, {
+        reason: rejectReason.trim(),
+      });
+      Alert.alert("Job rejected", `Booking ${res.booking_id} is now ${res.status}.`);
+    });
+  };
+
+  const { execute: executeComplete, loading: completing } = useAsyncOperation({
+    onSuccess: () => {
+      loadBookings(async () => {
+        const data = await getMyJobs(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
+        setBookings(data);
+      });
+    },
+    alertTitle: "Complete Job",
+  });
+
+  const onComplete = () => {
     if (!selected) return;
 
-    setCancelling(true);
-    try {
-      const res = await cancelBooking(api, selected.booking_id, {
-        reason: cancelReason || "handyman_unavailable",
-      });
-      Alert.alert("Booking cancelled", `Booking ${res.booking_id} is now ${res.status}.`);
-      setSelected(null);
-      await loadBookings();
-    } catch (e) {
-      Alert.alert("Cancel failed", (e as Error).message);
-    } finally {
-      setCancelling(false);
-    }
-  }
+    executeComplete(async () => {
+      const res = await completeBookingHandyman(api, selected.booking_id);
+      Alert.alert("Completion updated", `Booking ${res.booking_id} is now ${res.status}.`);
+      setSelected((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: res.status,
+              completed_by_user: res.completed_by_user,
+              completed_by_handyman: res.completed_by_handyman,
+              completed_at: res.completed_at ?? null,
+            }
+          : null
+      );
+    });
+  };
+
+  const incoming = bookings.filter((b) => isIncomingLikeBookingStatus(b.status));
+  const active = bookings.filter(
+    (b) =>
+      normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.CONFIRMED &&
+      !b.completed_at &&
+      !b.rejected_by_handyman
+  );
+  const completed = bookings.filter((b) => !!b.completed_at);
+  const other = bookings.filter((b) => {
+    const s = normalizeBookingStatus(b.status);
+    if (s === BOOKING_STATUS_NORMALIZED.PENDING || s === BOOKING_STATUS_NORMALIZED.RESERVED) return false;
+    if (s === BOOKING_STATUS_NORMALIZED.CONFIRMED && !b.completed_at && !b.rejected_by_handyman) return false;
+    if (b.completed_at) return false;
+    return true;
+  });
 
   function renderBookingCard(item: BookingResponse) {
     return (
@@ -131,12 +198,26 @@ export default function JobsScreen() {
         <View style={{ gap: 4 }}>
           <Text style={{ color: colors.textSoft }}>Start: {formatDateTime(item.desired_start)}</Text>
           <Text style={{ color: colors.textSoft }}>End: {formatDateTime(item.desired_end)}</Text>
+          {item.job_description ? (
+            <Text style={{ color: colors.textSoft }}>Job: {item.job_description}</Text>
+          ) : null}
+          <Text style={{ color: colors.textSoft }}>
+            Completion: user={item.completed_by_user ? "yes" : "no"} • handyman={item.completed_by_handyman ? "yes" : "no"}
+          </Text>
+          {item.completed_at ? (
+            <Text style={{ color: colors.textSoft }}>Completed at: {formatDateTime(item.completed_at)}</Text>
+          ) : null}
+          {item.rejected_by_handyman ? (
+            <Text style={{ color: colors.danger }}>
+              Rejected{item.rejection_reason ? `: ${item.rejection_reason}` : ""}
+            </Text>
+          ) : null}
         </View>
 
         <AppButton
           label="Open actions"
           onPress={() => {
-            setCancelReason(item.cancellation_reason ?? "handyman_unavailable");
+            setRejectReason(item.rejection_reason ?? "Job rejected after inspection");
             setSelected(item);
           }}
           tone="secondary"
@@ -153,6 +234,7 @@ export default function JobsScreen() {
           data={[
             { section: "Incoming requests", items: incoming },
             { section: "Active jobs", items: active },
+            { section: "Completed jobs", items: completed },
             { section: "Other", items: other },
           ]}
           keyExtractor={(item) => item.section}
@@ -160,8 +242,19 @@ export default function JobsScreen() {
             <View style={{ gap: 12, marginBottom: 14 }}>
               <PageHeader
                 title="Jobs"
-                subtitle="Incoming and active bookings"
-                action={<AppButton label="Refresh" onPress={loadBookings} style={{ minWidth: 120 }} />}
+                subtitle="Incoming, active, completed, and rejected jobs"
+                action={
+                  <AppButton
+                    label="Refresh"
+                    onPress={() =>
+                      loadBookings(async () => {
+                        const data = await getMyJobs(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
+                        setBookings(data);
+                      })
+                    }
+                    style={{ minWidth: 120 }}
+                  />
+                }
               />
 
               <Card>
@@ -204,14 +297,33 @@ export default function JobsScreen() {
               Status: {getBookingDisplayStatus(selected.status, "handyman")}
             </Text>
 
-            <View style={{ gap: 8 }}>
-              <Text style={{ fontWeight: "700", color: colors.text }}>Cancel reason</Text>
-              <AppInput
-                value={cancelReason}
-                onChangeText={setCancelReason}
-                placeholder="handyman_unavailable"
-              />
-            </View>
+            {selected.job_description ? (
+              <Text style={{ color: colors.textSoft }}>Job: {selected.job_description}</Text>
+            ) : null}
+
+            <Text style={{ color: colors.textSoft }}>
+              Completed by user: {selected.completed_by_user ? "Yes" : "No"}
+            </Text>
+            <Text style={{ color: colors.textSoft }}>
+              Completed by handyman: {selected.completed_by_handyman ? "Yes" : "No"}
+            </Text>
+
+            {selected.completed_at ? (
+              <Text style={{ color: colors.textSoft }}>
+                Completed at: {formatDateTime(selected.completed_at)}
+              </Text>
+            ) : null}
+
+            {canRejectJob(selected) ? (
+              <View style={{ gap: 8 }}>
+                <Text style={{ fontWeight: "700", color: colors.text }}>Reject reason</Text>
+                <AppInput
+                  value={rejectReason}
+                  onChangeText={setRejectReason}
+                  placeholder="Why are you rejecting this job?"
+                />
+              </View>
+            ) : null}
 
             <ButtonRow>
               <AppButton
@@ -220,19 +332,34 @@ export default function JobsScreen() {
                 tone="secondary"
                 style={{ flex: 1 }}
               />
-              <AppButton
-                label="Decline"
-                onPress={onCancel}
-                tone="danger"
-                loading={cancelling}
-                style={{ flex: 1 }}
-              />
-              <AppButton
-                label="Confirm"
-                onPress={onConfirm}
-                loading={confirming}
-                style={{ flex: 1 }}
-              />
+
+              {isIncomingLikeBookingStatus(selected.status) ? (
+                <AppButton
+                  label="Confirm"
+                  onPress={onConfirm}
+                  loading={confirming}
+                  style={{ flex: 1 }}
+                />
+              ) : null}
+
+              {canCompleteJob(selected) ? (
+                <AppButton
+                  label="Mark complete"
+                  onPress={onComplete}
+                  loading={completing}
+                  style={{ flex: 1 }}
+                />
+              ) : null}
+
+              {canRejectJob(selected) ? (
+                <AppButton
+                  label="Reject job"
+                  onPress={onReject}
+                  tone="danger"
+                  loading={rejecting}
+                  style={{ flex: 1 }}
+                />
+              ) : null}
             </ButtonRow>
           </>
         ) : null}

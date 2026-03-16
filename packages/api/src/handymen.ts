@@ -1,5 +1,6 @@
 import { ApiClient } from './client';
 import type { components } from './schema';
+import { buildQueryString } from './utils/queryBuilder';
 
 export type CreateHandyman = components['schemas']['CreateHandyman'];
 export type UpdateHandyman = components['schemas']['UpdateHandyman'];
@@ -18,11 +19,7 @@ export async function listHandymen(
   api: ApiClient,
   params?: { limit?: number; offset?: number },
 ): Promise<unknown> {
-  const qs = new URLSearchParams();
-  if (params?.limit != null) qs.set('limit', String(params.limit));
-  if (params?.offset != null) qs.set('offset', String(params.offset));
-  const suffix = qs.toString() ? `?${qs.toString()}` : '';
-
+  const suffix = buildQueryString(params || {});
   return api.request(`/handymen${suffix}`, { method: 'GET' });
 }
 
