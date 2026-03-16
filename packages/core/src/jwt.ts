@@ -10,11 +10,8 @@ function b64UrlToUtf8(input: string): string {
   const base64 = input.replace(/-/g, "+").replace(/_/g, "/");
   const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
 
-  // Browser
   if (typeof atob === "function") return atob(padded);
 
-  // Node / React Native (with Buffer polyfill set)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const B: any = (globalThis as any).Buffer;
   if (!B) throw new Error("Buffer not available. On React Native, add 'buffer' polyfill.");
   return B.from(padded, "base64").toString("utf-8");

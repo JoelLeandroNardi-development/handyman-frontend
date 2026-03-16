@@ -22,7 +22,6 @@ async function saveMode(mode: ThemeMode) {
   try {
     await SecureStore.setItemAsync(STORAGE_KEY, mode);
   } catch {
-    // ignore
   }
 }
 

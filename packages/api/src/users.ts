@@ -19,7 +19,6 @@ export async function adminListUsers(
   return api.request<UserResponse[]>(`/users${suffix}`, { method: "GET" });
 }
 
-// Still untyped in OpenAPI right now
 export async function getUser(api: ApiClient, email: string): Promise<unknown> {
   return api.request(`/users/${encodeURIComponent(email)}`, { method: "GET" });
 }

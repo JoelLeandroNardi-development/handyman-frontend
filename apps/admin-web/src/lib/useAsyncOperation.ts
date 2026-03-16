@@ -5,22 +5,6 @@ interface UseAsyncOperationOptions {
   onError?: (message: string) => void;
 }
 
-/**
- * Custom hook to handle async operations with loading state and error handling.
- * Eliminates repetitive try-catch-finally patterns across components.
- * 
- * @param options Configuration for the async operation
- * @returns Object with execute function, loading state, and error state
- * 
- * @example
- * const { execute, loading, error } = useAsyncOperation({
- *   onSuccess: () => setData(...)
- * });
- * 
- * const handleLoad = () => execute(async () => {
- *   return await fetchData();
- * });
- */
 export function useAsyncOperation(options: UseAsyncOperationOptions = {}) {
   const { onSuccess, onError } = options;
 

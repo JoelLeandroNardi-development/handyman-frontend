@@ -27,7 +27,6 @@ export default function ProfilePlaceholder() {
   const { colors } = useTheme();
   const { session, availableRoles, pickRole, roleMode, logout, refresh } = useSession();
 
-  // Refactor: Use useState from React
   const [fullName, setFullName] = React.useState("");
   const [locationLabel, setLocationLabel] = React.useState("Location not set");
 

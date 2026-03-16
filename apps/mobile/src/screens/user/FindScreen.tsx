@@ -26,7 +26,6 @@ export default function FindScreen() {
   const api = useMemo(() => createApiClient(), []);
   const { session } = useSession();
 
-  // Search filter state
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [startTime, setStartTime] = useState(() => {
     const d = new Date();
@@ -45,11 +44,9 @@ export default function FindScreen() {
   const [skillModalOpen, setSkillModalOpen] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
 
-  // Results state
   const [results, setResults] = useState<MatchResult[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
 
-  // Handyman detail state
   const [selectedHandymanProfile, setSelectedHandymanProfile] = useState<HandymanResponse | null>(null);
 
   const currentUserEmail = session?.email ?? "";
@@ -64,7 +61,6 @@ export default function FindScreen() {
     [selectedDate, endTime]
   );
 
-  // Async operation hooks
   const { execute: handleMatch, loading: loadingMatch } = useAsyncOperation({
     alertTitle: "Search",
   });

@@ -67,7 +67,6 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         setRoleMode(null);
       }
     } catch {
-      // token may be stale/invalid
       await clearToken();
       await clearRoleMode();
       setSession(null);

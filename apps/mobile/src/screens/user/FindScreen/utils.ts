@@ -9,9 +9,6 @@ export type SkillOption = {
   categoryLabel: string;
 };
 
-/**
- * Escape HTML special characters to prevent XSS in WebView
- */
 export function escapeHtml(value: string) {
   return value
     .replaceAll("&", "&amp;")
@@ -21,9 +18,6 @@ export function escapeHtml(value: string) {
     .replaceAll("'", "&#39;");
 }
 
-/**
- * Build interactive map HTML for displaying handymen results
- */
 export function buildMapHtml(userCoords: Coords | null, results: MatchResult[]) {
   const center = userCoords ?? { latitude: 37.7749, longitude: -122.4194 };
 
@@ -85,9 +79,6 @@ export function buildMapHtml(userCoords: Coords | null, results: MatchResult[]) 
   `;
 }
 
-/**
- * Flatten skill catalog into flat array of options
- */
 export function flattenSkills(catalog: SkillCatalogFlatResponse | null): SkillOption[] {
   if (!catalog) return [];
 
@@ -103,9 +94,6 @@ export function flattenSkills(catalog: SkillCatalogFlatResponse | null): SkillOp
   );
 }
 
-/**
- * Render star rating visually (⭐ repeated count times)
- */
 export function renderStars(value: number) {
   return "⭐".repeat(Math.min(value, 5));
 }
