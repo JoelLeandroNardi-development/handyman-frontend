@@ -4,13 +4,13 @@ import { buildQueryString } from './utils/queryBuilder';
 
 export type BookingResponse = components['schemas']['BookingResponse'];
 export type CreateBookingRequest =
-  components['schemas']['CreateBookingRequest'];
+  components['schemas']['CreateBooking'];
 export type UpdateBookingAdmin = components['schemas']['UpdateBookingAdmin'];
 
 export type ConfirmBookingResponse =
   components['schemas']['ConfirmBookingResponse'];
 export type CancelBookingRequest =
-  components['schemas']['CancelBookingRequest'];
+  components['schemas']['CancelBooking'];
 export type CancelBookingResponse =
   components['schemas']['CancelBookingResponse'];
 

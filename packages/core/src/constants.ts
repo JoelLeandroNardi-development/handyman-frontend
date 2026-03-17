@@ -65,3 +65,16 @@ export const QUERY_PARAMS = {
   SKILL: "skill",
   ACTIVE_ONLY: "active_only",
 } as const;
+
+export const NOTIFICATION_EVENT_LABELS = {
+  "slot.reserved": "Slot reserved",
+  "slot.confirmed": "Slot confirmed",
+  "slot.rejected": "Slot rejected",
+  "slot.expired": "Slot expired",
+  "slot.released": "Slot released",
+  "booking.completed": "Booking completed",
+  "booking.cancelled": "Booking cancelled",
+  "review.reminder": "Review reminder",
+} as const;
+
+export type NotificationEventType = keyof typeof NOTIFICATION_EVENT_LABELS;

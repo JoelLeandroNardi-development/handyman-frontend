@@ -7,6 +7,7 @@ import { queryClient } from "./src/lib/queryClient";
 import RootNavigator from "./src/navigation/RootNavigator";
 import { SessionProvider } from "./src/auth/SessionProvider";
 import { ThemeProvider } from "./src/theme";
+import { NotificationsProvider } from "./src/notifications/NotificationsProvider";
 
 export default function App() {
   return (
@@ -14,7 +15,9 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <SessionProvider>
-            <RootNavigator />
+            <NotificationsProvider>
+              <RootNavigator />
+            </NotificationsProvider>
           </SessionProvider>
         </ThemeProvider>
       </QueryClientProvider>

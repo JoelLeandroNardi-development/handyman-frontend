@@ -14,6 +14,7 @@ import {
   type SkillCatalogFlatResponse,
 } from "@smart/api";
 import { createApiClient } from "../../lib/api";
+import { parseOptionalCoordinates, toNullableString } from "../../lib/profileForm";
 import { useTheme } from "../../theme";
 import { useSession } from "../../auth/SessionProvider";
 import { useAsyncOperation } from "../../hooks/useAsyncOperation";
@@ -39,10 +40,35 @@ export default function ProfilePlaceholder() {
   const [profile, setProfile] = React.useState<HandymanResponse | null>(null);
 
   const [selectedSkills, setSelectedSkills] = React.useState<string[]>([]);
+  const [firstName, setFirstName] = React.useState("");
+  const [lastName, setLastName] = React.useState("");
+  const [phone, setPhone] = React.useState("");
+  const [nationalId, setNationalId] = React.useState("");
+  const [addressLine, setAddressLine] = React.useState("");
+  const [postalCode, setPostalCode] = React.useState("");
+  const [city, setCity] = React.useState("");
+  const [country, setCountry] = React.useState("");
   const [yearsExperience, setYearsExperience] = React.useState("");
   const [serviceRadiusKm, setServiceRadiusKm] = React.useState(0);
   const [latitude, setLatitude] = React.useState("");
   const [longitude, setLongitude] = React.useState("");
+
+  const applyProfileData = React.useCallback((data: HandymanResponse) => {
+    setProfile(data);
+    setSelectedSkills(data.skills ?? []);
+    setFirstName(data.first_name ?? "");
+    setLastName(data.last_name ?? "");
+    setPhone(data.phone ?? "");
+    setNationalId(data.national_id ?? "");
+    setAddressLine(data.address_line ?? "");
+    setPostalCode(data.postal_code ?? "");
+    setCity(data.city ?? "");
+    setCountry(data.country ?? "");
+    setYearsExperience(String(data.years_experience ?? ""));
+    setServiceRadiusKm(typeof data.service_radius_km === "number" ? data.service_radius_km : 0);
+    setLatitude(data.latitude != null ? String(data.latitude) : "");
+    setLongitude(data.longitude != null ? String(data.longitude) : "");
+  }, []);
 
   const { execute: loadCatalog, loading: loadingCatalog } = useAsyncOperation({
     alertTitle: "Load Skills Catalog",
@@ -60,6 +86,7 @@ export default function ProfilePlaceholder() {
     alertTitle: "Save Profile",
     onSuccess: () => {
       refresh();
+      void loadAll();
     },
   });
 
@@ -71,12 +98,7 @@ export default function ProfilePlaceholder() {
       }),
       loadProfile(async () => {
         const data = await getMeHandyman(api);
-        setProfile(data);
-        setSelectedSkills(data.skills ?? []);
-        setYearsExperience(String(data.years_experience ?? ""));
-        setServiceRadiusKm(typeof data.service_radius_km === "number" ? data.service_radius_km : 0);
-        setLatitude(data.latitude != null ? String(data.latitude) : "");
-        setLongitude(data.longitude != null ? String(data.longitude) : "");
+        applyProfileData(data);
       }),
     ]);
   }
@@ -115,41 +137,25 @@ export default function ProfilePlaceholder() {
       throw new Error("Please enter a valid integer for years of experience.");
     }
 
-    let parsedLatitude: number | null = null;
-    let parsedLongitude: number | null = null;
-
-    if (latitude.trim() !== "") {
-      parsedLatitude = Number.parseFloat(latitude);
-      if (Number.isNaN(parsedLatitude)) {
-        throw new Error("Latitude must be a valid number.");
-      }
-    }
-
-    if (longitude.trim() !== "") {
-      parsedLongitude = Number.parseFloat(longitude);
-      if (Number.isNaN(parsedLongitude)) {
-        throw new Error("Longitude must be a valid number.");
-      }
-    }
-
-    if ((parsedLatitude === null) !== (parsedLongitude === null)) {
-      throw new Error("Latitude and longitude must both be set or both be empty.");
-    }
+    const { latitude: parsedLatitude, longitude: parsedLongitude } =
+      parseOptionalCoordinates(latitude, longitude);
 
     const updated = await updateMeHandyman(api, {
+      first_name: toNullableString(firstName),
+      last_name: toNullableString(lastName),
+      phone: toNullableString(phone),
+      national_id: toNullableString(nationalId),
+      address_line: toNullableString(addressLine),
+      postal_code: toNullableString(postalCode),
+      city: toNullableString(city),
+      country: toNullableString(country),
       skills: selectedSkills,
       years_experience: parsedYears,
       service_radius_km: Math.round(serviceRadiusKm),
       latitude: parsedLatitude,
       longitude: parsedLongitude,
     });
-
-    setProfile(updated);
-    setSelectedSkills(updated.skills ?? []);
-    setYearsExperience(String(updated.years_experience ?? ""));
-    setServiceRadiusKm(typeof updated.service_radius_km === "number" ? updated.service_radius_km : 0);
-    setLatitude(updated.latitude != null ? String(updated.latitude) : "");
-    setLongitude(updated.longitude != null ? String(updated.longitude) : "");
+    applyProfileData(updated);
   }
 
   const loading = loadingCatalog || loadingProfile;
@@ -178,6 +184,47 @@ export default function ProfilePlaceholder() {
           <ActivityIndicator color={colors.primary} />
         ) : (
           <>
+            <View style={{ gap: 8 }}>
+              <Label>First name</Label>
+              <AppInput value={firstName} onChangeText={setFirstName} placeholder="First name" />
+            </View>
+
+            <View style={{ gap: 8 }}>
+              <Label>Last name</Label>
+              <AppInput value={lastName} onChangeText={setLastName} placeholder="Last name" />
+            </View>
+
+            <View style={{ gap: 8 }}>
+              <Label>Phone</Label>
+              <AppInput value={phone} onChangeText={setPhone} placeholder="Phone" keyboardType="phone-pad" />
+            </View>
+
+            <View style={{ gap: 8 }}>
+              <Label>National ID</Label>
+              <AppInput value={nationalId} onChangeText={setNationalId} placeholder="National ID" />
+            </View>
+
+            <View style={{ gap: 8 }}>
+              <Label>Address line</Label>
+              <AppInput value={addressLine} onChangeText={setAddressLine} placeholder="Address line" />
+            </View>
+
+            <ButtonRow>
+              <View style={{ flex: 1, gap: 8 }}>
+                <Label>Postal code</Label>
+                <AppInput value={postalCode} onChangeText={setPostalCode} placeholder="Postal code" />
+              </View>
+              <View style={{ flex: 1, gap: 8 }}>
+                <Label>City</Label>
+                <AppInput value={city} onChangeText={setCity} placeholder="City" />
+              </View>
+            </ButtonRow>
+
+            <View style={{ gap: 8 }}>
+              <Label>Country</Label>
+              <AppInput value={country} onChangeText={setCountry} placeholder="Country" />
+            </View>
+
             <View style={{ gap: 8 }}>
               <Label>Years of experience</Label>
               <AppInput

@@ -5,7 +5,7 @@ import { buildQueryString } from './utils/queryBuilder';
 export type CreateHandyman = components['schemas']['CreateHandyman'];
 export type UpdateHandyman = components['schemas']['UpdateHandyman'];
 export type UpdateHandymanLocation =
-  components['schemas']['UpdateHandymanLocation'];
+  components['schemas']['UpdateLocation'];
 export type HandymanResponse = components['schemas']['HandymanResponse'];
 
 export type SkillCatalogFlatResponse =

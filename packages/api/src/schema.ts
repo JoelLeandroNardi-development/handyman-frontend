@@ -787,6 +787,160 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Notifications */
+        get: operations["get_notifications_me_notifications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Unread Count */
+        get: operations["get_unread_count_me_notifications_unread_count_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/notifications/{notification_id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Notification Read */
+        post: operations["mark_notification_read_me_notifications__notification_id__read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark All Read */
+        post: operations["mark_all_read_me_notifications_read_all_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/notifications/{notification_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive Notification */
+        post: operations["archive_notification_me_notifications__notification_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/notification-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Preferences */
+        get: operations["get_preferences_me_notification_preferences_get"];
+        /** Update Preferences */
+        put: operations["update_preferences_me_notification_preferences_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/push-devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register Push Device */
+        post: operations["register_push_device_me_push_devices_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/push-devices/{device_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Push Device */
+        delete: operations["delete_push_device_me_push_devices__device_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/notifications/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stream Notifications */
+        get: operations["stream_notifications_me_notifications_stream_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -853,8 +1007,8 @@ export interface components {
             /** Cancellation Reason */
             cancellation_reason?: string | null;
         };
-        /** CancelBookingRequest */
-        CancelBookingRequest: {
+        /** CancelBooking */
+        CancelBooking: {
             /**
              * Reason
              * @default user_requested
@@ -890,8 +1044,8 @@ export interface components {
             /** Status */
             status: string;
         };
-        /** CreateBookingRequest */
-        CreateBookingRequest: {
+        /** CreateBooking */
+        CreateBooking: {
             /** User Email */
             user_email: string;
             /** Handyman Email */
@@ -1068,6 +1222,11 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** MarkAllReadResponse */
+        MarkAllReadResponse: {
+            /** Updated */
+            updated: number;
+        };
         /** MatchRequest */
         MatchRequest: {
             /** Latitude */
@@ -1115,6 +1274,109 @@ export interface components {
             roles: string[];
             user_profile?: components["schemas"]["UserResponse"] | null;
             handyman_profile?: components["schemas"]["HandymanResponse"] | null;
+        };
+        /** NotificationItem */
+        NotificationItem: {
+            /** Id */
+            id: string;
+            /** Type */
+            type: string;
+            /** Category */
+            category: string;
+            /** Priority */
+            priority: string;
+            /** Title */
+            title: string;
+            /** Body */
+            body: string;
+            /** Status */
+            status: string;
+            /** Entity Type */
+            entity_type?: string | null;
+            /** Entity Id */
+            entity_id?: string | null;
+            /** Action Url */
+            action_url?: string | null;
+            /** Payload */
+            payload?: Record<string, never>;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Read At */
+            read_at?: string | null;
+        };
+        /** NotificationListResponse */
+        NotificationListResponse: {
+            /** Items */
+            items: components["schemas"]["NotificationItem"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /** NotificationPreferencesResponse */
+        NotificationPreferencesResponse: {
+            /**
+             * Booking In App Enabled
+             * @default true
+             */
+            booking_in_app_enabled: boolean;
+            /**
+             * Booking Push Enabled
+             * @default true
+             */
+            booking_push_enabled: boolean;
+            /**
+             * Booking Email Enabled
+             * @default true
+             */
+            booking_email_enabled: boolean;
+            /**
+             * Chat In App Enabled
+             * @default true
+             */
+            chat_in_app_enabled: boolean;
+            /**
+             * Chat Push Enabled
+             * @default true
+             */
+            chat_push_enabled: boolean;
+            /**
+             * Chat Email Enabled
+             * @default false
+             */
+            chat_email_enabled: boolean;
+            /**
+             * System In App Enabled
+             * @default true
+             */
+            system_in_app_enabled: boolean;
+            /**
+             * System Push Enabled
+             * @default false
+             */
+            system_push_enabled: boolean;
+            /**
+             * System Email Enabled
+             * @default true
+             */
+            system_email_enabled: boolean;
+            /** Quiet Hours Start */
+            quiet_hours_start?: string | null;
+            /** Quiet Hours End */
+            quiet_hours_end?: string | null;
+            /** Timezone */
+            timezone?: string | null;
+            /** Locale */
+            locale?: string | null;
+        };
+        /** OkResponse */
+        OkResponse: {
+            /**
+             * Ok
+             * @default true
+             */
+            ok: boolean;
         };
         /** OnboardingCombinedRequest */
         OnboardingCombinedRequest: {
@@ -1207,6 +1469,23 @@ export interface components {
             auth_user: components["schemas"]["AuthUserResponse"];
             user_profile: components["schemas"]["UserResponse"];
         };
+        /** PushDeviceResponse */
+        PushDeviceResponse: {
+            /** Id */
+            id: number;
+            /** User Email */
+            user_email: string;
+            /** Platform */
+            platform: string;
+            /** Device Token */
+            device_token: string;
+            /** Device Name */
+            device_name?: string | null;
+            /** App Version */
+            app_version?: string | null;
+            /** Is Active */
+            is_active: boolean;
+        };
         /** Register */
         Register: {
             /** Email */
@@ -1215,6 +1494,20 @@ export interface components {
             password: string;
             /** Roles */
             roles?: string[];
+        };
+        /** RegisterPushDeviceRequest */
+        RegisterPushDeviceRequest: {
+            /**
+             * Platform
+             * @enum {string}
+             */
+            platform: "web" | "ios" | "android";
+            /** Device Token */
+            device_token: string;
+            /** Device Name */
+            device_name?: string | null;
+            /** App Version */
+            app_version?: string | null;
         };
         /** RejectBookingRequest */
         RejectBookingRequest: {
@@ -1245,7 +1538,7 @@ export interface components {
         /** SetAvailability */
         SetAvailability: {
             /** Slots */
-            slots: components["schemas"]["AvailabilitySlot"][];
+            slots?: components["schemas"]["AvailabilitySlot"][];
         };
         /** SkillCatalogCategoryItem */
         SkillCatalogCategoryItem: {
@@ -1285,7 +1578,7 @@ export interface components {
         /** SkillCatalogReplaceRequest */
         SkillCatalogReplaceRequest: {
             /** Catalog */
-            catalog: {
+            catalog?: {
                 [key: string]: string[];
             };
         };
@@ -1304,6 +1597,11 @@ export interface components {
         TokenResponse: {
             /** Access Token */
             access_token: string;
+        };
+        /** UnreadCountResponse */
+        UnreadCountResponse: {
+            /** Count */
+            count: number;
         };
         /** UpdateAuthUser */
         UpdateAuthUser: {
@@ -1352,12 +1650,41 @@ export interface components {
             /** Longitude */
             longitude?: number | null;
         };
-        /** UpdateHandymanLocation */
-        UpdateHandymanLocation: {
+        /** UpdateLocation */
+        UpdateLocation: {
             /** Latitude */
             latitude: number;
             /** Longitude */
             longitude: number;
+        };
+        /** UpdateNotificationPreferencesRequest */
+        UpdateNotificationPreferencesRequest: {
+            /** Booking In App Enabled */
+            booking_in_app_enabled?: boolean | null;
+            /** Booking Push Enabled */
+            booking_push_enabled?: boolean | null;
+            /** Booking Email Enabled */
+            booking_email_enabled?: boolean | null;
+            /** Chat In App Enabled */
+            chat_in_app_enabled?: boolean | null;
+            /** Chat Push Enabled */
+            chat_push_enabled?: boolean | null;
+            /** Chat Email Enabled */
+            chat_email_enabled?: boolean | null;
+            /** System In App Enabled */
+            system_in_app_enabled?: boolean | null;
+            /** System Push Enabled */
+            system_push_enabled?: boolean | null;
+            /** System Email Enabled */
+            system_email_enabled?: boolean | null;
+            /** Quiet Hours Start */
+            quiet_hours_start?: string | null;
+            /** Quiet Hours End */
+            quiet_hours_end?: string | null;
+            /** Timezone */
+            timezone?: string | null;
+            /** Locale */
+            locale?: string | null;
         };
         /** UpdateUser */
         UpdateUser: {
@@ -2367,7 +2694,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateHandymanLocation"];
+                "application/json": components["schemas"]["UpdateLocation"];
             };
         };
         responses: {
@@ -2969,7 +3296,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateBookingRequest"];
+                "application/json": components["schemas"]["CreateBooking"];
             };
         };
         responses: {
@@ -3132,7 +3459,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CancelBookingRequest"];
+                "application/json": components["schemas"]["CancelBooking"];
             };
         };
         responses: {
@@ -3350,6 +3677,280 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_notifications_me_notifications_get: {
+        parameters: {
+            query?: {
+                status?: ("unread" | "read" | "archived") | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_unread_count_me_notifications_unread_count_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnreadCountResponse"];
+                };
+            };
+        };
+    };
+    mark_notification_read_me_notifications__notification_id__read_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                notification_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_all_read_me_notifications_read_all_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarkAllReadResponse"];
+                };
+            };
+        };
+    };
+    archive_notification_me_notifications__notification_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                notification_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_preferences_me_notification_preferences_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferencesResponse"];
+                };
+            };
+        };
+    };
+    update_preferences_me_notification_preferences_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNotificationPreferencesRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferencesResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    register_push_device_me_push_devices_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterPushDeviceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushDeviceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_push_device_me_push_devices__device_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                device_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    stream_notifications_me_notifications_stream_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Server-Sent Events stream. Events: ready, ping, notification.created */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                    /** @example event: ready\ndata: {"ok":true}\n\n */
+                    "text/event-stream": unknown;
                 };
             };
         };

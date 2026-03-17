@@ -2,10 +2,13 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
+import { Text, View } from "react-native";
 import FindScreen from "../screens/user/FindScreen";
 import BookingsPlaceholder from "../screens/user/BookingsPlaceholder";
 import ProfilePlaceholder from "../screens/user/ProfilePlaceholder";
+import NotificationsScreen from "../screens/NotificationsScreen";
 import { useTheme } from "../theme";
+import { useNotifications } from "../notifications/NotificationsProvider";
 
 const Tab = createBottomTabNavigator();
 
@@ -17,6 +20,8 @@ function getUserTabIconName(
       return "travel-explore";
     case "Bookings":
       return "event-available";
+    case "Notifications":
+      return "notifications";
     case "Profile":
       return "manage-accounts";
     default:
@@ -27,6 +32,7 @@ function getUserTabIconName(
 export default function UserTabs() {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { unreadCount } = useNotifications();
 
   const tabBarHeight = 72 + Math.max(insets.bottom, 10);
 
@@ -53,17 +59,44 @@ export default function UserTabs() {
         tabBarIconStyle: {
           marginTop: 2,
         },
-        tabBarIcon: ({ color, size }) => (
-          <MaterialIcons
-            name={getUserTabIconName(route.name)}
-            color={color}
-            size={size ?? 24}
-          />
-        ),
+        tabBarIcon: ({ color, size }) => {
+          const showBadge = route.name === "Notifications" && unreadCount > 0;
+
+          return (
+            <View>
+              <MaterialIcons
+                name={getUserTabIconName(route.name)}
+                color={color}
+                size={size ?? 24}
+              />
+              {showBadge ? (
+                <View
+                  style={{
+                    position: "absolute",
+                    top: -6,
+                    right: -10,
+                    minWidth: 18,
+                    height: 18,
+                    borderRadius: 9,
+                    backgroundColor: colors.danger,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingHorizontal: 4,
+                  }}
+                >
+                  <Text style={{ color: "#fff", fontSize: 10, fontWeight: "800" }}>
+                    {unreadCount > 99 ? "99+" : String(unreadCount)}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          );
+        },
       })}
     >
       <Tab.Screen name="Find" component={FindScreen} />
       <Tab.Screen name="Bookings" component={BookingsPlaceholder} />
+      <Tab.Screen name="Notifications" component={NotificationsScreen} />
       <Tab.Screen name="Profile" component={ProfilePlaceholder} />
     </Tab.Navigator>
   );
