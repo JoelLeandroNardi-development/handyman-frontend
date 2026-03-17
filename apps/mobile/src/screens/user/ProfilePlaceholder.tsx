@@ -1,16 +1,16 @@
-import React, { useEffect, useMemo } from "react";
-import {
-  ActivityIndicator,
-  Text,
-  View,
-} from "react-native";
-import * as Location from "expo-location";
-import { getMeUser, updateMe, type UserResponse } from "@smart/api";
-import { createApiClient } from "../../lib/api";
-import { parseOptionalCoordinates, toNullableString } from "../../lib/profileForm";
-import { useTheme } from "../../theme";
-import { useSession } from "../../auth/SessionProvider";
-import { useAsyncOperation } from "../../hooks/useAsyncOperation";
+import React, { useEffect, useMemo } from 'react';
+import { ActivityIndicator, ScrollView, View, Dimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getMeUser, updateMe, type UserResponse } from '@smart/api';
+import { createApiClient } from '../../lib/api';
+import { toNullableString } from '../../lib/profileForm';
+import { useTheme } from '../../theme';
+import { useSession } from '../../auth/SessionProvider';
+import { useAsyncOperation } from '../../hooks/useAsyncOperation';
+import { useFormState } from '../../hooks/useFormState';
+import { useAppLocation } from '../../location/AppLocationProvider';
+import { useNotifications } from '../../notifications/NotificationsProvider';
+import { extractDeviceCoordinates } from '../../lib/coordinates';
 import {
   AppButton,
   AppInput,
@@ -18,39 +18,64 @@ import {
   Card,
   CardTitle,
   Label,
-  PageHeader,
   Screen,
-} from "../../ui/primitives";
-import ThemeToggleCard from "../../ui/ThemeToggleCard";
+} from '../../ui/primitives';
+import { ScreenHeader } from '../../ui/ScreenHeader';
+import ThemeToggleCard from '../../ui/ThemeToggleCard';
 
 export default function ProfilePlaceholder() {
   const api = useMemo(() => createApiClient(), []);
   const { colors } = useTheme();
-  const { session, availableRoles, pickRole, roleMode, logout, refresh } = useSession();
+  const insets = useSafeAreaInsets();
+  const { availableRoles, pickRole, logout } = useSession();
+  const { unreadCount } = useNotifications();
 
-  const [firstName, setFirstName] = React.useState("");
-  const [lastName, setLastName] = React.useState("");
-  const [phone, setPhone] = React.useState("");
-  const [nationalId, setNationalId] = React.useState("");
-  const [addressLine, setAddressLine] = React.useState("");
-  const [postalCode, setPostalCode] = React.useState("");
-  const [city, setCity] = React.useState("");
-  const [country, setCountry] = React.useState("");
-  const [latitude, setLatitude] = React.useState("");
-  const [longitude, setLongitude] = React.useState("");
+  const screenHeight = Dimensions.get('window').height;
+  const maxHeight = screenHeight - Math.max(insets.bottom);
 
-  const applyProfileData = React.useCallback((data: UserResponse) => {
-    setFirstName(data.first_name ?? "");
-    setLastName(data.last_name ?? "");
-    setPhone(data.phone ?? "");
-    setNationalId(data.national_id ?? "");
-    setAddressLine(data.address_line ?? "");
-    setPostalCode(data.postal_code ?? "");
-    setCity(data.city ?? "");
-    setCountry(data.country ?? "");
-    setLatitude(data.latitude != null ? String(data.latitude) : "");
-    setLongitude(data.longitude != null ? String(data.longitude) : "");
-  }, []);
+  interface UserFormData {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    nationalId: string;
+    addressLine: string;
+    postalCode: string;
+    city: string;
+    country: string;
+  }
+
+  const initialFormData: UserFormData = {
+    firstName: '',
+    lastName: '',
+    phone: '',
+    nationalId: '',
+    addressLine: '',
+    postalCode: '',
+    city: '',
+    country: '',
+  };
+
+  const {
+    data: formData,
+    patch,
+    patchMany,
+  } = useFormState<UserFormData>(initialFormData);
+
+  const applyProfileData = React.useCallback(
+    (data: UserResponse) => {
+      patchMany({
+        firstName: data.first_name ?? '',
+        lastName: data.last_name ?? '',
+        phone: data.phone ?? '',
+        nationalId: data.national_id ?? '',
+        addressLine: data.address_line ?? '',
+        postalCode: data.postal_code ?? '',
+        city: data.city ?? '',
+        country: data.country ?? '',
+      });
+    },
+    [patchMany],
+  );
 
   const fetchProfile = React.useCallback(async () => {
     const data = await getMeUser(api);
@@ -58,164 +83,189 @@ export default function ProfilePlaceholder() {
   }, [api, applyProfileData]);
 
   const { execute: loadProfile, loading: loadingProfile } = useAsyncOperation({
-    alertTitle: "Load Profile",
-  });
-
-  const { execute: handleLocationUpdate, loading: locating } = useAsyncOperation({
-    alertTitle: "Location Update",
+    alertTitle: 'Load Profile',
   });
 
   const { execute: handleProfileSave, loading: saving } = useAsyncOperation({
-    alertTitle: "Save Profile",
+    alertTitle: 'Save Profile',
     onSuccess: () => {
-      refresh();
       loadProfile(fetchProfile);
     },
   });
+
+  const { coords: deviceCoords } = useAppLocation();
 
   useEffect(() => {
     loadProfile(fetchProfile);
   }, [fetchProfile]);
 
-  async function useCurrentLocation() {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      throw new Error("Location permission is required.");
-    }
-
-    const pos = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.Balanced,
-    });
-
-    setLatitude(String(pos.coords.latitude));
-    setLongitude(String(pos.coords.longitude));
-  }
-
   async function saveProfile() {
-    const { latitude: parsedLatitude, longitude: parsedLongitude } =
-      parseOptionalCoordinates(latitude, longitude);
+    const { latitude, longitude } = extractDeviceCoordinates(deviceCoords);
 
     await updateMe(api, {
-      first_name: toNullableString(firstName),
-      last_name: toNullableString(lastName),
-      phone: toNullableString(phone),
-      national_id: toNullableString(nationalId),
-      address_line: toNullableString(addressLine),
-      postal_code: toNullableString(postalCode),
-      city: toNullableString(city),
-      country: toNullableString(country),
-      latitude: parsedLatitude,
-      longitude: parsedLongitude,
+      first_name: toNullableString(formData.firstName),
+      last_name: toNullableString(formData.lastName),
+      phone: toNullableString(formData.phone),
+      national_id: toNullableString(formData.nationalId),
+      address_line: toNullableString(formData.addressLine),
+      postal_code: toNullableString(formData.postalCode),
+      city: toNullableString(formData.city),
+      country: toNullableString(formData.country),
+      latitude,
+      longitude,
     });
   }
 
   return (
-    <Screen scroll>
-      <PageHeader title="Profile" />
+    <Screen
+      style={{
+        paddingBottom: 10,
+        maxHeight,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        overflow: 'hidden',
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+      }}>
+      <ScreenHeader
+        title="Profile"
+        subtitle="Manage your settings and personal information"
+        notificationBadgeCount={unreadCount}
+        isModal={true}
+        closeButtonPosition="right"
+      />
 
-      <Card>
-        <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>{session?.email ?? "-"}</Text>
-        <Text style={{ color: colors.textSoft, fontSize: 15 }}>Current mode: {roleMode ?? "-"}</Text>
-        <Text style={{ color: colors.textSoft, fontSize: 15 }}>
-          Roles: {(session?.roles ?? []).join(", ") || "-"}
-        </Text>
-      </Card>
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          gap: 14,
+        }}>
+        <ThemeToggleCard />
 
-      <ThemeToggleCard />
+        <Card>
+          <CardTitle
+            title="User details"
+            action={
+              <AppButton
+                label="Refresh"
+                onPress={() => loadProfile(fetchProfile)}
+                style={{ minWidth: 110 }}
+              />
+            }
+          />
 
-      <Card>
-        <CardTitle
-          title="User details"
-          action={<AppButton label="Refresh" onPress={() => loadProfile(fetchProfile)} style={{ minWidth: 110 }} />}
-        />
-
-        {loadingProfile ? (
-          <ActivityIndicator color={colors.primary} />
-        ) : (
-          <>
-            <View style={{ gap: 8 }}>
-              <Label>First name</Label>
-              <AppInput value={firstName} onChangeText={setFirstName} placeholder="First name" />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>Last name</Label>
-              <AppInput value={lastName} onChangeText={setLastName} placeholder="Last name" />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>Phone</Label>
-              <AppInput value={phone} onChangeText={setPhone} placeholder="Phone" keyboardType="phone-pad" />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>National ID</Label>
-              <AppInput value={nationalId} onChangeText={setNationalId} placeholder="National ID" />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>Address line</Label>
-              <AppInput value={addressLine} onChangeText={setAddressLine} placeholder="Address line" />
-            </View>
-
-            <ButtonRow>
-              <View style={{ flex: 1, gap: 8 }}>
-                <Label>Postal code</Label>
-                <AppInput value={postalCode} onChangeText={setPostalCode} placeholder="Postal code" />
+          {loadingProfile ? (
+            <ActivityIndicator color={colors.primary} />
+          ) : (
+            <>
+              <View style={{ gap: 8 }}>
+                <Label>First name</Label>
+                <AppInput
+                  value={formData.firstName}
+                  onChangeText={v => patch('firstName', v)}
+                  placeholder="First name"
+                />
               </View>
-              <View style={{ flex: 1, gap: 8 }}>
-                <Label>City</Label>
-                <AppInput value={city} onChangeText={setCity} placeholder="City" />
+
+              <View style={{ gap: 8 }}>
+                <Label>Last name</Label>
+                <AppInput
+                  value={formData.lastName}
+                  onChangeText={v => patch('lastName', v)}
+                  placeholder="Last name"
+                />
               </View>
-            </ButtonRow>
 
-            <View style={{ gap: 8 }}>
-              <Label>Country</Label>
-              <AppInput value={country} onChangeText={setCountry} placeholder="Country" />
-            </View>
+              <View style={{ gap: 8 }}>
+                <Label>Phone</Label>
+                <AppInput
+                  value={formData.phone}
+                  onChangeText={v => patch('phone', v)}
+                  placeholder="Phone"
+                  keyboardType="phone-pad"
+                />
+              </View>
 
-            <View style={{ gap: 8 }}>
-              <Label>Location</Label>
+              <View style={{ gap: 8 }}>
+                <Label>National ID</Label>
+                <AppInput
+                  value={formData.nationalId}
+                  onChangeText={v => patch('nationalId', v)}
+                  placeholder="National ID"
+                />
+              </View>
+
+              <View style={{ gap: 8 }}>
+                <Label>Address line</Label>
+                <AppInput
+                  value={formData.addressLine}
+                  onChangeText={v => patch('addressLine', v)}
+                  placeholder="Address line"
+                />
+              </View>
+
               <ButtonRow>
-                <AppInput
-                  value={latitude}
-                  onChangeText={setLatitude}
-                  placeholder="Latitude"
-                  keyboardType="decimal-pad"
-                  style={{ flex: 1 }}
-                />
-                <AppInput
-                  value={longitude}
-                  onChangeText={setLongitude}
-                  placeholder="Longitude"
-                  keyboardType="decimal-pad"
-                  style={{ flex: 1 }}
-                />
+                <View style={{ flex: 1, gap: 8 }}>
+                  <Label>Postal code</Label>
+                  <AppInput
+                    value={formData.postalCode}
+                    onChangeText={v => patch('postalCode', v)}
+                    placeholder="Postal code"
+                  />
+                </View>
+                <View style={{ flex: 1, gap: 8 }}>
+                  <Label>City</Label>
+                  <AppInput
+                    value={formData.city}
+                    onChangeText={v => patch('city', v)}
+                    placeholder="City"
+                  />
+                </View>
               </ButtonRow>
 
+              <View style={{ gap: 8 }}>
+                <Label>Country</Label>
+                <AppInput
+                  value={formData.country}
+                  onChangeText={v => patch('country', v)}
+                  placeholder="Country"
+                />
+              </View>
+
               <AppButton
-                label="Use current location"
-                onPress={() => handleLocationUpdate(useCurrentLocation)}
-                loading={locating}
+                label="Save profile"
+                onPress={() => handleProfileSave(saveProfile)}
+                loading={saving}
               />
-            </View>
-
-            <AppButton label="Save profile" onPress={() => handleProfileSave(saveProfile)} loading={saving} />
-          </>
-        )}
-      </Card>
-
-      {availableRoles.length > 1 ? (
-        <Card>
-          <CardTitle title="Switch role" />
-          <ButtonRow>
-            <AppButton label="User" onPress={() => pickRole("user")} tone="secondary" style={{ flex: 1 }} />
-            <AppButton label="Handyman" onPress={() => pickRole("handyman")} tone="secondary" style={{ flex: 1 }} />
-          </ButtonRow>
+            </>
+          )}
         </Card>
-      ) : null}
 
-      <AppButton label="Logout" onPress={logout} />
+        {availableRoles.length > 1 ? (
+          <Card>
+            <CardTitle title="Switch role" />
+            <ButtonRow>
+              <AppButton
+                label="User"
+                onPress={() => pickRole('user')}
+                tone="secondary"
+                style={{ flex: 1 }}
+              />
+              <AppButton
+                label="Handyman"
+                onPress={() => pickRole('handyman')}
+                tone="secondary"
+                style={{ flex: 1 }}
+              />
+            </ButtonRow>
+          </Card>
+        ) : null}
+
+        <AppButton label="Logout" onPress={logout} />
+      </ScrollView>
     </Screen>
   );
 }

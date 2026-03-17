@@ -1,45 +1,90 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 
-interface UseAsyncOperationOptions {
-  onSuccess?: () => void;
-  onError?: (message: string) => void;
+/**
+ * Generic async operation handler with support for loading state, error handling,
+ * retry logic, and granular callbacks
+ */
+interface UseAsyncOperationOptions<T = void> {
+  onSuccess?: (result?: T) => void;
+  onError?: (error: Error) => void;
+  onRetryableError?: (error: Error) => boolean;
   showAlert?: boolean;
   alertTitle?: string;
+  maxRetries?: number;
+  retryDelay?: number;
 }
 
-export function useAsyncOperation(options: UseAsyncOperationOptions = {}) {
+export function useAsyncOperation<T = void>(
+  options: UseAsyncOperationOptions<T> = {},
+) {
   const {
     onSuccess,
     onError,
+    onRetryableError,
     showAlert = true,
     alertTitle = 'Error',
+    maxRetries = 0,
+    retryDelay = 1000,
   } = options;
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const execute = useCallback(
-    async (operation: () => Promise<void>) => {
+    async (operation: () => Promise<T>): Promise<T | undefined> => {
       setLoading(true);
       setError(null);
-      try {
-        await operation();
-        onSuccess?.();
-      } catch (e) {
-        const message = (e as Error).message || 'An error occurred';
-        setError(message);
-        
-        if (showAlert) {
-          Alert.alert(alertTitle, message);
+
+      let lastError: Error | null = null;
+      let retryCount = 0;
+
+      while (retryCount <= maxRetries) {
+        try {
+          const result = await operation();
+          setLoading(false);
+          onSuccess?.(result);
+          return result;
+        } catch (e) {
+          lastError = e as Error;
+          const message = (e as Error).message || 'An error occurred';
+
+          // Check if error is retryable
+          const isRetryable = onRetryableError?.(lastError) ?? false;
+
+          if (isRetryable && retryCount < maxRetries) {
+            retryCount++;
+            // Wait before retrying
+            await new Promise(resolve =>
+              setTimeout(resolve, retryDelay * retryCount),
+            );
+            continue;
+          }
+
+          // Error is not retryable or max retries reached
+          setError(message);
+
+          if (showAlert) {
+            Alert.alert(alertTitle, message);
+          }
+
+          onError?.(lastError);
+          setLoading(false);
+          return undefined;
         }
-        
-        onError?.(message);
-      } finally {
-        setLoading(false);
       }
+
+      return undefined;
     },
-    [onSuccess, onError, showAlert, alertTitle]
+    [
+      onSuccess,
+      onError,
+      onRetryableError,
+      showAlert,
+      alertTitle,
+      maxRetries,
+      retryDelay,
+    ],
   );
 
   return {

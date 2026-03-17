@@ -1,30 +1,26 @@
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Text,
-  View,
-} from "react-native";
-import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, Text, View } from 'react-native';
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
 import {
   clearMyAvailability,
   getMyAvailability,
   setMyAvailability,
   type AvailabilitySlot,
-} from "@smart/api";
-import { createApiClient } from "../../lib/api";
+} from '@smart/api';
+import { createApiClient } from '../../lib/api';
 import {
   combineDateAndTime,
   formatDateLabel,
   formatDateTime,
   formatTimeLabel,
-} from "../../lib/dateTime";
+} from '../../lib/dateTime';
 import {
   normalizeAvailabilityResponse,
   sortAvailabilitySlots,
-} from "../../lib/availability";
-import { useTheme } from "../../theme";
+} from '../../lib/availability';
+import { useTheme } from '../../theme';
 import {
   AppButton,
   ButtonRow,
@@ -35,9 +31,9 @@ import {
   Label,
   PageHeader,
   Screen,
-} from "../../ui/primitives";
+} from '../../ui/primitives';
 
-type PickerTarget = "date" | "start" | "end" | null;
+type PickerTarget = 'date' | 'start' | 'end' | null;
 
 export default function AvailabilityPlaceholder() {
   const api = useMemo(() => createApiClient(), []);
@@ -66,7 +62,7 @@ export default function AvailabilityPlaceholder() {
       const data = await getMyAvailability(api);
       setSlots(sortAvailabilitySlots(normalizeAvailabilityResponse(data)));
     } catch (e) {
-      Alert.alert("Could not load availability", (e as Error).message);
+      Alert.alert('Could not load availability', (e as Error).message);
     } finally {
       setLoading(false);
     }
@@ -77,14 +73,14 @@ export default function AvailabilityPlaceholder() {
   }, []);
 
   function onPickerChange(event: DateTimePickerEvent, value?: Date) {
-    if (event.type === "dismissed" || !value) {
+    if (event.type === 'dismissed' || !value) {
       setPickerTarget(null);
       return;
     }
 
-    if (pickerTarget === "date") setSelectedDate(value);
-    if (pickerTarget === "start") setStartTime(value);
-    if (pickerTarget === "end") setEndTime(value);
+    if (pickerTarget === 'date') setSelectedDate(value);
+    if (pickerTarget === 'start') setStartTime(value);
+    if (pickerTarget === 'end') setEndTime(value);
 
     setPickerTarget(null);
   }
@@ -94,33 +90,33 @@ export default function AvailabilityPlaceholder() {
     const end = combineDateAndTime(selectedDate, endTime);
 
     if (end <= start) {
-      Alert.alert("Invalid range", "End must be after start.");
+      Alert.alert('Invalid range', 'End must be after start.');
       return;
     }
 
-    setSlots((prev) =>
+    setSlots(prev =>
       sortAvailabilitySlots([
         ...prev,
         {
           start: start.toISOString(),
           end: end.toISOString(),
         },
-      ])
+      ]),
     );
   }
 
   function removeSlot(index: number) {
-    setSlots((prev) => prev.filter((_, i) => i !== index));
+    setSlots(prev => prev.filter((_, i) => i !== index));
   }
 
   async function saveAvailability() {
     setSaving(true);
     try {
       await setMyAvailability(api, { slots });
-      Alert.alert("Availability saved", `Saved ${slots.length} slot(s).`);
+      Alert.alert('Availability saved', `Saved ${slots.length} slot(s).`);
       await loadAvailability();
     } catch (e) {
-      Alert.alert("Save failed", (e as Error).message);
+      Alert.alert('Save failed', (e as Error).message);
     } finally {
       setSaving(false);
     }
@@ -131,9 +127,9 @@ export default function AvailabilityPlaceholder() {
     try {
       await clearMyAvailability(api);
       setSlots([]);
-      Alert.alert("Availability cleared", "All slots were removed.");
+      Alert.alert('Availability cleared', 'All slots were removed.');
     } catch (e) {
-      Alert.alert("Clear failed", (e as Error).message);
+      Alert.alert('Clear failed', (e as Error).message);
     } finally {
       setClearing(false);
     }
@@ -146,42 +142,65 @@ export default function AvailabilityPlaceholder() {
     <Screen>
       {pickerTarget ? (
         <DateTimePicker
-          value={pickerTarget === "date" ? selectedDate : pickerTarget === "start" ? startTime : endTime}
-          mode={pickerTarget === "date" ? "date" : "time"}
+          value={
+            pickerTarget === 'date'
+              ? selectedDate
+              : pickerTarget === 'start'
+                ? startTime
+                : endTime
+          }
+          mode={pickerTarget === 'date' ? 'date' : 'time'}
           is24Hour
           onChange={onPickerChange}
         />
       ) : null}
 
+      <View style={{ paddingHorizontal: 16, paddingTop: 16, marginBottom: 14 }}>
+        <PageHeader
+          title="Availability"
+          subtitle="Manage the time slots you can accept jobs"
+          action={
+            <AppButton
+              label="Refresh"
+              onPress={loadAvailability}
+              style={{ minWidth: 120 }}
+            />
+          }
+        />
+      </View>
+
       <FlatList
-        contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}
         data={slots}
         keyExtractor={(item, index) => `${item.start}-${item.end}-${index}`}
         ListHeaderComponent={
           <View style={{ gap: 12, marginBottom: 12 }}>
-            <PageHeader
-              title="Availability"
-              subtitle="Manage the time slots you can accept jobs"
-              action={<AppButton label="Refresh" onPress={loadAvailability} style={{ minWidth: 120 }} />}
-            />
-
             <Card>
               <CardTitle title="Add slot" />
 
               <View style={{ gap: 8 }}>
                 <Label>Date</Label>
-                <InputButton label={formatDateLabel(selectedDate)} onPress={() => setPickerTarget("date")} />
+                <InputButton
+                  label={formatDateLabel(selectedDate)}
+                  onPress={() => setPickerTarget('date')}
+                />
               </View>
 
               <ButtonRow>
                 <View style={{ flex: 1, gap: 8 }}>
                   <Label>Start</Label>
-                  <InputButton label={formatTimeLabel(startTime)} onPress={() => setPickerTarget("start")} />
+                  <InputButton
+                    label={formatTimeLabel(startTime)}
+                    onPress={() => setPickerTarget('start')}
+                  />
                 </View>
 
                 <View style={{ flex: 1, gap: 8 }}>
                   <Label>End</Label>
-                  <InputButton label={formatTimeLabel(endTime)} onPress={() => setPickerTarget("end")} />
+                  <InputButton
+                    label={formatTimeLabel(endTime)}
+                    onPress={() => setPickerTarget('end')}
+                  />
                 </View>
               </ButtonRow>
 
@@ -192,22 +211,25 @@ export default function AvailabilityPlaceholder() {
                   borderRadius: 16,
                   padding: 12,
                   backgroundColor: colors.surfaceMuted,
-                }}
-              >
+                }}>
                 <Text style={{ color: colors.textSoft }}>
-                  Slot preview: {previewStart.toLocaleString()} → {previewEnd.toLocaleString()}
+                  Slot preview: {previewStart.toLocaleString()} →{' '}
+                  {previewEnd.toLocaleString()}
                 </Text>
               </View>
 
               <AppButton label="Add slot locally" onPress={addDraftSlot} />
             </Card>
 
-            <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>Current slots</Text>
+            <Text
+              style={{ fontSize: 18, fontWeight: '800', color: colors.text }}>
+              Current slots
+            </Text>
           </View>
         }
         ListEmptyComponent={
           loading ? (
-            <View style={{ paddingVertical: 32, alignItems: "center" }}>
+            <View style={{ paddingVertical: 32, alignItems: 'center' }}>
               <ActivityIndicator color={colors.primary} />
             </View>
           ) : (
@@ -216,17 +238,28 @@ export default function AvailabilityPlaceholder() {
         }
         renderItem={({ item, index }) => (
           <Card style={{ marginBottom: 10 }}>
-            <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>Slot {index + 1}</Text>
-            <Text style={{ color: colors.textSoft }}>Start: {formatDateTime(item.start)}</Text>
-            <Text style={{ color: colors.textSoft }}>End: {formatDateTime(item.end)}</Text>
-            <AppButton label="Remove" onPress={() => removeSlot(index)} tone="secondary" />
+            <Text
+              style={{ fontSize: 16, fontWeight: '800', color: colors.text }}>
+              Slot {index + 1}
+            </Text>
+            <Text style={{ color: colors.textSoft }}>
+              Start: {formatDateTime(item.start)}
+            </Text>
+            <Text style={{ color: colors.textSoft }}>
+              End: {formatDateTime(item.end)}
+            </Text>
+            <AppButton
+              label="Remove"
+              onPress={() => removeSlot(index)}
+              tone="secondary"
+            />
           </Card>
         )}
       />
 
       <View
         style={{
-          position: "absolute",
+          position: 'absolute',
           left: 0,
           right: 0,
           bottom: 0,
@@ -234,8 +267,7 @@ export default function AvailabilityPlaceholder() {
           backgroundColor: colors.surface,
           borderTopWidth: 1,
           borderTopColor: colors.border,
-        }}
-      >
+        }}>
         <ButtonRow>
           <AppButton
             label="Clear all"

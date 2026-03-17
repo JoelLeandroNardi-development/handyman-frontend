@@ -1,12 +1,25 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Appearance } from "react-native";
-import * as SecureStore from "expo-secure-store";
-import { palettes, type ThemeMode, type ThemePalette } from "@smart/theme";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { Appearance } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
+import {
+  palettes,
+  themes,
+  type ThemeMode,
+  type ThemePalette,
+  type ThemeTokens,
+} from '@smart/theme';
 
-const STORAGE_KEY = "handyman-theme-mode";
+const STORAGE_KEY = 'handyman-theme-mode';
 
 function isThemeMode(value: string | null): value is ThemeMode {
-  return value === "light" || value === "dark";
+  return value === 'light' || value === 'dark';
 }
 
 async function loadStoredMode(): Promise<ThemeMode | null> {
@@ -21,21 +34,25 @@ async function loadStoredMode(): Promise<ThemeMode | null> {
 async function saveMode(mode: ThemeMode) {
   try {
     await SecureStore.setItemAsync(STORAGE_KEY, mode);
-  } catch {
-  }
+  } catch {}
 }
 
 function getPreferredMode(): ThemeMode {
-  return Appearance.getColorScheme() === "dark" ? "dark" : "light";
+  return Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
 }
 
 function getThemeData(mode: ThemeMode): ThemePalette {
   return palettes[mode];
 }
 
+function getThemeTokens(mode: ThemeMode): ThemeTokens {
+  return themes[mode];
+}
+
 type ThemeContextValue = {
   mode: ThemeMode;
   colors: ThemePalette;
+  tokens: ThemeTokens;
   toggle: () => void;
   setMode: (mode: ThemeMode) => void;
 };
@@ -64,7 +81,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const listener = Appearance.addChangeListener(({ colorScheme }) => {
       if (!hasStoredPreference) {
-        setModeState(colorScheme === "dark" ? "dark" : "light");
+        setModeState(colorScheme === 'dark' ? 'dark' : 'light');
       }
     });
 
@@ -81,8 +98,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggle = useCallback(() => {
-    setModeState((prev) => {
-      const nextMode = prev === "light" ? "dark" : "light";
+    setModeState(prev => {
+      const nextMode = prev === 'light' ? 'dark' : 'light';
       setHasStoredPreference(true);
       void saveMode(nextMode);
       return nextMode;
@@ -90,17 +107,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ mode, colors: getThemeData(mode), toggle, setMode }),
-    [mode, toggle, setMode]
+    () => ({
+      mode,
+      colors: getThemeData(mode),
+      tokens: getThemeTokens(mode),
+      toggle,
+      setMode,
+    }),
+    [mode, toggle, setMode],
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {
   const ctx = useContext(ThemeContext);
   if (!ctx) {
-    throw new Error("useTheme must be used within ThemeProvider");
+    throw new Error('useTheme must be used within ThemeProvider');
   }
   return ctx;
 }

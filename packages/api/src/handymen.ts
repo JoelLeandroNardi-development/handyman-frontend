@@ -4,8 +4,7 @@ import { buildQueryString } from './utils/queryBuilder';
 
 export type CreateHandyman = components['schemas']['CreateHandyman'];
 export type UpdateHandyman = components['schemas']['UpdateHandyman'];
-export type UpdateHandymanLocation =
-  components['schemas']['UpdateLocation'];
+export type UpdateHandymanLocation = components['schemas']['UpdateLocation'];
 export type HandymanResponse = components['schemas']['HandymanResponse'];
 
 export type SkillCatalogFlatResponse =
@@ -18,16 +17,18 @@ export type HandymanReviewResponse =
 export async function listHandymen(
   api: ApiClient,
   params?: { limit?: number; offset?: number },
-): Promise<unknown> {
+): Promise<HandymanResponse[]> {
   const suffix = buildQueryString(params || {});
-  return api.request(`/handymen${suffix}`, { method: 'GET' });
+  return api.request<HandymanResponse[]>(`/handymen${suffix}`, {
+    method: 'GET',
+  });
 }
 
 export async function createHandyman(
   api: ApiClient,
   body: CreateHandyman,
-): Promise<unknown> {
-  return api.request('/handymen', {
+): Promise<HandymanResponse> {
+  return api.request<HandymanResponse>('/handymen', {
     method: 'POST',
     json: body,
   });
@@ -60,8 +61,8 @@ export async function adminUpdateHandyman(
 export async function adminDeleteHandyman(
   api: ApiClient,
   email: string,
-): Promise<unknown> {
-  return api.request(`/handymen/${encodeURIComponent(email)}`, {
+): Promise<void> {
+  await api.request(`/handymen/${encodeURIComponent(email)}`, {
     method: 'DELETE',
   });
 }
@@ -70,11 +71,14 @@ export async function updateHandymanLocation(
   api: ApiClient,
   email: string,
   body: UpdateHandymanLocation,
-): Promise<unknown> {
-  return api.request(`/handymen/${encodeURIComponent(email)}/location`, {
-    method: 'PUT',
-    json: body,
-  });
+): Promise<HandymanResponse> {
+  return api.request<HandymanResponse>(
+    `/handymen/${encodeURIComponent(email)}/location`,
+    {
+      method: 'PUT',
+      json: body,
+    },
+  );
 }
 
 export async function getMeHandyman(api: ApiClient): Promise<HandymanResponse> {

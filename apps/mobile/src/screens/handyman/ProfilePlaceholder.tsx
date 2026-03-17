@@ -1,23 +1,29 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from 'react';
 import {
   ActivityIndicator,
+  ScrollView,
   Text,
   View,
-} from "react-native";
-import * as Location from "expo-location";
-import Slider from "@react-native-community/slider";
+  Dimensions,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Slider from '@react-native-community/slider';
 import {
   getSkillsCatalogFlat,
   getMeHandyman,
   updateMeHandyman,
   type HandymanResponse,
   type SkillCatalogFlatResponse,
-} from "@smart/api";
-import { createApiClient } from "../../lib/api";
-import { parseOptionalCoordinates, toNullableString } from "../../lib/profileForm";
-import { useTheme } from "../../theme";
-import { useSession } from "../../auth/SessionProvider";
-import { useAsyncOperation } from "../../hooks/useAsyncOperation";
+} from '@smart/api';
+import { createApiClient } from '../../lib/api';
+import { toNullableString } from '../../lib/profileForm';
+import { useTheme } from '../../theme';
+import { useSession } from '../../auth/SessionProvider';
+import { useAsyncOperation } from '../../hooks/useAsyncOperation';
+import { useFormState } from '../../hooks/useFormState';
+import { useAppLocation } from '../../location/AppLocationProvider';
+import { useNotifications } from '../../notifications/NotificationsProvider';
+import { extractDeviceCoordinates } from '../../lib/coordinates';
 import {
   AppButton,
   AppInput,
@@ -25,70 +31,95 @@ import {
   Card,
   CardTitle,
   Label,
-  PageHeader,
   Screen,
   SkillChip,
-} from "../../ui/primitives";
-import ThemeToggleCard from "../../ui/ThemeToggleCard";
+} from '../../ui/primitives';
+import { ScreenHeader } from '../../ui/ScreenHeader';
+import ThemeToggleCard from '../../ui/ThemeToggleCard';
 
 export default function ProfilePlaceholder() {
   const api = useMemo(() => createApiClient(), []);
   const { colors } = useTheme();
-  const { session, availableRoles, pickRole, roleMode, logout, refresh } = useSession();
+  const insets = useSafeAreaInsets();
+  const { availableRoles, pickRole, logout } = useSession();
+  const { unreadCount } = useNotifications();
 
-  const [catalog, setCatalog] = React.useState<SkillCatalogFlatResponse | null>(null);
-  const [profile, setProfile] = React.useState<HandymanResponse | null>(null);
+  const screenHeight = Dimensions.get('window').height;
+  const maxHeight = screenHeight - Math.max(insets.bottom);
 
+  interface HandymanFormData {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    nationalId: string;
+    addressLine: string;
+    postalCode: string;
+    city: string;
+    country: string;
+    yearsExperience: string;
+  }
+
+  const initialFormData: HandymanFormData = {
+    firstName: '',
+    lastName: '',
+    phone: '',
+    nationalId: '',
+    addressLine: '',
+    postalCode: '',
+    city: '',
+    country: '',
+    yearsExperience: '',
+  };
+
+  const [catalog, setCatalog] = React.useState<SkillCatalogFlatResponse | null>(
+    null,
+  );
   const [selectedSkills, setSelectedSkills] = React.useState<string[]>([]);
-  const [firstName, setFirstName] = React.useState("");
-  const [lastName, setLastName] = React.useState("");
-  const [phone, setPhone] = React.useState("");
-  const [nationalId, setNationalId] = React.useState("");
-  const [addressLine, setAddressLine] = React.useState("");
-  const [postalCode, setPostalCode] = React.useState("");
-  const [city, setCity] = React.useState("");
-  const [country, setCountry] = React.useState("");
-  const [yearsExperience, setYearsExperience] = React.useState("");
   const [serviceRadiusKm, setServiceRadiusKm] = React.useState(0);
-  const [latitude, setLatitude] = React.useState("");
-  const [longitude, setLongitude] = React.useState("");
 
-  const applyProfileData = React.useCallback((data: HandymanResponse) => {
-    setProfile(data);
-    setSelectedSkills(data.skills ?? []);
-    setFirstName(data.first_name ?? "");
-    setLastName(data.last_name ?? "");
-    setPhone(data.phone ?? "");
-    setNationalId(data.national_id ?? "");
-    setAddressLine(data.address_line ?? "");
-    setPostalCode(data.postal_code ?? "");
-    setCity(data.city ?? "");
-    setCountry(data.country ?? "");
-    setYearsExperience(String(data.years_experience ?? ""));
-    setServiceRadiusKm(typeof data.service_radius_km === "number" ? data.service_radius_km : 0);
-    setLatitude(data.latitude != null ? String(data.latitude) : "");
-    setLongitude(data.longitude != null ? String(data.longitude) : "");
-  }, []);
+  const {
+    data: formData,
+    patch,
+    patchMany,
+  } = useFormState<HandymanFormData>(initialFormData);
+
+  const applyProfileData = React.useCallback(
+    (data: HandymanResponse) => {
+      setSelectedSkills(data.skills ?? []);
+      patchMany({
+        firstName: data.first_name ?? '',
+        lastName: data.last_name ?? '',
+        phone: data.phone ?? '',
+        nationalId: data.national_id ?? '',
+        addressLine: data.address_line ?? '',
+        postalCode: data.postal_code ?? '',
+        city: data.city ?? '',
+        country: data.country ?? '',
+        yearsExperience: String(data.years_experience ?? ''),
+      });
+      setServiceRadiusKm(
+        typeof data.service_radius_km === 'number' ? data.service_radius_km : 0,
+      );
+    },
+    [patchMany],
+  );
 
   const { execute: loadCatalog, loading: loadingCatalog } = useAsyncOperation({
-    alertTitle: "Load Skills Catalog",
+    alertTitle: 'Load Skills Catalog',
   });
 
   const { execute: loadProfile, loading: loadingProfile } = useAsyncOperation({
-    alertTitle: "Load Profile",
-  });
-
-  const { execute: handleLocationUpdate, loading: locating } = useAsyncOperation({
-    alertTitle: "Get Current Location",
+    alertTitle: 'Load Profile',
   });
 
   const { execute: handleProfileSave, loading: saving } = useAsyncOperation({
-    alertTitle: "Save Profile",
+    alertTitle: 'Save Profile',
     onSuccess: () => {
-      refresh();
       void loadAll();
     },
   });
+
+  const { coords: deviceCoords } = useAppLocation();
 
   async function loadAll() {
     await Promise.all([
@@ -108,52 +139,35 @@ export default function ProfilePlaceholder() {
   }, []);
 
   function toggleSkill(skillKey: string) {
-    setSelectedSkills((prev) =>
-      prev.includes(skillKey) ? prev.filter((s) => s !== skillKey) : [...prev, skillKey]
+    setSelectedSkills(prev =>
+      prev.includes(skillKey)
+        ? prev.filter(s => s !== skillKey)
+        : [...prev, skillKey],
     );
   }
 
-  async function useCurrentLocation() {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      throw new Error("Location permission denied.");
-    }
-
-    const pos = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.Balanced,
-    });
-
-    setLatitude(String(pos.coords.latitude));
-    setLongitude(String(pos.coords.longitude));
-  }
-
   async function saveProfile() {
-    if (!profile) {
-      throw new Error("Could not load your handyman profile.");
-    }
-
-    const parsedYears = Number.parseInt(yearsExperience, 10);
+    const parsedYears = Number.parseInt(formData.yearsExperience, 10);
     if (Number.isNaN(parsedYears) || parsedYears < 0) {
-      throw new Error("Please enter a valid integer for years of experience.");
+      throw new Error('Please enter a valid integer for years of experience.');
     }
 
-    const { latitude: parsedLatitude, longitude: parsedLongitude } =
-      parseOptionalCoordinates(latitude, longitude);
+    const { latitude, longitude } = extractDeviceCoordinates(deviceCoords);
 
     const updated = await updateMeHandyman(api, {
-      first_name: toNullableString(firstName),
-      last_name: toNullableString(lastName),
-      phone: toNullableString(phone),
-      national_id: toNullableString(nationalId),
-      address_line: toNullableString(addressLine),
-      postal_code: toNullableString(postalCode),
-      city: toNullableString(city),
-      country: toNullableString(country),
+      first_name: toNullableString(formData.firstName),
+      last_name: toNullableString(formData.lastName),
+      phone: toNullableString(formData.phone),
+      national_id: toNullableString(formData.nationalId),
+      address_line: toNullableString(formData.addressLine),
+      postal_code: toNullableString(formData.postalCode),
+      city: toNullableString(formData.city),
+      country: toNullableString(formData.country),
       skills: selectedSkills,
       years_experience: parsedYears,
       service_radius_km: Math.round(serviceRadiusKm),
-      latitude: parsedLatitude,
-      longitude: parsedLongitude,
+      latitude,
+      longitude,
     });
     applyProfileData(updated);
   }
@@ -161,179 +175,235 @@ export default function ProfilePlaceholder() {
   const loading = loadingCatalog || loadingProfile;
 
   return (
-    <Screen scroll>
-      <PageHeader title="Profile" />
+    <Screen
+      style={{
+        paddingBottom: 10,
+        maxHeight,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        overflow: 'hidden',
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+      }}>
+      <ScreenHeader
+        title="Profile"
+        subtitle="Manage your settings and handyman information"
+        notificationBadgeCount={unreadCount}
+        isModal={true}
+        closeButtonPosition="right"
+      />
 
-      <Card>
-        <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>{session?.email ?? "-"}</Text>
-        <Text style={{ color: colors.textSoft, fontSize: 15 }}>Current mode: {roleMode ?? "-"}</Text>
-        <Text style={{ color: colors.textSoft, fontSize: 15 }}>
-          Roles: {(session?.roles ?? []).join(", ") || "-"}
-        </Text>
-      </Card>
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          gap: 14,
+        }}>
+        <ThemeToggleCard />
 
-      <ThemeToggleCard />
-
-      <Card>
-        <CardTitle
-          title="Handyman details"
-          action={<AppButton label="Refresh" onPress={() => void loadAll()} style={{ minWidth: 110 }} />}
-        />
-
-        {loading ? (
-          <ActivityIndicator color={colors.primary} />
-        ) : (
-          <>
-            <View style={{ gap: 8 }}>
-              <Label>First name</Label>
-              <AppInput value={firstName} onChangeText={setFirstName} placeholder="First name" />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>Last name</Label>
-              <AppInput value={lastName} onChangeText={setLastName} placeholder="Last name" />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>Phone</Label>
-              <AppInput value={phone} onChangeText={setPhone} placeholder="Phone" keyboardType="phone-pad" />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>National ID</Label>
-              <AppInput value={nationalId} onChangeText={setNationalId} placeholder="National ID" />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>Address line</Label>
-              <AppInput value={addressLine} onChangeText={setAddressLine} placeholder="Address line" />
-            </View>
-
-            <ButtonRow>
-              <View style={{ flex: 1, gap: 8 }}>
-                <Label>Postal code</Label>
-                <AppInput value={postalCode} onChangeText={setPostalCode} placeholder="Postal code" />
-              </View>
-              <View style={{ flex: 1, gap: 8 }}>
-                <Label>City</Label>
-                <AppInput value={city} onChangeText={setCity} placeholder="City" />
-              </View>
-            </ButtonRow>
-
-            <View style={{ gap: 8 }}>
-              <Label>Country</Label>
-              <AppInput value={country} onChangeText={setCountry} placeholder="Country" />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>Years of experience</Label>
-              <AppInput
-                value={yearsExperience}
-                onChangeText={setYearsExperience}
-                keyboardType="number-pad"
-                placeholder="e.g. 5"
-              />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>Service radius: {Math.round(serviceRadiusKm)} km</Label>
-              <Slider
-                minimumValue={0}
-                maximumValue={100}
-                step={1}
-                value={serviceRadiusKm}
-                onValueChange={setServiceRadiusKm}
-                minimumTrackTintColor={colors.primary}
-                maximumTrackTintColor={colors.border}
-              />
-              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                <Text style={{ color: colors.textFaint }}>0 km</Text>
-                <Text style={{ color: colors.textFaint }}>100 km</Text>
-              </View>
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>Location</Label>
-              <ButtonRow>
-                <AppInput
-                  value={latitude}
-                  onChangeText={setLatitude}
-                  keyboardType="decimal-pad"
-                  placeholder="Latitude"
-                  style={{ flex: 1 }}
-                />
-                <AppInput
-                  value={longitude}
-                  onChangeText={setLongitude}
-                  keyboardType="decimal-pad"
-                  placeholder="Longitude"
-                  style={{ flex: 1 }}
-                />
-              </ButtonRow>
-              <AppButton
-                label="Use current location"
-                onPress={() => handleLocationUpdate(useCurrentLocation)}
-                loading={locating}
-              />
-            </View>
-          </>
-        )}
-      </Card>
-
-      <Card>
-        <CardTitle title="Skills" />
-
-        {loading ? (
-          <ActivityIndicator color={colors.primary} />
-        ) : !catalog || catalog.categories.length === 0 ? (
-          <Text style={{ color: colors.textSoft }}>No active skills found in catalog.</Text>
-        ) : (
-          <>
-            {catalog.categories.map((category) => {
-              const skillsInCategory = category.skills.filter((s) => s.active);
-              if (skillsInCategory.length === 0) return null;
-
-              return (
-                <View key={category.key} style={{ gap: 10 }}>
-                  <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
-                    {category.label}
-                  </Text>
-
-                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                    {skillsInCategory.map((skill) => (
-                      <SkillChip
-                        key={skill.key}
-                        label={skill.label}
-                        selected={selectedSkills.includes(skill.key)}
-                        onPress={() => toggleSkill(skill.key)}
-                      />
-                    ))}
-                  </View>
-                </View>
-              );
-            })}
-
-            <AppButton
-              label="Save profile"
-              onPress={() => handleProfileSave(saveProfile)}
-              loading={saving}
-              disabled={loading || !profile}
-            />
-          </>
-        )}
-      </Card>
-
-      {availableRoles.length > 1 ? (
         <Card>
-          <CardTitle title="Switch role" />
-          <ButtonRow>
-            <AppButton label="User" onPress={() => pickRole("user")} tone="secondary" style={{ flex: 1 }} />
-            <AppButton label="Handyman" onPress={() => pickRole("handyman")} tone="secondary" style={{ flex: 1 }} />
-          </ButtonRow>
-        </Card>
-      ) : null}
+          <CardTitle
+            title="Handyman details"
+            action={
+              <AppButton
+                label="Refresh"
+                onPress={() => void loadAll()}
+                style={{ minWidth: 110 }}
+              />
+            }
+          />
 
-      <AppButton label="Logout" onPress={logout} />
+          {loading ? (
+            <ActivityIndicator color={colors.primary} />
+          ) : (
+            <>
+              <View style={{ gap: 8 }}>
+                <Label>First name</Label>
+                <AppInput
+                  value={formData.firstName}
+                  onChangeText={v => patch('firstName', v)}
+                  placeholder="First name"
+                />
+              </View>
+
+              <View style={{ gap: 8 }}>
+                <Label>Last name</Label>
+                <AppInput
+                  value={formData.lastName}
+                  onChangeText={v => patch('lastName', v)}
+                  placeholder="Last name"
+                />
+              </View>
+
+              <View style={{ gap: 8 }}>
+                <Label>Phone</Label>
+                <AppInput
+                  value={formData.phone}
+                  onChangeText={v => patch('phone', v)}
+                  placeholder="Phone"
+                  keyboardType="phone-pad"
+                />
+              </View>
+
+              <View style={{ gap: 8 }}>
+                <Label>National ID</Label>
+                <AppInput
+                  value={formData.nationalId}
+                  onChangeText={v => patch('nationalId', v)}
+                  placeholder="National ID"
+                />
+              </View>
+
+              <View style={{ gap: 8 }}>
+                <Label>Address line</Label>
+                <AppInput
+                  value={formData.addressLine}
+                  onChangeText={v => patch('addressLine', v)}
+                  placeholder="Address line"
+                />
+              </View>
+
+              <ButtonRow>
+                <View style={{ flex: 1, gap: 8 }}>
+                  <Label>Postal code</Label>
+                  <AppInput
+                    value={formData.postalCode}
+                    onChangeText={v => patch('postalCode', v)}
+                    placeholder="Postal code"
+                  />
+                </View>
+                <View style={{ flex: 1, gap: 8 }}>
+                  <Label>City</Label>
+                  <AppInput
+                    value={formData.city}
+                    onChangeText={v => patch('city', v)}
+                    placeholder="City"
+                  />
+                </View>
+              </ButtonRow>
+
+              <View style={{ gap: 8 }}>
+                <Label>Country</Label>
+                <AppInput
+                  value={formData.country}
+                  onChangeText={v => patch('country', v)}
+                  placeholder="Country"
+                />
+              </View>
+
+              <View style={{ gap: 8 }}>
+                <Label>Years of experience</Label>
+                <AppInput
+                  value={formData.yearsExperience}
+                  onChangeText={v => patch('yearsExperience', v)}
+                  keyboardType="number-pad"
+                  placeholder="e.g. 5"
+                />
+              </View>
+
+              <View style={{ gap: 8 }}>
+                <Label>Service radius: {Math.round(serviceRadiusKm)} km</Label>
+                <Slider
+                  minimumValue={0}
+                  maximumValue={100}
+                  step={1}
+                  value={serviceRadiusKm}
+                  onValueChange={setServiceRadiusKm}
+                  minimumTrackTintColor={colors.primary}
+                  maximumTrackTintColor={colors.border}
+                />
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                  }}>
+                  <Text style={{ color: colors.textFaint }}>0 km</Text>
+                  <Text style={{ color: colors.textFaint }}>100 km</Text>
+                </View>
+              </View>
+            </>
+          )}
+        </Card>
+
+        <Card>
+          <CardTitle title="Skills" />
+
+          {loading ? (
+            <ActivityIndicator color={colors.primary} />
+          ) : !catalog || catalog.categories.length === 0 ? (
+            <Text style={{ color: colors.textSoft }}>
+              No active skills found in catalog.
+            </Text>
+          ) : (
+            <>
+              {catalog.categories.map(category => {
+                const skillsInCategory = category.skills.filter(s => s.active);
+                if (skillsInCategory.length === 0) return null;
+
+                return (
+                  <View key={category.key} style={{ gap: 10 }}>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: '800',
+                        color: colors.text,
+                      }}>
+                      {category.label}
+                    </Text>
+
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        gap: 8,
+                      }}>
+                      {skillsInCategory.map(skill => (
+                        <SkillChip
+                          key={skill.key}
+                          label={skill.label}
+                          selected={selectedSkills.includes(skill.key)}
+                          onPress={() => toggleSkill(skill.key)}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                );
+              })}
+
+              <AppButton
+                label="Save profile"
+                onPress={() => handleProfileSave(saveProfile)}
+                loading={saving}
+                disabled={loading}
+              />
+            </>
+          )}
+        </Card>
+
+        {availableRoles.length > 1 ? (
+          <Card>
+            <CardTitle title="Switch role" />
+            <ButtonRow>
+              <AppButton
+                label="User"
+                onPress={() => pickRole('user')}
+                tone="secondary"
+                style={{ flex: 1 }}
+              />
+              <AppButton
+                label="Handyman"
+                onPress={() => pickRole('handyman')}
+                tone="secondary"
+                style={{ flex: 1 }}
+              />
+            </ButtonRow>
+          </Card>
+        ) : null}
+
+        <AppButton label="Logout" onPress={logout} />
+      </ScrollView>
     </Screen>
   );
 }

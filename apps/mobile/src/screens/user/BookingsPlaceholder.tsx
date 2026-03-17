@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -6,15 +6,16 @@ import {
   Pressable,
   Text,
   View,
-} from "react-native";
+} from 'react-native';
 import {
   cancelBooking,
   completeBookingUser,
   createBookingReview,
   getMyBookings,
   type BookingResponse,
-} from "@smart/api";
-import { useAsyncOperation } from "../../hooks/useAsyncOperation";
+} from '@smart/api';
+import { useAsyncOperation } from '../../hooks/useAsyncOperation';
+import { useNotifications } from '../../notifications/NotificationsProvider';
 import {
   BOOKING_STATUS_NORMALIZED,
   PAGINATION_DEFAULTS,
@@ -22,10 +23,10 @@ import {
   getBookingStatusTone,
   isPendingLikeBookingStatus,
   normalizeBookingStatus,
-} from "@smart/core";
-import { createApiClient } from "../../lib/api";
-import { formatDateTime } from "../../lib/dateTime";
-import { useTheme } from "../../theme";
+} from '@smart/core';
+import { createApiClient } from '../../lib/api';
+import { formatDateTime } from '../../lib/dateTime';
+import { useTheme } from '../../theme';
 import {
   AppButton,
   AppInput,
@@ -33,28 +34,48 @@ import {
   ButtonRow,
   Card,
   EmptyState,
-  PageHeader,
   Screen,
   StatusBadge,
-} from "../../ui/primitives";
+} from '../../ui/primitives';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 function canUserComplete(booking: BookingResponse) {
   const status = normalizeBookingStatus(booking.status);
-  return status === BOOKING_STATUS_NORMALIZED.CONFIRMED && !booking.completed_by_user;
+  return (
+    status === BOOKING_STATUS_NORMALIZED.CONFIRMED && !booking.completed_by_user
+  );
 }
 
 function canReviewBooking(booking: BookingResponse) {
   const status = normalizeBookingStatus(booking.status);
-  return status === BOOKING_STATUS_NORMALIZED.COMPLETED || (!!booking.completed_by_user && !!booking.completed_by_handyman);
+  return (
+    status === BOOKING_STATUS_NORMALIZED.COMPLETED ||
+    (!!booking.completed_by_user && !!booking.completed_by_handyman)
+  );
 }
 
 function groupBookingsByStatus(bookings: BookingResponse[]) {
   return {
-    Pending: bookings.filter((b) => isPendingLikeBookingStatus(b.status)),
-    Confirmed: bookings.filter((b) => normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.CONFIRMED),
-    Completed: bookings.filter((b) => normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.COMPLETED),
-    Cancelled: bookings.filter((b) => normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.CANCELLED),
-    Failed: bookings.filter((b) => normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.FAILED),
+    Pending: bookings.filter(b => isPendingLikeBookingStatus(b.status)),
+    Confirmed: bookings.filter(
+      b =>
+        normalizeBookingStatus(b.status) ===
+        BOOKING_STATUS_NORMALIZED.CONFIRMED,
+    ),
+    Completed: bookings.filter(
+      b =>
+        normalizeBookingStatus(b.status) ===
+        BOOKING_STATUS_NORMALIZED.COMPLETED,
+    ),
+    Cancelled: bookings.filter(
+      b =>
+        normalizeBookingStatus(b.status) ===
+        BOOKING_STATUS_NORMALIZED.CANCELLED,
+    ),
+    Failed: bookings.filter(
+      b =>
+        normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.FAILED,
+    ),
   };
 }
 
@@ -76,8 +97,8 @@ function StarRating({
   };
 }) {
   return (
-    <View style={{ flexDirection: "row", gap: 8 }}>
-      {[1, 2, 3, 4, 5].map((star) => {
+    <View style={{ flexDirection: 'row', gap: 8 }}>
+      {[1, 2, 3, 4, 5].map(star => {
         const active = star <= value;
 
         return (
@@ -93,18 +114,16 @@ function StarRating({
               borderRadius: 12,
               borderWidth: 1,
               borderColor: active ? colors.primary : colors.border,
-              backgroundColor: active ? colors.surfaceMuted : "transparent",
-              alignItems: "center",
-              justifyContent: "center",
+              backgroundColor: active ? colors.surfaceMuted : 'transparent',
+              alignItems: 'center',
+              justifyContent: 'center',
               opacity: disabled ? 0.6 : 1,
-            }}
-          >
+            }}>
             <Text
               style={{
                 fontSize: 24,
                 color: active ? colors.primary : colors.textFaint,
-              }}
-            >
+              }}>
               ★
             </Text>
           </Pressable>
@@ -117,21 +136,25 @@ function StarRating({
 export default function BookingsPlaceholder() {
   const api = useMemo(() => createApiClient(), []);
   const { colors } = useTheme();
+  const { unreadCount } = useNotifications();
 
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [selected, setSelected] = useState<BookingResponse | null>(null);
-  const [cancelReason, setCancelReason] = useState("user_requested");
+  const [cancelReason, setCancelReason] = useState('user_requested');
   const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState("");
+  const [reviewComment, setReviewComment] = useState('');
 
   const { execute: loadBookings, loading } = useAsyncOperation({
     onSuccess: () => {},
-    alertTitle: "Load Bookings",
+    alertTitle: 'Load Bookings',
   });
 
   useEffect(() => {
     loadBookings(async () => {
-      const data = await getMyBookings(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
+      const data = await getMyBookings(api, {
+        limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
+        offset: PAGINATION_DEFAULTS.OFFSET,
+      });
       setBookings(data);
     });
   }, []);
@@ -140,11 +163,14 @@ export default function BookingsPlaceholder() {
     onSuccess: () => {
       setSelected(null);
       loadBookings(async () => {
-        const data = await getMyBookings(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
+        const data = await getMyBookings(api, {
+          limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
+          offset: PAGINATION_DEFAULTS.OFFSET,
+        });
         setBookings(data);
       });
     },
-    alertTitle: "Cancel Booking",
+    alertTitle: 'Cancel Booking',
   });
 
   const onCancel = () => {
@@ -152,20 +178,26 @@ export default function BookingsPlaceholder() {
 
     executeCancel(async () => {
       const res = await cancelBooking(api, selected.booking_id, {
-        reason: cancelReason || "user_requested",
+        reason: cancelReason || 'user_requested',
       });
-      Alert.alert("Booking cancelled", `Booking ${res.booking_id} is now ${res.status}.`);
+      Alert.alert(
+        'Booking cancelled',
+        `Booking ${res.booking_id} is now ${res.status}.`,
+      );
     });
   };
 
   const { execute: executeComplete, loading: completing } = useAsyncOperation({
     onSuccess: () => {
       loadBookings(async () => {
-        const data = await getMyBookings(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
+        const data = await getMyBookings(api, {
+          limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
+          offset: PAGINATION_DEFAULTS.OFFSET,
+        });
         setBookings(data);
       });
     },
-    alertTitle: "Complete Booking",
+    alertTitle: 'Complete Booking',
   });
 
   const onComplete = () => {
@@ -174,10 +206,10 @@ export default function BookingsPlaceholder() {
     executeComplete(async () => {
       const res = await completeBookingUser(api, selected.booking_id);
       Alert.alert(
-        "Completion recorded",
-        `Booking ${res.booking_id} is now ${res.status}.`
+        'Completion recorded',
+        `Booking ${res.booking_id} is now ${res.status}.`,
       );
-      setSelected((prev) =>
+      setSelected(prev =>
         prev
           ? {
               ...prev,
@@ -186,29 +218,33 @@ export default function BookingsPlaceholder() {
               completed_by_handyman: res.completed_by_handyman,
               completed_at: res.completed_at ?? prev.completed_at ?? null,
             }
-          : prev
+          : prev,
       );
     });
   };
 
-  const { execute: executeSubmitReview, loading: submittingReview } = useAsyncOperation({
-    onSuccess: () => {
-      setSelected(null);
-      setReviewRating(5);
-      setReviewComment("");
-      loadBookings(async () => {
-        const data = await getMyBookings(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
-        setBookings(data);
-      });
-    },
-    alertTitle: "Submit Review",
-  });
+  const { execute: executeSubmitReview, loading: submittingReview } =
+    useAsyncOperation({
+      onSuccess: () => {
+        setSelected(null);
+        setReviewRating(5);
+        setReviewComment('');
+        loadBookings(async () => {
+          const data = await getMyBookings(api, {
+            limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
+            offset: PAGINATION_DEFAULTS.OFFSET,
+          });
+          setBookings(data);
+        });
+      },
+      alertTitle: 'Submit Review',
+    });
 
   const onSubmitReview = () => {
     if (!selected) return;
 
     if (!canReviewBooking(selected)) {
-      Alert.alert("Review not available", "This booking is not completed yet.");
+      Alert.alert('Review not available', 'This booking is not completed yet.');
       return;
     }
 
@@ -218,53 +254,67 @@ export default function BookingsPlaceholder() {
         review_text: reviewComment.trim() || null,
       });
 
-      Alert.alert("Review submitted", "Thanks for rating this handyman.");
+      Alert.alert('Review submitted', 'Thanks for rating this handyman.');
     });
   };
 
   const grouped = groupBookingsByStatus(bookings);
-  const sections = Object.entries(grouped).map(([title, data]) => ({ title, data }));
+  const sections = Object.entries(grouped).map(([title, data]) => ({
+    title,
+    data,
+  }));
 
   function renderCard(item: BookingResponse) {
     return (
       <Card key={item.booking_id} style={{ marginBottom: 10 }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+            <Text
+              style={{ fontSize: 16, fontWeight: '800', color: colors.text }}>
               {item.handyman_email}
             </Text>
             <Text
               style={{
                 marginTop: 4,
                 color: colors.textFaint,
-                fontFamily: "monospace",
+                fontFamily: 'monospace',
                 fontSize: 13,
-              }}
-            >
+              }}>
               {item.booking_id}
             </Text>
           </View>
 
           <StatusBadge
-            label={getBookingDisplayStatus(item.status, "user")}
+            label={getBookingDisplayStatus(item.status, 'user')}
             tone={getBookingStatusTone(item.status)}
           />
         </View>
 
         <View style={{ gap: 4 }}>
-          <Text style={{ color: colors.textSoft }}>Start: {formatDateTime(item.desired_start)}</Text>
-          <Text style={{ color: colors.textSoft }}>End: {formatDateTime(item.desired_end)}</Text>
+          <Text style={{ color: colors.textSoft }}>
+            Start: {formatDateTime(item.desired_start)}
+          </Text>
+          <Text style={{ color: colors.textSoft }}>
+            End: {formatDateTime(item.desired_end)}
+          </Text>
           {item.job_description ? (
-            <Text style={{ color: colors.textSoft }}>Description: {item.job_description}</Text>
+            <Text style={{ color: colors.textSoft }}>
+              Description: {item.job_description}
+            </Text>
           ) : null}
         </View>
 
         <AppButton
           label="Open details"
           onPress={() => {
-            setCancelReason(item.cancellation_reason ?? "user_requested");
+            setCancelReason(item.cancellation_reason ?? 'user_requested');
             setReviewRating(5);
-            setReviewComment("");
+            setReviewComment('');
             setSelected(item);
           }}
           tone="secondary"
@@ -287,25 +337,26 @@ export default function BookingsPlaceholder() {
   return (
     <>
       <Screen>
-        <View style={{ paddingHorizontal: 16, paddingTop: 16, marginBottom: 14 }}>
-          <PageHeader
-            title="Bookings"
-            subtitle="Your booking requests and status"
-            action={
-              <AppButton
-                label="Refresh"
-                onPress={() =>
-                  loadBookings(async () => {
-                    const data = await getMyBookings(api, {
-                      limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
-                      offset: PAGINATION_DEFAULTS.OFFSET,
-                    });
-                    setBookings(data);
-                  })
-                }
-                style={{ minWidth: 120 }}
-              />
+        <ScreenHeader
+          title="Bookings"
+          subtitle="Your booking requests and status"
+          notificationBadgeCount={unreadCount}
+        />
+
+        <View
+          style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 2 }}>
+          <AppButton
+            label="Refresh"
+            onPress={() =>
+              loadBookings(async () => {
+                const data = await getMyBookings(api, {
+                  limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
+                  offset: PAGINATION_DEFAULTS.OFFSET,
+                });
+                setBookings(data);
+              })
             }
+            style={{ minWidth: 120 }}
           />
         </View>
 
@@ -313,16 +364,16 @@ export default function BookingsPlaceholder() {
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
           sections={sections}
           stickySectionHeadersEnabled
-          keyExtractor={(item) => item.booking_id}
+          keyExtractor={item => item.booking_id}
           renderSectionHeader={({ section }) => (
             <View
               style={{
                 paddingTop: 6,
                 paddingBottom: 8,
                 backgroundColor: colors.bg,
-              }}
-            >
-              <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
+              }}>
+              <Text
+                style={{ fontSize: 18, fontWeight: '800', color: colors.text }}>
                 {section.title}
               </Text>
             </View>
@@ -339,7 +390,7 @@ export default function BookingsPlaceholder() {
           }
           ListEmptyComponent={
             loading ? (
-              <View style={{ paddingVertical: 40, alignItems: "center" }}>
+              <View style={{ paddingVertical: 40, alignItems: 'center' }}>
                 <ActivityIndicator color={colors.primary} />
               </View>
             ) : null
@@ -347,45 +398,69 @@ export default function BookingsPlaceholder() {
         />
       </Screen>
 
-      <BottomSheet visible={!!selected} onClose={() => setSelected(null)} title="Booking details">
+      <BottomSheet
+        visible={!!selected}
+        onClose={() => setSelected(null)}
+        title="Booking details">
         {selected ? (
           <>
-            <Text style={{ color: colors.textSoft }}>Handyman: {selected.handyman_email}</Text>
-            <Text style={{ color: colors.textSoft }}>Booking ID: {selected.booking_id}</Text>
-            <Text style={{ color: colors.textSoft }}>Start: {formatDateTime(selected.desired_start)}</Text>
-            <Text style={{ color: colors.textSoft }}>End: {formatDateTime(selected.desired_end)}</Text>
             <Text style={{ color: colors.textSoft }}>
-              Status: {getBookingDisplayStatus(selected.status, "user")}
+              Handyman: {selected.handyman_email}
+            </Text>
+            <Text style={{ color: colors.textSoft }}>
+              Booking ID: {selected.booking_id}
+            </Text>
+            <Text style={{ color: colors.textSoft }}>
+              Start: {formatDateTime(selected.desired_start)}
+            </Text>
+            <Text style={{ color: colors.textSoft }}>
+              End: {formatDateTime(selected.desired_end)}
+            </Text>
+            <Text style={{ color: colors.textSoft }}>
+              Status: {getBookingDisplayStatus(selected.status, 'user')}
             </Text>
 
             {selected.job_description ? (
-              <Text style={{ color: colors.textSoft }}>Description: {selected.job_description}</Text>
+              <Text style={{ color: colors.textSoft }}>
+                Description: {selected.job_description}
+              </Text>
             ) : null}
 
             <Text style={{ color: colors.textSoft }}>
-              Completed by you: {selected.completed_by_user ? "Yes" : "No"}
+              Completed by you: {selected.completed_by_user ? 'Yes' : 'No'}
             </Text>
             <Text style={{ color: colors.textSoft }}>
-              Completed by handyman: {selected.completed_by_handyman ? "Yes" : "No"}
+              Completed by handyman:{' '}
+              {selected.completed_by_handyman ? 'Yes' : 'No'}
             </Text>
             {selected.completed_at ? (
-              <Text style={{ color: colors.textSoft }}>Completed at: {formatDateTime(selected.completed_at)}</Text>
+              <Text style={{ color: colors.textSoft }}>
+                Completed at: {formatDateTime(selected.completed_at)}
+              </Text>
             ) : null}
 
             {selected.cancellation_reason ? (
-              <Text style={{ color: colors.textSoft }}>Cancel reason: {selected.cancellation_reason}</Text>
+              <Text style={{ color: colors.textSoft }}>
+                Cancel reason: {selected.cancellation_reason}
+              </Text>
             ) : null}
             {selected.failure_reason ? (
-              <Text style={{ color: colors.textSoft }}>Failure reason: {selected.failure_reason}</Text>
+              <Text style={{ color: colors.textSoft }}>
+                Failure reason: {selected.failure_reason}
+              </Text>
             ) : null}
             {selected.rejection_reason ? (
-              <Text style={{ color: colors.textSoft }}>Rejection reason: {selected.rejection_reason}</Text>
+              <Text style={{ color: colors.textSoft }}>
+                Rejection reason: {selected.rejection_reason}
+              </Text>
             ) : null}
 
             {!reviewDisabled ? (
               <>
                 <View style={{ gap: 8 }}>
-                  <Text style={{ fontWeight: "700", color: colors.text }}>Review rating</Text>
+                  <Text style={{ fontWeight: '700', color: colors.text }}>
+                    Review rating
+                  </Text>
                   <StarRating
                     value={reviewRating}
                     onChange={setReviewRating}
@@ -397,11 +472,15 @@ export default function BookingsPlaceholder() {
                       primary: colors.primary,
                     }}
                   />
-                  <Text style={{ color: colors.textSoft }}>{reviewRating} / 5</Text>
+                  <Text style={{ color: colors.textSoft }}>
+                    {reviewRating} / 5
+                  </Text>
                 </View>
 
                 <View style={{ gap: 8 }}>
-                  <Text style={{ fontWeight: "700", color: colors.text }}>Review comment</Text>
+                  <Text style={{ fontWeight: '700', color: colors.text }}>
+                    Review comment
+                  </Text>
                   <AppInput
                     value={reviewComment}
                     onChangeText={setReviewComment}
@@ -419,9 +498,12 @@ export default function BookingsPlaceholder() {
               />
             ) : null}
 
-            {normalizeBookingStatus(selected.status) !== BOOKING_STATUS_NORMALIZED.COMPLETED ? (
+            {normalizeBookingStatus(selected.status) !==
+            BOOKING_STATUS_NORMALIZED.COMPLETED ? (
               <View style={{ gap: 8 }}>
-                <Text style={{ fontWeight: "700", color: colors.text }}>Cancel reason</Text>
+                <Text style={{ fontWeight: '700', color: colors.text }}>
+                  Cancel reason
+                </Text>
                 <AppInput
                   value={cancelReason}
                   onChangeText={setCancelReason}

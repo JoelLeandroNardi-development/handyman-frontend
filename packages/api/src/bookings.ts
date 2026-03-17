@@ -3,14 +3,12 @@ import type { components } from './schema';
 import { buildQueryString } from './utils/queryBuilder';
 
 export type BookingResponse = components['schemas']['BookingResponse'];
-export type CreateBookingRequest =
-  components['schemas']['CreateBooking'];
+export type CreateBookingRequest = components['schemas']['CreateBooking'];
 export type UpdateBookingAdmin = components['schemas']['UpdateBookingAdmin'];
 
 export type ConfirmBookingResponse =
   components['schemas']['ConfirmBookingResponse'];
-export type CancelBookingRequest =
-  components['schemas']['CancelBooking'];
+export type CancelBookingRequest = components['schemas']['CancelBooking'];
 export type CancelBookingResponse =
   components['schemas']['CancelBookingResponse'];
 
@@ -66,18 +64,21 @@ export async function adminUpdateBooking(
   api: ApiClient,
   bookingId: string,
   body: UpdateBookingAdmin,
-): Promise<unknown> {
-  return api.request(`/bookings/${encodeURIComponent(bookingId)}`, {
-    method: 'PUT',
-    json: body,
-  });
+): Promise<BookingResponse> {
+  return api.request<BookingResponse>(
+    `/bookings/${encodeURIComponent(bookingId)}`,
+    {
+      method: 'PUT',
+      json: body,
+    },
+  );
 }
 
 export async function adminDeleteBooking(
   api: ApiClient,
   bookingId: string,
-): Promise<unknown> {
-  return api.request(`/bookings/${encodeURIComponent(bookingId)}`, {
+): Promise<void> {
+  await api.request(`/bookings/${encodeURIComponent(bookingId)}`, {
     method: 'DELETE',
   });
 }

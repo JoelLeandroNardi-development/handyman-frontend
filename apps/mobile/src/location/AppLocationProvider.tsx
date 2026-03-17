@@ -1,5 +1,12 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import * as Location from "expo-location";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import * as Location from 'expo-location';
 
 export type AppCoords = { latitude: number; longitude: number };
 
@@ -12,7 +19,11 @@ type AppLocationContextValue = {
 
 const AppLocationContext = createContext<AppLocationContextValue | null>(null);
 
-export function AppLocationProvider({ children }: { children: React.ReactNode }) {
+export function AppLocationProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [coords, setCoordsState] = useState<AppCoords | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -23,8 +34,13 @@ export function AppLocationProvider({ children }: { children: React.ReactNode })
   const refreshLocation = useCallback(async () => {
     setLoading(true);
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
+      let { status } = await Location.getForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        const request = await Location.requestForegroundPermissionsAsync();
+        status = request.status;
+      }
+
+      if (status !== 'granted') {
         return;
       }
 
@@ -47,16 +63,20 @@ export function AppLocationProvider({ children }: { children: React.ReactNode })
 
   const value = useMemo<AppLocationContextValue>(
     () => ({ coords, loading, refreshLocation, setCoords }),
-    [coords, loading, refreshLocation, setCoords]
+    [coords, loading, refreshLocation, setCoords],
   );
 
-  return <AppLocationContext.Provider value={value}>{children}</AppLocationContext.Provider>;
+  return (
+    <AppLocationContext.Provider value={value}>
+      {children}
+    </AppLocationContext.Provider>
+  );
 }
 
 export function useAppLocation() {
   const ctx = useContext(AppLocationContext);
   if (!ctx) {
-    throw new Error("useAppLocation must be used within AppLocationProvider");
+    throw new Error('useAppLocation must be used within AppLocationProvider');
   }
   return ctx;
 }

@@ -1,14 +1,18 @@
-import React, { useState } from "react";
-import { Alert, Text, View } from "react-native";
-import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
-import * as Location from "expo-location";
-import { getSkillsCatalogFlat, type SkillCatalogFlatResponse } from "@smart/api";
+import React, { useState } from 'react';
+import { Alert, Text, View } from 'react-native';
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
+import {
+  getSkillsCatalogFlat,
+  type SkillCatalogFlatResponse,
+} from '@smart/api';
 import {
   combineDateAndTime,
   formatDateLabel,
   formatTimeLabel,
-} from "../../../lib/dateTime";
-import { useTheme } from "../../../theme";
+} from '../../../lib/dateTime';
+import { useTheme } from '../../../theme';
 import {
   AppButton,
   AppInput,
@@ -16,10 +20,10 @@ import {
   Card,
   InputButton,
   Label,
-} from "../../../ui/primitives";
-import { flattenSkills, type Coords, type SkillOption } from "./utils";
+} from '../../../ui/primitives';
+import { flattenSkills, type Coords, type SkillOption } from './utils';
 
-type PickerTarget = "date" | "start" | "end" | null;
+type PickerTarget = 'date' | 'start' | 'end' | null;
 
 export interface SearchFiltersProps {
   api: any;
@@ -30,17 +34,15 @@ export interface SearchFiltersProps {
   endTime: Date;
   jobDescription: string;
   userCoords: Coords | null;
-  loadingLocation: boolean;
   loadingMatch: boolean;
   bookingSuccess: string | null;
-  
+
   onCatalogLoaded: (catalog: SkillCatalogFlatResponse) => void;
   onSkillKeySelected: (skillKey: string) => void;
   onDateChanged: (date: Date) => void;
   onStartTimeChanged: (time: Date) => void;
   onEndTimeChanged: (time: Date) => void;
   onJobDescriptionChanged: (desc: string) => void;
-  onLocationReceived: (coords: Coords) => void;
   onMatch: () => void;
   onSkillModalOpen: () => void;
 }
@@ -54,7 +56,6 @@ export function SearchFilters({
   endTime,
   jobDescription,
   userCoords,
-  loadingLocation,
   loadingMatch,
   bookingSuccess,
   onCatalogLoaded,
@@ -63,7 +64,6 @@ export function SearchFilters({
   onStartTimeChanged,
   onEndTimeChanged,
   onJobDescriptionChanged,
-  onLocationReceived,
   onMatch,
   onSkillModalOpen,
 }: SearchFiltersProps) {
@@ -73,7 +73,8 @@ export function SearchFilters({
   const desiredStartDate = combineDateAndTime(selectedDate, startTime);
   const desiredEndDate = combineDateAndTime(selectedDate, endTime);
   const skillOptions = flattenSkills(catalog);
-  const selectedSkill = skillOptions.find((s) => s.key === selectedSkillKey) ?? null;
+  const selectedSkill =
+    skillOptions.find(s => s.key === selectedSkillKey) ?? null;
 
   async function loadCatalog() {
     try {
@@ -84,7 +85,7 @@ export function SearchFilters({
         onSkillKeySelected(data.allowed_skill_keys[0]);
       }
     } catch (e) {
-      Alert.alert("Could not load skills", (e as Error).message);
+      Alert.alert('Could not load skills', (e as Error).message);
     }
   }
 
@@ -92,51 +93,33 @@ export function SearchFilters({
     void loadCatalog();
   }, []);
 
-  async function handleGetLocation() {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert("Location permission", "Permission denied.");
-        return;
-      }
-
-      const pos = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-
-      onLocationReceived({
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
-      });
-    } catch (e) {
-      Alert.alert("Location error", (e as Error).message);
-    }
-  }
-
   function onPickerChange(event: DateTimePickerEvent, value?: Date) {
-    if (event.type === "dismissed" || !value) {
+    if (event.type === 'dismissed' || !value) {
       setPickerTarget(null);
       return;
     }
 
-    if (pickerTarget === "date") onDateChanged(value);
-    if (pickerTarget === "start") onStartTimeChanged(value);
-    if (pickerTarget === "end") onEndTimeChanged(value);
+    if (pickerTarget === 'date') onDateChanged(value);
+    if (pickerTarget === 'start') onStartTimeChanged(value);
+    if (pickerTarget === 'end') onEndTimeChanged(value);
 
     setPickerTarget(null);
   }
 
   function handleMatch() {
     if (!userCoords) {
-      Alert.alert("Location required", 'Tap "Use my location" first.');
+      Alert.alert(
+        'Location required',
+        'Please enable location permission in settings.',
+      );
       return;
     }
     if (!selectedSkillKey) {
-      Alert.alert("Missing skill", "Please choose a skill.");
+      Alert.alert('Missing skill', 'Please choose a skill.');
       return;
     }
     if (desiredEndDate <= desiredStartDate) {
-      Alert.alert("Invalid time range", "End time must be after start time.");
+      Alert.alert('Invalid time range', 'End time must be after start time.');
       return;
     }
 
@@ -147,8 +130,14 @@ export function SearchFilters({
     <>
       {pickerTarget ? (
         <DateTimePicker
-          value={pickerTarget === "date" ? selectedDate : pickerTarget === "start" ? startTime : endTime}
-          mode={pickerTarget === "date" ? "date" : "time"}
+          value={
+            pickerTarget === 'date'
+              ? selectedDate
+              : pickerTarget === 'start'
+                ? startTime
+                : endTime
+          }
+          mode={pickerTarget === 'date' ? 'date' : 'time'}
           is24Hour
           onChange={onPickerChange}
         />
@@ -156,21 +145,14 @@ export function SearchFilters({
 
       <Card>
         <View style={{ gap: 8 }}>
-          <Label>Search (prototype)</Label>
-          <AppInput
-            placeholder="Search by name, city, or skill..."
-          />
-        </View>
-
-        <View style={{ gap: 8 }}>
           <Label>Skill</Label>
           <InputButton
             label={
               !catalog
-                ? "Loading skills..."
+                ? 'Loading skills...'
                 : selectedSkill
                   ? `${selectedSkill.categoryLabel} • ${selectedSkill.label}`
-                  : "Choose a skill"
+                  : 'Choose a skill'
             }
             onPress={onSkillModalOpen}
           />
@@ -187,18 +169,27 @@ export function SearchFilters({
 
         <View style={{ gap: 8 }}>
           <Label>Date</Label>
-          <InputButton label={formatDateLabel(selectedDate)} onPress={() => setPickerTarget("date")} />
+          <InputButton
+            label={formatDateLabel(selectedDate)}
+            onPress={() => setPickerTarget('date')}
+          />
         </View>
 
         <ButtonRow>
           <View style={{ flex: 1, gap: 8 }}>
             <Label>Start</Label>
-            <InputButton label={formatTimeLabel(startTime)} onPress={() => setPickerTarget("start")} />
+            <InputButton
+              label={formatTimeLabel(startTime)}
+              onPress={() => setPickerTarget('start')}
+            />
           </View>
 
           <View style={{ flex: 1, gap: 8 }}>
             <Label>End</Label>
-            <InputButton label={formatTimeLabel(endTime)} onPress={() => setPickerTarget("end")} />
+            <InputButton
+              label={formatTimeLabel(endTime)}
+              onPress={() => setPickerTarget('end')}
+            />
           </View>
         </ButtonRow>
 
@@ -209,20 +200,14 @@ export function SearchFilters({
             borderWidth: 1,
             borderColor: colors.border,
             padding: 12,
-          }}
-        >
+          }}>
           <Text style={{ color: colors.textSoft }}>
-            Requested window: {desiredStartDate.toLocaleString()} → {desiredEndDate.toLocaleString()}
+            Requested window: {desiredStartDate.toLocaleString()} →{' '}
+            {desiredEndDate.toLocaleString()}
           </Text>
         </View>
 
         <ButtonRow>
-          <AppButton
-            label={userCoords ? "Update location" : "Use my location"}
-            onPress={handleGetLocation}
-            loading={loadingLocation}
-            style={{ flex: 1 }}
-          />
           <AppButton
             label="Match"
             onPress={handleMatch}
@@ -240,9 +225,10 @@ export function SearchFilters({
               borderWidth: 1,
               borderRadius: 16,
               padding: 12,
-            }}
-          >
-            <Text style={{ color: colors.success, fontWeight: "700" }}>{bookingSuccess}</Text>
+            }}>
+            <Text style={{ color: colors.success, fontWeight: '700' }}>
+              {bookingSuccess}
+            </Text>
           </View>
         ) : null}
       </Card>
