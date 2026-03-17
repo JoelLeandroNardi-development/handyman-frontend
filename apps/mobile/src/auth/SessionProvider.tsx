@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { getMe } from "@smart/api";
+import { getMe, logout as logoutApi } from "@smart/api";
 import { createApiClient } from "../lib/api";
 import {
   buildSession,
@@ -7,6 +7,7 @@ import {
   clearToken,
   getMobileRoles,
   getStoredRoleMode,
+  getStoredRefreshToken,
   getStoredToken,
   storeRoleMode,
   type MobileSession,
@@ -78,6 +79,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logout() {
+    try {
+      const refreshToken = await getStoredRefreshToken();
+      if (refreshToken) {
+        const api = createApiClient();
+        await logoutApi(api, { refresh_token: refreshToken });
+      }
+    } catch {
+      // Best-effort server logout; local token clear still proceeds.
+    }
+
     await clearToken();
     await clearRoleMode();
     await refresh();

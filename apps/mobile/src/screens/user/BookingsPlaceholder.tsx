@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
+  SectionList,
   Pressable,
   Text,
   View,
@@ -223,6 +223,7 @@ export default function BookingsPlaceholder() {
   };
 
   const grouped = groupBookingsByStatus(bookings);
+  const sections = Object.entries(grouped).map(([title, data]) => ({ title, data }));
 
   function renderCard(item: BookingResponse) {
     return (
@@ -286,43 +287,56 @@ export default function BookingsPlaceholder() {
   return (
     <>
       <Screen>
-        <FlatList
-          contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
-          data={Object.entries(grouped)}
-          keyExtractor={([section]) => section}
-          ListHeaderComponent={
-            <View style={{ marginBottom: 14 }}>
-              <PageHeader
-                title="Bookings"
-                subtitle="Your booking requests and status"
-                action={
-                  <AppButton
-                    label="Refresh"
-                    onPress={() =>
-                      loadBookings(async () => {
-                        const data = await getMyBookings(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
-                        setBookings(data);
-                      })
-                    }
-                    style={{ minWidth: 120 }}
-                  />
+        <View style={{ paddingHorizontal: 16, paddingTop: 16, marginBottom: 14 }}>
+          <PageHeader
+            title="Bookings"
+            subtitle="Your booking requests and status"
+            action={
+              <AppButton
+                label="Refresh"
+                onPress={() =>
+                  loadBookings(async () => {
+                    const data = await getMyBookings(api, {
+                      limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
+                      offset: PAGINATION_DEFAULTS.OFFSET,
+                    });
+                    setBookings(data);
+                  })
                 }
+                style={{ minWidth: 120 }}
               />
-            </View>
-          }
-          renderItem={({ item: [section, items] }) => (
-            <View style={{ marginBottom: 18 }}>
-              <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text, marginBottom: 10 }}>
-                {section}
-              </Text>
+            }
+          />
+        </View>
 
-              {items.length === 0 ? (
-                <EmptyState text="No bookings in this section." />
-              ) : (
-                items.map(renderCard)
-              )}
+        <SectionList
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
+          sections={sections}
+          stickySectionHeadersEnabled
+          keyExtractor={(item) => item.booking_id}
+          renderSectionHeader={({ section }) => (
+            <View
+              style={{
+                paddingTop: 6,
+                paddingBottom: 8,
+                backgroundColor: colors.bg,
+              }}
+            >
+              <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
+                {section.title}
+              </Text>
             </View>
           )}
+          renderItem={({ item }) => renderCard(item)}
+          renderSectionFooter={({ section }) =>
+            section.data.length === 0 ? (
+              <View style={{ marginBottom: 12 }}>
+                <EmptyState text="No bookings in this section." />
+              </View>
+            ) : (
+              <View style={{ height: 8 }} />
+            )
+          }
           ListEmptyComponent={
             loading ? (
               <View style={{ paddingVertical: 40, alignItems: "center" }}>

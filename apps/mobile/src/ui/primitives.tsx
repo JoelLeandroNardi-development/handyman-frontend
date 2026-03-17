@@ -35,12 +35,24 @@ export function Screen({
   if (scroll) {
     return (
       <View style={[{ flex: 1, backgroundColor: colors.bg, paddingTop: topInset }, style]}>
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            top: topInset,
+            left: 0,
+            right: 0,
+            height: 84,
+            backgroundColor: colors.primarySoft,
+            opacity: 0.5,
+          }}
+        />
         <ScrollView
           contentContainerStyle={[
             {
-              padding: 16,
-              paddingBottom: 28,
-              gap: 12,
+              padding: 18,
+              paddingBottom: 36,
+              gap: 14,
             },
             contentContainerStyle,
           ]}
@@ -54,6 +66,18 @@ export function Screen({
 
   return (
     <View style={[{ flex: 1, backgroundColor: colors.bg, paddingTop: topInset }, style]}>
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          top: topInset,
+          left: 0,
+          right: 0,
+          height: 84,
+          backgroundColor: colors.primarySoft,
+          opacity: 0.5,
+        }}
+      />
       {children}
     </View>
   );
@@ -82,8 +106,8 @@ export function PageHeader({
       <View style={{ flex: 1 }}>
         <Text
           style={{
-            fontSize: 24,
-            lineHeight: 30,
+            fontSize: 28,
+            lineHeight: 34,
             fontWeight: "800",
             color: colors.text,
           }}
@@ -94,8 +118,8 @@ export function PageHeader({
           <Text
             style={{
               marginTop: 6,
-              fontSize: 15,
-              lineHeight: 22,
+              fontSize: 14,
+              lineHeight: 20,
               color: colors.textFaint,
             }}
           >
@@ -125,9 +149,14 @@ export function Card({
           backgroundColor: colors.surface,
           borderWidth: 1,
           borderColor: colors.border,
-          borderRadius: 20,
-          padding: 16,
-          gap: 12,
+          borderRadius: 22,
+          padding: 18,
+          gap: 14,
+          shadowColor: "#0f172a",
+          shadowOpacity: 0.08,
+          shadowOffset: { width: 0, height: 8 },
+          shadowRadius: 16,
+          elevation: 2,
         },
         style,
       ]}
@@ -220,15 +249,15 @@ export function AppInput(props: TextInputProps) {
       {...props}
       style={[
         {
-          minHeight: 52,
+          minHeight: 54,
           borderWidth: 1,
           borderColor: colors.border,
           borderRadius: 16,
-          paddingHorizontal: 14,
+          paddingHorizontal: 15,
           paddingVertical: 12,
-          backgroundColor: colors.surface,
+          backgroundColor: colors.surfaceMuted,
           color: colors.text,
-          fontSize: 15,
+          fontSize: 16,
         },
         props.style,
       ]}
@@ -319,7 +348,7 @@ export function AppButton({
       disabled={disabled || loading}
       style={[
         {
-          minHeight: 54,
+          minHeight: 56,
           borderRadius: 18,
           borderWidth: 1,
           borderColor: palette.borderColor,
@@ -327,6 +356,11 @@ export function AppButton({
           alignItems: "center",
           justifyContent: "center",
           paddingHorizontal: 16,
+          shadowColor: "#0f172a",
+          shadowOpacity: tone === "primary" ? 0.16 : 0.06,
+          shadowOffset: { width: 0, height: 6 },
+          shadowRadius: 12,
+          elevation: tone === "primary" ? 3 : 1,
         },
         style,
       ]}

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
+  SectionList,
   Text,
   View,
 } from "react-native";
@@ -31,7 +31,6 @@ import {
   BottomSheet,
   ButtonRow,
   Card,
-  CardTitle,
   EmptyState,
   PageHeader,
   Screen,
@@ -171,6 +170,13 @@ export default function JobsScreen() {
     return true;
   });
 
+  const sections = [
+    { title: "Incoming requests", data: incoming },
+    { title: "Active jobs", data: active },
+    { title: "Completed jobs", data: completed },
+    { title: "Other", data: other },
+  ];
+
   function renderBookingCard(item: BookingResponse) {
     return (
       <Card key={item.booking_id} style={{ marginBottom: 10 }}>
@@ -229,53 +235,56 @@ export default function JobsScreen() {
   return (
     <>
       <Screen>
-        <FlatList
-          contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
-          data={[
-            { section: "Incoming requests", items: incoming },
-            { section: "Active jobs", items: active },
-            { section: "Completed jobs", items: completed },
-            { section: "Other", items: other },
-          ]}
-          keyExtractor={(item) => item.section}
-          ListHeaderComponent={
-            <View style={{ gap: 12, marginBottom: 14 }}>
-              <PageHeader
-                title="Jobs"
-                subtitle="Incoming, active, completed, and rejected jobs"
-                action={
-                  <AppButton
-                    label="Refresh"
-                    onPress={() =>
-                      loadBookings(async () => {
-                        const data = await getMyJobs(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
-                        setBookings(data);
-                      })
-                    }
-                    style={{ minWidth: 120 }}
-                  />
+        <View style={{ paddingHorizontal: 16, paddingTop: 16, marginBottom: 14 }}>
+          <PageHeader
+            title="Jobs"
+            subtitle="Incoming, active, completed, and rejected jobs"
+            action={
+              <AppButton
+                label="Refresh"
+                onPress={() =>
+                  loadBookings(async () => {
+                    const data = await getMyJobs(api, {
+                      limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
+                      offset: PAGINATION_DEFAULTS.OFFSET,
+                    });
+                    setBookings(data);
+                  })
                 }
+                style={{ minWidth: 120 }}
               />
+            }
+          />
+        </View>
 
-              <Card>
-                <CardTitle title="Logged in as" />
-                <Text style={{ color: colors.textSoft, fontSize: 16 }}>{session?.email ?? "-"}</Text>
-              </Card>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <View style={{ marginBottom: 18 }}>
-              <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text, marginBottom: 10 }}>
-                {item.section}
+        <SectionList
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
+          sections={sections}
+          stickySectionHeadersEnabled
+          keyExtractor={(item) => item.booking_id}
+          renderSectionHeader={({ section }) => (
+            <View
+              style={{
+                paddingTop: 6,
+                paddingBottom: 8,
+                backgroundColor: colors.bg,
+              }}
+            >
+              <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
+                {section.title}
               </Text>
-
-              {item.items.length === 0 ? (
-                <EmptyState text="No bookings in this section." />
-              ) : (
-                item.items.map(renderBookingCard)
-              )}
             </View>
           )}
+          renderItem={({ item }) => renderBookingCard(item)}
+          renderSectionFooter={({ section }) =>
+            section.data.length === 0 ? (
+              <View style={{ marginBottom: 12 }}>
+                <EmptyState text="No bookings in this section." />
+              </View>
+            ) : (
+              <View style={{ height: 8 }} />
+            )
+          }
           ListEmptyComponent={
             loading ? (
               <View style={{ paddingVertical: 40, alignItems: "center" }}>

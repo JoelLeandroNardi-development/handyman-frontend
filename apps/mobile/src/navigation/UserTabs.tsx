@@ -34,7 +34,8 @@ export default function UserTabs() {
   const { colors } = useTheme();
   const { unreadCount } = useNotifications();
 
-  const tabBarHeight = 72 + Math.max(insets.bottom, 10);
+  const bottomPadding = Math.max(insets.bottom, 10);
+  const tabBarHeight = 76 + bottomPadding;
 
   return (
     <Tab.Navigator
@@ -45,25 +46,34 @@ export default function UserTabs() {
         tabBarInactiveTintColor: colors.textFaint,
         tabBarStyle: {
           height: tabBarHeight,
-          paddingTop: 8,
-          paddingBottom: Math.max(insets.bottom, 10),
-          backgroundColor: colors.surface,
+          paddingTop: 10,
+          paddingBottom: bottomPadding,
+          backgroundColor: colors.bg,
           borderTopWidth: 1,
           borderTopColor: colors.border,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "700",
-          marginBottom: 2,
+          marginBottom: 4,
         },
         tabBarIconStyle: {
-          marginTop: 2,
+          marginTop: 4,
         },
-        tabBarIcon: ({ color, size }) => {
+        tabBarIcon: ({ color, size, focused }) => {
           const showBadge = route.name === "Notifications" && unreadCount > 0;
 
           return (
-            <View>
+            <View
+              style={{
+                minWidth: 34,
+                height: 34,
+                borderRadius: 17,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: focused ? colors.primarySoft : "transparent",
+              }}
+            >
               <MaterialIcons
                 name={getUserTabIconName(route.name)}
                 color={color}
@@ -73,12 +83,14 @@ export default function UserTabs() {
                 <View
                   style={{
                     position: "absolute",
-                    top: -6,
-                    right: -10,
+                    top: -2,
+                    right: -8,
                     minWidth: 18,
                     height: 18,
                     borderRadius: 9,
                     backgroundColor: colors.danger,
+                    borderWidth: 1,
+                    borderColor: colors.surface,
                     alignItems: "center",
                     justifyContent: "center",
                     paddingHorizontal: 4,

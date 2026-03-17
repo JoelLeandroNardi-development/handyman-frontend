@@ -8,17 +8,20 @@ import RootNavigator from "./src/navigation/RootNavigator";
 import { SessionProvider } from "./src/auth/SessionProvider";
 import { ThemeProvider } from "./src/theme";
 import { NotificationsProvider } from "./src/notifications/NotificationsProvider";
+import { AppLocationProvider } from "./src/location/AppLocationProvider";
 
 export default function App() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <SessionProvider>
-            <NotificationsProvider>
-              <RootNavigator />
-            </NotificationsProvider>
-          </SessionProvider>
+          <AppLocationProvider>
+            <SessionProvider>
+              <NotificationsProvider>
+                <RootNavigator />
+              </NotificationsProvider>
+            </SessionProvider>
+          </AppLocationProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>

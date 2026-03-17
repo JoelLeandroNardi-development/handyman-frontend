@@ -21,10 +21,12 @@ import { SkillSelector } from "./FindScreen/SkillSelector";
 import { HandymanDetail } from "./FindScreen/HandymanDetail";
 import { combineDateAndTime } from "../../lib/dateTime";
 import type { Coords } from "./FindScreen/utils";
+import { useAppLocation } from "../../location/AppLocationProvider";
 
 export default function FindScreen() {
   const api = useMemo(() => createApiClient(), []);
   const { session } = useSession();
+  const { coords: appCoords, setCoords: setAppCoords } = useAppLocation();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [startTime, setStartTime] = useState(() => {
@@ -39,7 +41,7 @@ export default function FindScreen() {
   });
   const [selectedSkillKey, setSelectedSkillKey] = useState("");
   const [jobDescription, setJobDescription] = useState("");
-  const [userCoords, setUserCoords] = useState<Coords | null>(null);
+  const [userCoords, setUserCoords] = useState<Coords | null>(appCoords);
   const [catalog, setCatalog] = useState<SkillCatalogFlatResponse | null>(null);
   const [skillModalOpen, setSkillModalOpen] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
@@ -60,6 +62,12 @@ export default function FindScreen() {
     () => combineDateAndTime(selectedDate, endTime),
     [selectedDate, endTime]
   );
+
+  React.useEffect(() => {
+    if (!userCoords && appCoords) {
+      setUserCoords(appCoords);
+    }
+  }, [appCoords, userCoords]);
 
   const { execute: handleMatch, loading: loadingMatch } = useAsyncOperation({
     alertTitle: "Search",
@@ -163,7 +171,10 @@ export default function FindScreen() {
           onStartTimeChanged={setStartTime}
           onEndTimeChanged={setEndTime}
           onJobDescriptionChanged={setJobDescription}
-          onLocationReceived={setUserCoords}
+          onLocationReceived={(coords) => {
+            setUserCoords(coords);
+            setAppCoords(coords);
+          }}
           onMatch={() => handleMatch(performMatch)}
           onSkillModalOpen={() => setSkillModalOpen(true)}
         />
