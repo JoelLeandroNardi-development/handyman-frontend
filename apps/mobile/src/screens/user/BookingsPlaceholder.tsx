@@ -117,7 +117,6 @@ export default function BookingsPlaceholder() {
   }, [api]);
 
   const { execute: loadBookings, loading } = useAsyncOperation({
-    onSuccess: () => {},
     alertTitle: 'Load Bookings',
   });
 

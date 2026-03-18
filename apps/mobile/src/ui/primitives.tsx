@@ -432,7 +432,7 @@ export function BottomSheet({
             borderTopRightRadius: tokens.nativeRadius.lg,
           },
         ]}>
-        <Text style={styles.titleText}>{title}</Text>
+        {title ? <Text style={styles.titleText}>{title}</Text> : null}
         {children}
       </View>
     </View>

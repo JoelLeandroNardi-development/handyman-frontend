@@ -36,16 +36,18 @@ import {
   ButtonRow,
   Card,
   EmptyState,
-  PageHeader,
   Screen,
   StatusBadge,
 } from "../../ui/primitives";
+import { ScreenHeader } from '../../ui/ScreenHeader';
+import { useNotifications } from '../../notifications/NotificationsProvider';
 import { useTheme } from "../../theme";
 
 export default function JobsScreen() {
   const api = useMemo(() => createApiClient(), []);
   const { session } = useSession();
   const { colors } = useTheme();
+  const { unreadCount } = useNotifications();
 
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [selected, setSelected] = useState<BookingResponse | null>(null);
@@ -60,7 +62,6 @@ export default function JobsScreen() {
   }, [api]);
 
   const { execute: loadBookings, loading } = useAsyncOperation({
-    onSuccess: () => {},
     alertTitle: "Load Jobs",
   });
 
@@ -195,19 +196,17 @@ export default function JobsScreen() {
   return (
     <>
       <Screen>
-        <View style={{ paddingHorizontal: 16, paddingTop: 16, marginBottom: 14 }}>
-          <PageHeader
-            title="Jobs"
-            subtitle="Incoming, active, completed, and rejected jobs"
-            action={
-              <AppButton
-                label="Refresh"
-                onPress={() =>
-                  loadBookings(fetchJobs)
-                }
-                style={{ minWidth: 120 }}
-              />
-            }
+        <ScreenHeader
+          title="Jobs"
+          subtitle="Incoming, active, completed, and rejected jobs"
+          notificationBadgeCount={unreadCount}
+        />
+
+        <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 2 }}>
+          <AppButton
+            label="Refresh"
+            onPress={() => loadBookings(fetchJobs)}
+            style={{ minWidth: 120 }}
           />
         </View>
 

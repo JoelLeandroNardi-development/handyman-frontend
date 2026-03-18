@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, ScrollView, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 import {
   createBooking,
   getHandyman,
@@ -14,7 +14,8 @@ import { useAsyncOperation } from '../../hooks/useAsyncOperation';
 import { createApiClient } from '../../lib/api';
 import { useSession } from '../../auth/SessionProvider';
 import { useNotifications } from '../../notifications/NotificationsProvider';
-import { Screen } from '../../ui/primitives';
+import { useTheme } from '../../theme';
+import { AppButton, ButtonRow, Card, CardTitle, Screen } from '../../ui/primitives';
 import { ScreenHeader } from '../../ui/ScreenHeader';
 import { SearchFilters } from './FindScreen/SearchFilters';
 import { MapResults } from './FindScreen/MapResults';
@@ -30,6 +31,7 @@ export default function FindScreen() {
   const { session } = useSession();
   const { coords: appCoords } = useAppLocation();
   const { unreadCount } = useNotifications();
+  const { colors } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -58,6 +60,7 @@ export default function FindScreen() {
 
   const currentUserEmail = session?.email ?? '';
   const selected = results.find(r => r.email === selectedEmail) ?? null;
+  const hasResults = results.length > 0;
 
   const desiredStartDate = useMemo(
     () => combineDateAndTime(selectedDate, startTime),
@@ -108,9 +111,26 @@ export default function FindScreen() {
       desired_end: desiredEndDate.toISOString(),
     });
 
+    if (res.length === 0) {
+      setResults([]);
+      setSelectedEmail(null);
+      setSelectedHandymanProfile(null);
+      Alert.alert(
+        'No handyman available',
+        'No handyman available for the specified skill and time window.',
+      );
+      return;
+    }
+
     setResults(res);
     setSelectedEmail(null);
     setSelectedHandymanProfile(null);
+  }
+
+  function resetSearchView() {
+    setSelectedEmail(null);
+    setSelectedHandymanProfile(null);
+    setResults([]);
   }
 
   async function performOpenHandyman(email: string) {
@@ -170,38 +190,92 @@ export default function FindScreen() {
           paddingBottom: 28,
           gap: 14,
         }}>
-        <SearchFilters
-          api={api}
-          catalog={catalog}
-          selectedSkillKey={selectedSkillKey}
-          selectedDate={selectedDate}
-          startTime={startTime}
-          endTime={endTime}
-          jobDescription={jobDescription}
-          userCoords={userCoords}
-          loadingMatch={loadingMatch}
-          bookingSuccess={bookingSuccess}
-          onCatalogLoaded={setCatalog}
-          onSkillKeySelected={setSelectedSkillKey}
-          onDateChanged={setSelectedDate}
-          onStartTimeChanged={setStartTime}
-          onEndTimeChanged={setEndTime}
-          onJobDescriptionChanged={setJobDescription}
-          onMatch={() => handleMatch(performMatch)}
-          onSkillModalOpen={() => setSkillModalOpen(true)}
-        />
+        {hasResults ? (
+          <>
+            <Card>
+              <CardTitle
+                title="Current search"
+                action={
+                  <Text style={{ color: colors.textFaint, fontWeight: '700' }}>
+                    {results.length} found
+                  </Text>
+                }
+              />
+
+              <View style={{ gap: 12 }}>
+                <Text style={{ color: colors.textSoft }}>
+                  These results match your selected skill and requested time
+                  window. Review the search summary below or edit it before
+                  choosing a handyman.
+                </Text>
+
+                <View
+                  style={{
+                    backgroundColor: colors.surfaceMuted,
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    padding: 12,
+                    gap: 6,
+                  }}>
+                  <Text style={{ color: colors.textFaint, fontSize: 12, fontWeight: '700' }}>
+                    CURRENT SEARCH
+                  </Text>
+                  <Text style={{ color: colors.text, fontWeight: '800' }}>
+                    {catalog?.categories
+                      .flatMap(category => category.skills)
+                      .find(skill => skill.key === selectedSkillKey)?.label ?? 'Selected skill'}
+                  </Text>
+                  <Text style={{ color: colors.textSoft }}>
+                    {desiredStartDate.toLocaleString()} → {desiredEndDate.toLocaleString()}
+                  </Text>
+                </View>
+
+                <ButtonRow>
+                  <AppButton
+                    label="Edit search"
+                    onPress={resetSearchView}
+                    tone="secondary"
+                    style={{ flex: 1 }}
+                  />
+                </ButtonRow>
+              </View>
+            </Card>
+
+            <HandymenList
+              results={results}
+              userCoords={userCoords}
+              loadingMatch={loadingMatch}
+              selectedEmail={selectedEmail}
+              onHandymanSelected={email =>
+                handleOpenHandyman(() => performOpenHandyman(email))
+              }
+            />
+          </>
+        ) : (
+          <SearchFilters
+            api={api}
+            catalog={catalog}
+            selectedSkillKey={selectedSkillKey}
+            selectedDate={selectedDate}
+            startTime={startTime}
+            endTime={endTime}
+            jobDescription={jobDescription}
+            userCoords={userCoords}
+            loadingMatch={loadingMatch}
+            bookingSuccess={bookingSuccess}
+            onCatalogLoaded={setCatalog}
+            onSkillKeySelected={setSelectedSkillKey}
+            onDateChanged={setSelectedDate}
+            onStartTimeChanged={setStartTime}
+            onEndTimeChanged={setEndTime}
+            onJobDescriptionChanged={setJobDescription}
+            onMatch={() => handleMatch(performMatch)}
+            onSkillModalOpen={() => setSkillModalOpen(true)}
+          />
+        )}
 
         <MapResults userCoords={userCoords} results={results} />
-
-        <HandymenList
-          results={results}
-          userCoords={userCoords}
-          loadingMatch={loadingMatch}
-          selectedEmail={selectedEmail}
-          onHandymanSelected={email =>
-            handleOpenHandyman(() => performOpenHandyman(email))
-          }
-        />
       </ScrollView>
 
       <SkillSelector

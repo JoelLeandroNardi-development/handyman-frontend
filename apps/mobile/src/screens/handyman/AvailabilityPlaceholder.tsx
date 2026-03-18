@@ -29,15 +29,17 @@ import {
   EmptyState,
   InputButton,
   Label,
-  PageHeader,
   Screen,
 } from '../../ui/primitives';
+import { ScreenHeader } from '../../ui/ScreenHeader';
+import { useNotifications } from '../../notifications/NotificationsProvider';
 
 type PickerTarget = 'date' | 'start' | 'end' | null;
 
 export default function AvailabilityPlaceholder() {
   const api = useMemo(() => createApiClient(), []);
   const { colors } = useTheme();
+  const { unreadCount } = useNotifications();
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -155,17 +157,17 @@ export default function AvailabilityPlaceholder() {
         />
       ) : null}
 
-      <View style={{ paddingHorizontal: 16, paddingTop: 16, marginBottom: 14 }}>
-        <PageHeader
-          title="Availability"
-          subtitle="Manage the time slots you can accept jobs"
-          action={
-            <AppButton
-              label="Refresh"
-              onPress={loadAvailability}
-              style={{ minWidth: 120 }}
-            />
-          }
+      <ScreenHeader
+        title="Availability"
+        subtitle="Manage the time slots you can accept jobs"
+        notificationBadgeCount={unreadCount}
+      />
+
+      <View style={{ paddingHorizontal: 16, paddingTop: 12, marginBottom: 14 }}>
+        <AppButton
+          label="Refresh"
+          onPress={loadAvailability}
+          style={{ minWidth: 120 }}
         />
       </View>
 
