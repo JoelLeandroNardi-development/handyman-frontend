@@ -34,7 +34,7 @@ export function SettingsAccountActions({
         </Card>
       ) : null}
 
-      <AppButton label="Logout" onPress={logout} />
+      <AppButton label="Logout" tone="danger" onPress={logout} />
     </>
   );
 }
