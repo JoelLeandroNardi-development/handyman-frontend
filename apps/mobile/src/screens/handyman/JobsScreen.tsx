@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -20,9 +20,13 @@ import {
   getBookingDisplayStatus,
   getBookingStatusTone,
   isIncomingLikeBookingStatus,
-  normalizeBookingStatus,
 } from "@smart/core";
 import { createApiClient } from "../../lib/api";
+import {
+  canCompleteJob,
+  canRejectJob,
+  getHandymanJobSections,
+} from '../../lib/bookingSections';
 import { formatDateTime } from "../../lib/dateTime";
 import { useSession } from "../../auth/SessionProvider";
 import {
@@ -38,25 +42,6 @@ import {
 } from "../../ui/primitives";
 import { useTheme } from "../../theme";
 
-function canRejectJob(booking: BookingResponse) {
-  const status = normalizeBookingStatus(booking.status);
-  return (
-    (status === BOOKING_STATUS_NORMALIZED.PENDING ||
-      status === BOOKING_STATUS_NORMALIZED.RESERVED ||
-      status === BOOKING_STATUS_NORMALIZED.CONFIRMED) &&
-    !booking.rejected_by_handyman
-  );
-}
-
-function canCompleteJob(booking: BookingResponse) {
-  const status = normalizeBookingStatus(booking.status);
-  return (
-    status === BOOKING_STATUS_NORMALIZED.CONFIRMED &&
-    !booking.completed_by_handyman &&
-    !booking.rejected_by_handyman
-  );
-}
-
 export default function JobsScreen() {
   const api = useMemo(() => createApiClient(), []);
   const { session } = useSession();
@@ -66,25 +51,27 @@ export default function JobsScreen() {
   const [selected, setSelected] = useState<BookingResponse | null>(null);
   const [rejectReason, setRejectReason] = useState("Job rejected after inspection");
 
+  const fetchJobs = useCallback(async () => {
+    const data = await getMyJobs(api, {
+      limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
+      offset: PAGINATION_DEFAULTS.OFFSET,
+    });
+    setBookings(data);
+  }, [api]);
+
   const { execute: loadBookings, loading } = useAsyncOperation({
     onSuccess: () => {},
     alertTitle: "Load Jobs",
   });
 
   useEffect(() => {
-    loadBookings(async () => {
-      const data = await getMyJobs(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
-      setBookings(data);
-    });
-  }, [session?.email]);
+    loadBookings(fetchJobs);
+  }, [fetchJobs, loadBookings, session?.email]);
 
   const { execute: executeConfirm, loading: confirming } = useAsyncOperation({
     onSuccess: () => {
       setSelected(null);
-      loadBookings(async () => {
-        const data = await getMyJobs(api, { limit: 100, offset: 0 });
-        setBookings(data);
-      });
+      loadBookings(fetchJobs);
     },
     alertTitle: "Confirm Booking",
   });
@@ -101,10 +88,7 @@ export default function JobsScreen() {
   const { execute: executeReject, loading: rejecting } = useAsyncOperation({
     onSuccess: () => {
       setSelected(null);
-      loadBookings(async () => {
-        const data = await getMyJobs(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
-        setBookings(data);
-      });
+      loadBookings(fetchJobs);
     },
     alertTitle: "Reject Job",
   });
@@ -126,10 +110,7 @@ export default function JobsScreen() {
 
   const { execute: executeComplete, loading: completing } = useAsyncOperation({
     onSuccess: () => {
-      loadBookings(async () => {
-        const data = await getMyJobs(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
-        setBookings(data);
-      });
+      loadBookings(fetchJobs);
     },
     alertTitle: "Complete Job",
   });
@@ -154,28 +135,7 @@ export default function JobsScreen() {
     });
   };
 
-  const incoming = bookings.filter((b) => isIncomingLikeBookingStatus(b.status));
-  const active = bookings.filter(
-    (b) =>
-      normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.CONFIRMED &&
-      !b.completed_at &&
-      !b.rejected_by_handyman
-  );
-  const completed = bookings.filter((b) => !!b.completed_at);
-  const other = bookings.filter((b) => {
-    const s = normalizeBookingStatus(b.status);
-    if (s === BOOKING_STATUS_NORMALIZED.PENDING || s === BOOKING_STATUS_NORMALIZED.RESERVED) return false;
-    if (s === BOOKING_STATUS_NORMALIZED.CONFIRMED && !b.completed_at && !b.rejected_by_handyman) return false;
-    if (b.completed_at) return false;
-    return true;
-  });
-
-  const sections = [
-    { title: "Incoming requests", data: incoming },
-    { title: "Active jobs", data: active },
-    { title: "Completed jobs", data: completed },
-    { title: "Other", data: other },
-  ];
+  const sections = getHandymanJobSections(bookings);
 
   function renderBookingCard(item: BookingResponse) {
     return (
@@ -243,13 +203,7 @@ export default function JobsScreen() {
               <AppButton
                 label="Refresh"
                 onPress={() =>
-                  loadBookings(async () => {
-                    const data = await getMyJobs(api, {
-                      limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
-                      offset: PAGINATION_DEFAULTS.OFFSET,
-                    });
-                    setBookings(data);
-                  })
+                  loadBookings(fetchJobs)
                 }
                 style={{ minWidth: 120 }}
               />

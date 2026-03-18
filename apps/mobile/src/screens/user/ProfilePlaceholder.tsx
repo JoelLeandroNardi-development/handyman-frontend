@@ -1,48 +1,47 @@
-import React, { useEffect, useMemo } from 'react';
-import { ActivityIndicator, ScrollView, View, Dimensions } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useCallback, useEffect, useMemo } from 'react';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { getMeUser, updateMe, type UserResponse } from '@smart/api';
 import { createApiClient } from '../../lib/api';
 import { toNullableString } from '../../lib/profileForm';
 import { useTheme } from '../../theme';
 import { useSession } from '../../auth/SessionProvider';
 import { useAsyncOperation } from '../../hooks/useAsyncOperation';
+import { useBottomGuard } from '../../hooks/useBottomGuard';
 import { useFormState } from '../../hooks/useFormState';
 import { useAppLocation } from '../../location/AppLocationProvider';
 import { useNotifications } from '../../notifications/NotificationsProvider';
 import { extractDeviceCoordinates } from '../../lib/coordinates';
 import {
   AppButton,
-  AppInput,
   ButtonRow,
   Card,
   CardTitle,
-  Label,
-  Screen,
 } from '../../ui/primitives';
+import { ModalScreen } from '../../ui/ModalScreen';
+import {
+  ProfileIdentityFields,
+  type ProfileIdentityFieldKey,
+} from '../../ui/ProfileIdentityFields';
 import { ScreenHeader } from '../../ui/ScreenHeader';
 import ThemeToggleCard from '../../ui/ThemeToggleCard';
+
+interface UserFormData {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  nationalId: string;
+  addressLine: string;
+  postalCode: string;
+  city: string;
+  country: string;
+}
 
 export default function ProfilePlaceholder() {
   const api = useMemo(() => createApiClient(), []);
   const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
   const { availableRoles, pickRole, logout } = useSession();
   const { unreadCount } = useNotifications();
-
-  const screenHeight = Dimensions.get('window').height;
-  const maxHeight = screenHeight - Math.max(insets.bottom);
-
-  interface UserFormData {
-    firstName: string;
-    lastName: string;
-    phone: string;
-    nationalId: string;
-    addressLine: string;
-    postalCode: string;
-    city: string;
-    country: string;
-  }
+  const { bottomGuardHeight, bottomContentPadding } = useBottomGuard();
 
   const initialFormData: UserFormData = {
     firstName: '',
@@ -99,6 +98,13 @@ export default function ProfilePlaceholder() {
     loadProfile(fetchProfile);
   }, [fetchProfile]);
 
+  const handleFieldChange = useCallback(
+    (field: ProfileIdentityFieldKey, value: string) => {
+      patch(field, value);
+    },
+    [patch],
+  );
+
   async function saveProfile() {
     const { latitude, longitude } = extractDeviceCoordinates(deviceCoords);
 
@@ -117,155 +123,90 @@ export default function ProfilePlaceholder() {
   }
 
   return (
-    <Screen
+    <ModalScreen
+      scrollable={false}
       style={{
         paddingBottom: 10,
-        maxHeight,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        overflow: 'hidden',
-        elevation: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
       }}>
       <ScreenHeader
         title="Profile"
         subtitle="Manage your settings and personal information"
         notificationBadgeCount={unreadCount}
         isModal={true}
+        modalVariant="compact"
         closeButtonPosition="right"
       />
 
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          gap: 14,
-        }}>
-        <ThemeToggleCard />
+      <View style={{ flex: 1, minHeight: 0 }}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            gap: 14,
+            paddingBottom: bottomContentPadding,
+          }}>
+          <ThemeToggleCard />
 
-        <Card>
-          <CardTitle
-            title="User details"
-            action={
-              <AppButton
-                label="Refresh"
-                onPress={() => loadProfile(fetchProfile)}
-                style={{ minWidth: 110 }}
-              />
-            }
-          />
-
-          {loadingProfile ? (
-            <ActivityIndicator color={colors.primary} />
-          ) : (
-            <>
-              <View style={{ gap: 8 }}>
-                <Label>First name</Label>
-                <AppInput
-                  value={formData.firstName}
-                  onChangeText={v => patch('firstName', v)}
-                  placeholder="First name"
-                />
-              </View>
-
-              <View style={{ gap: 8 }}>
-                <Label>Last name</Label>
-                <AppInput
-                  value={formData.lastName}
-                  onChangeText={v => patch('lastName', v)}
-                  placeholder="Last name"
-                />
-              </View>
-
-              <View style={{ gap: 8 }}>
-                <Label>Phone</Label>
-                <AppInput
-                  value={formData.phone}
-                  onChangeText={v => patch('phone', v)}
-                  placeholder="Phone"
-                  keyboardType="phone-pad"
-                />
-              </View>
-
-              <View style={{ gap: 8 }}>
-                <Label>National ID</Label>
-                <AppInput
-                  value={formData.nationalId}
-                  onChangeText={v => patch('nationalId', v)}
-                  placeholder="National ID"
-                />
-              </View>
-
-              <View style={{ gap: 8 }}>
-                <Label>Address line</Label>
-                <AppInput
-                  value={formData.addressLine}
-                  onChangeText={v => patch('addressLine', v)}
-                  placeholder="Address line"
-                />
-              </View>
-
-              <ButtonRow>
-                <View style={{ flex: 1, gap: 8 }}>
-                  <Label>Postal code</Label>
-                  <AppInput
-                    value={formData.postalCode}
-                    onChangeText={v => patch('postalCode', v)}
-                    placeholder="Postal code"
-                  />
-                </View>
-                <View style={{ flex: 1, gap: 8 }}>
-                  <Label>City</Label>
-                  <AppInput
-                    value={formData.city}
-                    onChangeText={v => patch('city', v)}
-                    placeholder="City"
-                  />
-                </View>
-              </ButtonRow>
-
-              <View style={{ gap: 8 }}>
-                <Label>Country</Label>
-                <AppInput
-                  value={formData.country}
-                  onChangeText={v => patch('country', v)}
-                  placeholder="Country"
-                />
-              </View>
-
-              <AppButton
-                label="Save profile"
-                onPress={() => handleProfileSave(saveProfile)}
-                loading={saving}
-              />
-            </>
-          )}
-        </Card>
-
-        {availableRoles.length > 1 ? (
           <Card>
-            <CardTitle title="Switch role" />
-            <ButtonRow>
-              <AppButton
-                label="User"
-                onPress={() => pickRole('user')}
-                tone="secondary"
-                style={{ flex: 1 }}
-              />
-              <AppButton
-                label="Handyman"
-                onPress={() => pickRole('handyman')}
-                tone="secondary"
-                style={{ flex: 1 }}
-              />
-            </ButtonRow>
-          </Card>
-        ) : null}
+            <CardTitle
+              title="User details"
+              action={
+                <AppButton
+                  label="Refresh"
+                  onPress={() => loadProfile(fetchProfile)}
+                  style={{ minWidth: 110 }}
+                />
+              }
+            />
 
-        <AppButton label="Logout" onPress={logout} />
-      </ScrollView>
-    </Screen>
+            {loadingProfile ? (
+              <ActivityIndicator color={colors.primary} />
+            ) : (
+              <>
+                <ProfileIdentityFields
+                  values={formData}
+                  onChange={handleFieldChange}
+                />
+
+                <AppButton
+                  label="Save profile"
+                  onPress={() => handleProfileSave(saveProfile)}
+                  loading={saving}
+                />
+              </>
+            )}
+          </Card>
+
+          {availableRoles.length > 1 ? (
+            <Card>
+              <CardTitle title="Switch role" />
+              <ButtonRow>
+                <AppButton
+                  label="User"
+                  onPress={() => pickRole('user')}
+                  tone="secondary"
+                  style={{ flex: 1 }}
+                />
+                <AppButton
+                  label="Handyman"
+                  onPress={() => pickRole('handyman')}
+                  tone="secondary"
+                  style={{ flex: 1 }}
+                />
+              </ButtonRow>
+            </Card>
+          ) : null}
+
+          <AppButton label="Logout" onPress={logout} />
+        </ScrollView>
+        <View
+          pointerEvents="none"
+          style={{
+            height: bottomGuardHeight,
+            backgroundColor: colors.surface,
+          }}
+        />
+      </View>
+    </ModalScreen>
   );
 }

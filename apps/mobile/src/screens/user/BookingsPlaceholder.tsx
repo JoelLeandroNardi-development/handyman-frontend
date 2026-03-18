@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -21,10 +21,14 @@ import {
   PAGINATION_DEFAULTS,
   getBookingDisplayStatus,
   getBookingStatusTone,
-  isPendingLikeBookingStatus,
   normalizeBookingStatus,
 } from '@smart/core';
 import { createApiClient } from '../../lib/api';
+import {
+  canReviewBooking,
+  canUserCompleteBooking,
+  getUserBookingSections,
+} from '../../lib/bookingSections';
 import { formatDateTime } from '../../lib/dateTime';
 import { useTheme } from '../../theme';
 import {
@@ -38,46 +42,6 @@ import {
   StatusBadge,
 } from '../../ui/primitives';
 import { ScreenHeader } from '../../ui/ScreenHeader';
-
-function canUserComplete(booking: BookingResponse) {
-  const status = normalizeBookingStatus(booking.status);
-  return (
-    status === BOOKING_STATUS_NORMALIZED.CONFIRMED && !booking.completed_by_user
-  );
-}
-
-function canReviewBooking(booking: BookingResponse) {
-  const status = normalizeBookingStatus(booking.status);
-  return (
-    status === BOOKING_STATUS_NORMALIZED.COMPLETED ||
-    (!!booking.completed_by_user && !!booking.completed_by_handyman)
-  );
-}
-
-function groupBookingsByStatus(bookings: BookingResponse[]) {
-  return {
-    Pending: bookings.filter(b => isPendingLikeBookingStatus(b.status)),
-    Confirmed: bookings.filter(
-      b =>
-        normalizeBookingStatus(b.status) ===
-        BOOKING_STATUS_NORMALIZED.CONFIRMED,
-    ),
-    Completed: bookings.filter(
-      b =>
-        normalizeBookingStatus(b.status) ===
-        BOOKING_STATUS_NORMALIZED.COMPLETED,
-    ),
-    Cancelled: bookings.filter(
-      b =>
-        normalizeBookingStatus(b.status) ===
-        BOOKING_STATUS_NORMALIZED.CANCELLED,
-    ),
-    Failed: bookings.filter(
-      b =>
-        normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.FAILED,
-    ),
-  };
-}
 
 function StarRating({
   value,
@@ -144,31 +108,27 @@ export default function BookingsPlaceholder() {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
 
+  const fetchBookings = useCallback(async () => {
+    const data = await getMyBookings(api, {
+      limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
+      offset: PAGINATION_DEFAULTS.OFFSET,
+    });
+    setBookings(data);
+  }, [api]);
+
   const { execute: loadBookings, loading } = useAsyncOperation({
     onSuccess: () => {},
     alertTitle: 'Load Bookings',
   });
 
   useEffect(() => {
-    loadBookings(async () => {
-      const data = await getMyBookings(api, {
-        limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
-        offset: PAGINATION_DEFAULTS.OFFSET,
-      });
-      setBookings(data);
-    });
-  }, []);
+    loadBookings(fetchBookings);
+  }, [fetchBookings, loadBookings]);
 
   const { execute: executeCancel, loading: cancelling } = useAsyncOperation({
     onSuccess: () => {
       setSelected(null);
-      loadBookings(async () => {
-        const data = await getMyBookings(api, {
-          limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
-          offset: PAGINATION_DEFAULTS.OFFSET,
-        });
-        setBookings(data);
-      });
+      loadBookings(fetchBookings);
     },
     alertTitle: 'Cancel Booking',
   });
@@ -189,13 +149,7 @@ export default function BookingsPlaceholder() {
 
   const { execute: executeComplete, loading: completing } = useAsyncOperation({
     onSuccess: () => {
-      loadBookings(async () => {
-        const data = await getMyBookings(api, {
-          limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
-          offset: PAGINATION_DEFAULTS.OFFSET,
-        });
-        setBookings(data);
-      });
+      loadBookings(fetchBookings);
     },
     alertTitle: 'Complete Booking',
   });
@@ -229,13 +183,7 @@ export default function BookingsPlaceholder() {
         setSelected(null);
         setReviewRating(5);
         setReviewComment('');
-        loadBookings(async () => {
-          const data = await getMyBookings(api, {
-            limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
-            offset: PAGINATION_DEFAULTS.OFFSET,
-          });
-          setBookings(data);
-        });
+        loadBookings(fetchBookings);
       },
       alertTitle: 'Submit Review',
     });
@@ -258,11 +206,7 @@ export default function BookingsPlaceholder() {
     });
   };
 
-  const grouped = groupBookingsByStatus(bookings);
-  const sections = Object.entries(grouped).map(([title, data]) => ({
-    title,
-    data,
-  }));
+  const sections = getUserBookingSections(bookings);
 
   function renderCard(item: BookingResponse) {
     return (
@@ -331,7 +275,7 @@ export default function BookingsPlaceholder() {
       BOOKING_STATUS_NORMALIZED.COMPLETED,
     ].includes(normalizeBookingStatus(selected.status) as any);
 
-  const completeDisabled = !selected || !canUserComplete(selected);
+  const completeDisabled = !selected || !canUserCompleteBooking(selected);
   const reviewDisabled = !selected || !canReviewBooking(selected);
 
   return (
@@ -348,13 +292,7 @@ export default function BookingsPlaceholder() {
           <AppButton
             label="Refresh"
             onPress={() =>
-              loadBookings(async () => {
-                const data = await getMyBookings(api, {
-                  limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
-                  offset: PAGINATION_DEFAULTS.OFFSET,
-                });
-                setBookings(data);
-              })
+              loadBookings(fetchBookings)
             }
             style={{ minWidth: 120 }}
           />
@@ -490,7 +428,7 @@ export default function BookingsPlaceholder() {
               </>
             ) : null}
 
-            {canUserComplete(selected) ? (
+            {canUserCompleteBooking(selected) ? (
               <AppButton
                 label="Mark as complete"
                 onPress={onComplete}

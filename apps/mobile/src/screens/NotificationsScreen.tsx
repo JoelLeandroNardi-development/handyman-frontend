@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, Text, View, Dimensions } from 'react-native';
+import { FlatList, Text, View } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -12,8 +12,10 @@ import {
 import { createApiClient } from '../lib/api';
 import { useTheme } from '../theme';
 import { useAsyncOperation } from '../hooks/useAsyncOperation';
+import { useBottomGuard } from '../hooks/useBottomGuard';
 import { useNotifications } from '../notifications/NotificationsProvider';
-import { AppButton, Card, EmptyState, Screen } from '../ui/primitives';
+import { AppButton, Card, EmptyState } from '../ui/primitives';
+import { ModalScreen } from '../ui/ModalScreen';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { NOTIFICATION_EVENT_LABELS } from '@smart/core';
 
@@ -46,13 +48,10 @@ export default function NotificationsScreen() {
   const api = useMemo(() => createApiClient(), []);
   const { colors } = useTheme();
   const isFocused = useIsFocused();
-  const insets = useSafeAreaInsets();
   const { setUnreadCount, refreshUnreadCount, latestCreatedNotification } =
     useNotifications();
   const [items, setItems] = useState<NotificationItem[]>([]);
-
-  const screenHeight = Dimensions.get('window').height;
-  const maxHeight = screenHeight - Math.max(insets.bottom);
+  const { bottomGuardHeight, bottomContentPadding } = useBottomGuard();
 
   const { execute: loadNotifications, loading } = useAsyncOperation({
     alertTitle: 'Load Notifications',
@@ -141,23 +140,17 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <Screen
+    <ModalScreen
+      scrollable={false}
       style={{
         paddingBottom: 10,
-        maxHeight,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        overflow: 'hidden',
-        elevation: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
       }}>
       <ScreenHeader
         title="Notifications"
         subtitle="Updates about bookings and slots"
         isModal={true}
+        modalVariant="compact"
+        closeButtonPosition="right"
       />
 
       <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
@@ -169,68 +162,77 @@ export default function NotificationsScreen() {
         />
       </View>
 
-      <FlatList
-        data={items}
-        keyExtractor={item => item.notification_id}
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingBottom: 80,
-          gap: 10,
-        }}
-        refreshing={loading}
-        onRefresh={reload}
-        ListEmptyComponent={
-          loading ? null : (
-            <EmptyState text="No notifications. You are all caught up." />
-          )
-        }
-        renderItem={({ item }) => {
-          const unread = isUnread(item);
+      <View style={{ flex: 1, minHeight: 0 }}>
+        <FlatList
+          data={items}
+          keyExtractor={item => item.notification_id}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingBottom: bottomContentPadding,
+            gap: 10,
+          }}
+          refreshing={loading}
+          onRefresh={reload}
+          ListEmptyComponent={
+            loading ? null : (
+              <EmptyState text="No notifications. You are all caught up." />
+            )
+          }
+          renderItem={({ item }) => {
+            const unread = isUnread(item);
 
-          return (
-            <Card
-              style={{
-                borderColor: unread ? colors.primary : colors.border,
-              }}>
-              <View style={{ gap: 4 }}>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: '800',
-                    color: colors.text,
-                  }}>
-                  {getNotificationTitle(item)}
-                </Text>
-                <Text style={{ color: colors.textSoft, fontSize: 14 }}>
-                  {getNotificationBody(item)}
-                </Text>
-                <Text style={{ color: colors.textFaint, fontSize: 12 }}>
-                  {item.created_at
-                    ? new Date(item.created_at).toLocaleString()
-                    : ''}
-                </Text>
-              </View>
+            return (
+              <Card
+                style={{
+                  borderColor: unread ? colors.primary : colors.border,
+                }}>
+                <View style={{ gap: 4 }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: '800',
+                      color: colors.text,
+                    }}>
+                    {getNotificationTitle(item)}
+                  </Text>
+                  <Text style={{ color: colors.textSoft, fontSize: 14 }}>
+                    {getNotificationBody(item)}
+                  </Text>
+                  <Text style={{ color: colors.textFaint, fontSize: 12 }}>
+                    {item.created_at
+                      ? new Date(item.created_at).toLocaleString()
+                      : ''}
+                  </Text>
+                </View>
 
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <AppButton
-                  label={unread ? 'Mark read' : 'Read'}
-                  tone="secondary"
-                  onPress={() => onMarkRead(item.notification_id)}
-                  disabled={!unread || actionLoading}
-                  style={{ flex: 1 }}
-                />
-                <AppButton
-                  label="Archive"
-                  tone="surface"
-                  onPress={() => onArchive(item.notification_id)}
-                  disabled={actionLoading}
-                  style={{ flex: 1 }}
-                />
-              </View>
-            </Card>
-          );
-        }}
-      />
-    </Screen>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <AppButton
+                    label={unread ? 'Mark read' : 'Read'}
+                    tone="secondary"
+                    onPress={() => onMarkRead(item.notification_id)}
+                    disabled={!unread || actionLoading}
+                    style={{ flex: 1 }}
+                  />
+                  <AppButton
+                    label="Archive"
+                    tone="surface"
+                    onPress={() => onArchive(item.notification_id)}
+                    disabled={actionLoading}
+                    style={{ flex: 1 }}
+                  />
+                </View>
+              </Card>
+            );
+          }}
+        />
+        <View
+          pointerEvents="none"
+          style={{
+            height: bottomGuardHeight,
+            backgroundColor: colors.surface,
+          }}
+        />
+      </View>
+    </ModalScreen>
   );
 }
