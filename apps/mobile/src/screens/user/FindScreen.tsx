@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Alert, ScrollView, Text, View } from 'react-native';
 import {
   createBooking,
@@ -14,6 +14,7 @@ import { useAsyncOperation } from '../../hooks/useAsyncOperation';
 import { createApiClient } from '../../lib/api';
 import { useSession } from '../../auth/SessionProvider';
 import { useNotifications } from '../../notifications/NotificationsProvider';
+import { APP_BACKGROUND_IMAGE } from '../../theme/appChrome';
 import { useTheme } from '../../theme';
 import { AppButton, ButtonRow, Card, CardTitle, Screen } from '../../ui/primitives';
 import { ScreenHeader } from '../../ui/ScreenHeader';
@@ -28,6 +29,7 @@ import { useAppLocation } from '../../location/AppLocationProvider';
 
 export default function FindScreen() {
   const api = useMemo(() => createApiClient(), []);
+  const scrollViewRef = useRef<ScrollView | null>(null);
   const { session } = useSession();
   const { coords: appCoords } = useAppLocation();
   const { unreadCount } = useNotifications();
@@ -50,7 +52,6 @@ export default function FindScreen() {
   const [userCoords, setUserCoords] = useState<Coords | null>(appCoords);
   const [catalog, setCatalog] = useState<SkillCatalogFlatResponse | null>(null);
   const [skillModalOpen, setSkillModalOpen] = useState(false);
-  const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
 
   const [results, setResults] = useState<MatchResult[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
@@ -76,6 +77,16 @@ export default function FindScreen() {
       setUserCoords(appCoords);
     }
   }, [appCoords, userCoords]);
+
+  React.useEffect(() => {
+    if (!hasResults) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    });
+  }, [hasResults]);
 
   const { execute: handleMatch, loading: loadingMatch } = useAsyncOperation({
     alertTitle: 'Search',
@@ -164,7 +175,6 @@ export default function FindScreen() {
       job_description: jobDescription.trim() || null,
     });
 
-    setBookingSuccess('Booking created successfully!');
     setSelectedEmail(null);
     setSelectedHandymanProfile(null);
 
@@ -175,7 +185,7 @@ export default function FindScreen() {
   }
 
   return (
-    <Screen>
+    <Screen backgroundImage={APP_BACKGROUND_IMAGE}>
       <ScreenHeader
         title="Find a handyman"
         subtitle="Choose a skill, review profiles, and request a booking."
@@ -185,6 +195,7 @@ export default function FindScreen() {
       />
 
       <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingBottom: 28,
@@ -263,7 +274,6 @@ export default function FindScreen() {
             jobDescription={jobDescription}
             userCoords={userCoords}
             loadingMatch={loadingMatch}
-            bookingSuccess={bookingSuccess}
             onCatalogLoaded={setCatalog}
             onSkillKeySelected={setSelectedSkillKey}
             onDateChanged={setSelectedDate}

@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  ScrollView,
   Pressable,
   Text,
   View,
@@ -27,19 +26,17 @@ import { extractDeviceCoordinates } from '../../lib/coordinates';
 import {
   AppButton,
   AppInput,
-  ButtonRow,
   Card,
   CardTitle,
   Label,
 } from '../../ui/primitives';
-import { ModalScreen } from '../../ui/ModalScreen';
 import {
   ProfileIdentityFields,
   type ProfileIdentityFieldKey,
 } from '../../ui/ProfileIdentityFields';
-import { SkillSelectionTile } from '../../ui/SkillSelectionTile';
-import { getSkillImageSource } from '../../ui/skillImageSources';
-import { ScreenHeader } from '../../ui/ScreenHeader';
+import { SettingsAccountActions } from '../../ui/SettingsAccountActions';
+import { SettingsModalShell } from '../../ui/SettingsModalShell';
+import { SkillCategorySections } from '../../ui/SkillCategorySections';
 import ThemeToggleCard from '../../ui/ThemeToggleCard';
 
 interface HandymanFormData {
@@ -54,6 +51,18 @@ interface HandymanFormData {
   yearsExperience: string;
 }
 
+const initialFormData: HandymanFormData = {
+  firstName: '',
+  lastName: '',
+  phone: '',
+  nationalId: '',
+  addressLine: '',
+  postalCode: '',
+  city: '',
+  country: '',
+  yearsExperience: '',
+};
+
 export default function HandymanSettings() {
   const api = useMemo(() => createApiClient(), []);
   const { colors, tokens } = useTheme();
@@ -61,18 +70,6 @@ export default function HandymanSettings() {
   const { unreadCount } = useNotifications();
   const { bottomGuardHeight, bottomContentPadding } = useBottomGuard();
   const [activeTab, setActiveTab] = useState<'personal' | 'skills'>('personal');
-
-  const initialFormData: HandymanFormData = {
-    firstName: '',
-    lastName: '',
-    phone: '',
-    nationalId: '',
-    addressLine: '',
-    postalCode: '',
-    city: '',
-    country: '',
-    yearsExperience: '',
-  };
 
   const [catalog, setCatalog] = React.useState<SkillCatalogFlatResponse | null>(
     null,
@@ -86,7 +83,7 @@ export default function HandymanSettings() {
     patchMany,
   } = useFormState<HandymanFormData>(initialFormData);
 
-  const applyProfileData = React.useCallback(
+  const applyProfileData = useCallback(
     (data: HandymanResponse) => {
       setSelectedSkills(data.skills ?? []);
       patchMany({
@@ -196,248 +193,169 @@ export default function HandymanSettings() {
   }
 
   return (
-    <ModalScreen
-      scrollable={false}
-      style={{
-        paddingBottom: 10,
-      }}>
-      <ScreenHeader
-        title="Profile"
-        subtitle="Manage your settings and handyman information"
-        notificationBadgeCount={unreadCount}
-        isModal={true}
-        modalVariant="compact"
-        closeButtonPosition="right"
-      />
-
-      <View style={{ flex: 1, minHeight: 0 }}>
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            gap: 14,
-            paddingBottom: bottomContentPadding,
+    <SettingsModalShell
+      subtitle="Manage your settings and handyman information"
+      unreadCount={unreadCount}
+      bottomGuardHeight={bottomGuardHeight}
+      bottomContentPadding={bottomContentPadding}>
+      <Card>
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: 8,
+            padding: 6,
+            borderRadius: tokens.nativeRadius.md,
+            backgroundColor: colors.surfaceMuted,
           }}>
-          <Card>
-            <View
+          <Pressable
+            onPress={() => setActiveTab('personal')}
+            style={{
+              flex: 1,
+              minHeight: 44,
+              borderRadius: tokens.nativeRadius.sm,
+              backgroundColor:
+                activeTab === 'personal' ? colors.surface : 'transparent',
+              borderWidth: activeTab === 'personal' ? 1 : 0,
+              borderColor: colors.border,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Text
               style={{
-                flexDirection: 'row',
-                gap: 8,
-                padding: 6,
-                borderRadius: tokens.nativeRadius.md,
-                backgroundColor: colors.surfaceMuted,
+                color:
+                  activeTab === 'personal' ? colors.text : colors.textSoft,
+                fontWeight: '800',
               }}>
-              <Pressable
-                onPress={() => setActiveTab('personal')}
-                style={{
-                  flex: 1,
-                  minHeight: 44,
-                  borderRadius: tokens.nativeRadius.sm,
-                  backgroundColor:
-                    activeTab === 'personal' ? colors.surface : 'transparent',
-                  borderWidth: activeTab === 'personal' ? 1 : 0,
-                  borderColor: colors.border,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                <Text
-                  style={{
-                    color:
-                      activeTab === 'personal' ? colors.text : colors.textSoft,
-                    fontWeight: '800',
-                  }}>
-                  Personal Info
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setActiveTab('skills')}
-                style={{
-                  flex: 1,
-                  minHeight: 44,
-                  borderRadius: tokens.nativeRadius.sm,
-                  backgroundColor:
-                    activeTab === 'skills' ? colors.surface : 'transparent',
-                  borderWidth: activeTab === 'skills' ? 1 : 0,
-                  borderColor: colors.border,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                <Text
-                  style={{
-                    color:
-                      activeTab === 'skills' ? colors.text : colors.textSoft,
-                    fontWeight: '800',
-                  }}>
-                  Skills
-                </Text>
-              </Pressable>
-            </View>
+              Personal Info
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setActiveTab('skills')}
+            style={{
+              flex: 1,
+              minHeight: 44,
+              borderRadius: tokens.nativeRadius.sm,
+              backgroundColor:
+                activeTab === 'skills' ? colors.surface : 'transparent',
+              borderWidth: activeTab === 'skills' ? 1 : 0,
+              borderColor: colors.border,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Text
+              style={{
+                color: activeTab === 'skills' ? colors.text : colors.textSoft,
+                fontWeight: '800',
+              }}>
+              Skills
+            </Text>
+          </Pressable>
+        </View>
+      </Card>
+
+      {activeTab === 'personal' ? (
+        <>
+          <Card>
+            <CardTitle title="Handyman details" />
+
+            {loadingProfile ? (
+              <ActivityIndicator color={colors.primary} />
+            ) : (
+              <>
+                <ProfileIdentityFields
+                  values={formData}
+                  onChange={handleFieldChange}
+                />
+
+                <View style={{ gap: 8 }}>
+                  <Label>Years of experience</Label>
+                  <AppInput
+                    value={formData.yearsExperience}
+                    onChangeText={value => patch('yearsExperience', value)}
+                    keyboardType="number-pad"
+                    placeholder="e.g. 5"
+                  />
+                </View>
+
+                <View style={{ gap: 8 }}>
+                  <Label>Service radius: {Math.round(serviceRadiusKm)} km</Label>
+                  <Slider
+                    minimumValue={0}
+                    maximumValue={100}
+                    step={1}
+                    value={serviceRadiusKm}
+                    onValueChange={setServiceRadiusKm}
+                    minimumTrackTintColor={colors.primary}
+                    maximumTrackTintColor={colors.border}
+                  />
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}>
+                    <Text style={{ color: colors.textFaint }}>0 km</Text>
+                    <Text style={{ color: colors.textFaint }}>100 km</Text>
+                  </View>
+                </View>
+
+                <AppButton
+                  label="Save personal info"
+                  onPress={() => handleProfileSave(savePersonalInfo)}
+                  loading={saving}
+                  disabled={loadingProfile}
+                />
+              </>
+            )}
           </Card>
 
-          {activeTab === 'personal' ? (
-            <>
-              <Card>
-                <CardTitle title="Handyman details" />
+          <ThemeToggleCard />
+        </>
+      ) : (
+        <Card>
+          <CardTitle
+            title="Skills"
+            action={
+              <Text style={{ color: colors.textFaint, fontWeight: '700' }}>
+                {selectedSkills.length} selected
+              </Text>
+            }
+          />
 
-                {loadingProfile ? (
-                  <ActivityIndicator color={colors.primary} />
-                ) : (
-                  <>
-                    <ProfileIdentityFields
-                      values={formData}
-                      onChange={handleFieldChange}
-                    />
-
-                    <View style={{ gap: 8 }}>
-                      <Label>Years of experience</Label>
-                      <AppInput
-                        value={formData.yearsExperience}
-                        onChangeText={value => patch('yearsExperience', value)}
-                        keyboardType="number-pad"
-                        placeholder="e.g. 5"
-                      />
-                    </View>
-
-                    <View style={{ gap: 8 }}>
-                      <Label>
-                        Service radius: {Math.round(serviceRadiusKm)} km
-                      </Label>
-                      <Slider
-                        minimumValue={0}
-                        maximumValue={100}
-                        step={1}
-                        value={serviceRadiusKm}
-                        onValueChange={setServiceRadiusKm}
-                        minimumTrackTintColor={colors.primary}
-                        maximumTrackTintColor={colors.border}
-                      />
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
-                        }}>
-                        <Text style={{ color: colors.textFaint }}>0 km</Text>
-                        <Text style={{ color: colors.textFaint }}>100 km</Text>
-                      </View>
-                    </View>
-
-                    <AppButton
-                      label="Save personal info"
-                      onPress={() => handleProfileSave(savePersonalInfo)}
-                      loading={saving}
-                      disabled={loadingProfile}
-                    />
-                  </>
-                )}
-              </Card>
-
-              <ThemeToggleCard />
-            </>
+          {loadingCatalog ? (
+            <ActivityIndicator color={colors.primary} />
+          ) : !catalog || catalog.categories.length === 0 ? (
+            <Text style={{ color: colors.textSoft }}>
+              No active skills found in catalog.
+            </Text>
           ) : (
             <>
-              <Card>
-                <CardTitle
-                  title="Skills"
-                  action={
-                    <Text style={{ color: colors.textFaint, fontWeight: '700' }}>
-                      {selectedSkills.length} selected
-                    </Text>
-                  }
-                />
+              <Text style={{ color: colors.textSoft }}>
+                Choose the services you want to be discoverable for. These
+                tiles are ready for image backgrounds later.
+              </Text>
 
-                {loadingCatalog ? (
-                  <ActivityIndicator color={colors.primary} />
-                ) : !catalog || catalog.categories.length === 0 ? (
-                  <Text style={{ color: colors.textSoft }}>
-                    No active skills found in catalog.
-                  </Text>
-                ) : (
-                  <>
-                    <Text style={{ color: colors.textSoft }}>
-                      Choose the services you want to be discoverable for. These
-                      tiles are ready for image backgrounds later.
-                    </Text>
+              <SkillCategorySections
+                categories={catalog.categories}
+                isSelected={skillKey => selectedSkills.includes(skillKey)}
+                onSkillPress={toggleSkill}
+              />
 
-                    {catalog.categories.map(category => {
-                      const skillsInCategory = category.skills.filter(
-                        skill => skill.active,
-                      );
-                      if (skillsInCategory.length === 0) return null;
-
-                      return (
-                        <View key={category.key} style={{ gap: 10 }}>
-                          <Text
-                            style={{
-                              fontSize: 16,
-                              fontWeight: '800',
-                              color: colors.text,
-                            }}>
-                            {category.label}
-                          </Text>
-
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              flexWrap: 'wrap',
-                              justifyContent: 'flex-start',
-                              gap: 8,
-                            }}>
-                            {skillsInCategory.map(skill => (
-                              <SkillSelectionTile
-                                key={skill.key}
-                                label={skill.label}
-                                backgroundImage={getSkillImageSource(skill.key)}
-                                selected={selectedSkills.includes(skill.key)}
-                                onPress={() => toggleSkill(skill.key)}
-                              />
-                            ))}
-                          </View>
-                        </View>
-                      );
-                    })}
-
-                    <AppButton
-                      label="Save skills"
-                      onPress={() => handleSkillsSave(saveSkills)}
-                      loading={savingSkills}
-                      disabled={loadingCatalog}
-                    />
-                  </>
-                )}
-              </Card>
+              <AppButton
+                label="Save skills"
+                onPress={() => handleSkillsSave(saveSkills)}
+                loading={savingSkills}
+                disabled={loadingCatalog}
+              />
             </>
           )}
+        </Card>
+      )}
 
-          {availableRoles.length > 1 ? (
-            <Card>
-              <CardTitle title="Switch role" />
-              <ButtonRow>
-                <AppButton
-                  label="User"
-                  onPress={() => pickRole('user')}
-                  tone="secondary"
-                  style={{ flex: 1 }}
-                />
-                <AppButton
-                  label="Handyman"
-                  onPress={() => pickRole('handyman')}
-                  tone="secondary"
-                  style={{ flex: 1 }}
-                />
-              </ButtonRow>
-            </Card>
-          ) : null}
-
-          <AppButton label="Logout" onPress={logout} />
-        </ScrollView>
-        <View
-          pointerEvents="none"
-          style={{
-            height: bottomGuardHeight,
-            backgroundColor: colors.surface,
-          }}
-        />
-      </View>
-    </ModalScreen>
+      <SettingsAccountActions
+        availableRoles={availableRoles}
+        pickRole={pickRole}
+        logout={logout}
+      />
+    </SettingsModalShell>
   );
 }

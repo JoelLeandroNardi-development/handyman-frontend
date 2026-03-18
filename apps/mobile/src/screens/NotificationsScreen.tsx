@@ -44,6 +44,12 @@ function isUnread(item: NotificationItem) {
   return item.status === 'unread';
 }
 
+type PendingNotificationAction =
+  | { kind: 'mark-all-read' }
+  | { kind: 'mark-read'; notificationId: string }
+  | { kind: 'archive'; notificationId: string }
+  | null;
+
 export default function NotificationsScreen() {
   const api = useMemo(() => createApiClient(), []);
   const { colors } = useTheme();
@@ -51,6 +57,8 @@ export default function NotificationsScreen() {
   const { setUnreadCount, refreshUnreadCount, latestCreatedNotification } =
     useNotifications();
   const [items, setItems] = useState<NotificationItem[]>([]);
+  const [pendingAction, setPendingAction] =
+    useState<PendingNotificationAction>(null);
   const { bottomGuardHeight, bottomContentPadding } = useBottomGuard();
 
   const { execute: loadNotifications, loading } = useAsyncOperation({
@@ -104,38 +112,65 @@ export default function NotificationsScreen() {
   };
 
   const onMarkRead = (notificationId: string) => {
+    if (actionLoading) {
+      return;
+    }
+
+    setPendingAction({ kind: 'mark-read', notificationId });
     runAction(async () => {
-      await markNotificationRead(api, notificationId);
-      setItems(prev =>
-        prev.map(item =>
-          item.notification_id === notificationId
-            ? {
-                ...item,
-                status: 'read',
-              }
-            : item,
-        ),
-      );
-      await refreshUnreadCount();
+      try {
+        await markNotificationRead(api, notificationId);
+        setItems(prev =>
+          prev.map(item =>
+            item.notification_id === notificationId
+              ? {
+                  ...item,
+                  status: 'read',
+                }
+              : item,
+          ),
+        );
+        await refreshUnreadCount();
+      } finally {
+        setPendingAction(null);
+      }
     });
   };
 
   const onArchive = (notificationId: string) => {
+    if (actionLoading) {
+      return;
+    }
+
+    setPendingAction({ kind: 'archive', notificationId });
     runAction(async () => {
-      await archiveNotification(api, notificationId);
-      setItems(prev =>
-        prev.filter(item => item.notification_id !== notificationId),
-      );
-      await refreshUnreadCount();
+      try {
+        await archiveNotification(api, notificationId);
+        setItems(prev =>
+          prev.filter(item => item.notification_id !== notificationId),
+        );
+        await refreshUnreadCount();
+      } finally {
+        setPendingAction(null);
+      }
     });
   };
 
   const onMarkAllRead = () => {
+    if (actionLoading) {
+      return;
+    }
+
+    setPendingAction({ kind: 'mark-all-read' });
     runAction(async () => {
-      await markAllNotificationsRead(api);
-      setItems(prev => prev.map(item => ({ ...item, status: 'read' })));
-      setUnreadCount(0);
-      await refreshUnreadCount();
+      try {
+        await markAllNotificationsRead(api);
+        setItems(prev => prev.map(item => ({ ...item, status: 'read' })));
+        setUnreadCount(0);
+        await refreshUnreadCount();
+      } finally {
+        setPendingAction(null);
+      }
     });
   };
 
@@ -158,7 +193,10 @@ export default function NotificationsScreen() {
           label="Read all"
           tone="secondary"
           onPress={onMarkAllRead}
-          disabled={items.length === 0 || actionLoading}
+          loading={
+            actionLoading && pendingAction?.kind === 'mark-all-read'
+          }
+          disabled={items.length === 0}
         />
       </View>
 
@@ -180,6 +218,14 @@ export default function NotificationsScreen() {
           }
           renderItem={({ item }) => {
             const unread = isUnread(item);
+            const isMarkReadPending =
+              actionLoading &&
+              pendingAction?.kind === 'mark-read' &&
+              pendingAction.notificationId === item.notification_id;
+            const isArchivePending =
+              actionLoading &&
+              pendingAction?.kind === 'archive' &&
+              pendingAction.notificationId === item.notification_id;
 
             return (
               <Card
@@ -210,14 +256,16 @@ export default function NotificationsScreen() {
                     label={unread ? 'Mark read' : 'Read'}
                     tone="secondary"
                     onPress={() => onMarkRead(item.notification_id)}
-                    disabled={!unread || actionLoading}
+                    loading={isMarkReadPending}
+                    disabled={!unread || isMarkReadPending}
                     style={{ flex: 1 }}
                   />
                   <AppButton
                     label="Archive"
                     tone="surface"
                     onPress={() => onArchive(item.notification_id)}
-                    disabled={actionLoading}
+                    loading={isArchivePending}
+                    disabled={isArchivePending}
                     style={{ flex: 1 }}
                   />
                 </View>

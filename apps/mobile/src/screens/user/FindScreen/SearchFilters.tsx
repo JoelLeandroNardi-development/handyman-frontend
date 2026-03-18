@@ -36,7 +36,6 @@ export interface SearchFiltersProps {
   jobDescription: string;
   userCoords: Coords | null;
   loadingMatch: boolean;
-  bookingSuccess: string | null;
 
   onCatalogLoaded: (catalog: SkillCatalogFlatResponse) => void;
   onSkillKeySelected: (skillKey: string) => void;
@@ -58,7 +57,6 @@ export function SearchFilters({
   jobDescription,
   userCoords,
   loadingMatch,
-  bookingSuccess,
   onCatalogLoaded,
   onSkillKeySelected,
   onDateChanged,
@@ -249,21 +247,6 @@ export function SearchFilters({
             style={{ flex: 1 }}
           />
         </ButtonRow>
-
-        {bookingSuccess ? (
-          <View
-            style={{
-              backgroundColor: colors.successSoft,
-              borderColor: colors.success,
-              borderWidth: 1,
-              borderRadius: 16,
-              padding: 12,
-            }}>
-            <Text style={{ color: colors.success, fontWeight: '700' }}>
-              {bookingSuccess}
-            </Text>
-          </View>
-        ) : null}
       </Card>
     </>
   );

@@ -1,11 +1,13 @@
 import type { ImageSourcePropType } from 'react-native';
 
 const skillImageSources: Record<string, ImageSourcePropType> = {
+  appliance_installation: require('../../assets/skills/appliance_installation.png'),
   cabinet_installation: require('../../assets/skills/cabinet_installation.png'),
   carpentry: require('../../assets/skills/carpentry.png'),
   caulking_sealing: require('../../assets/skills/caulking_sealing.png'),
   deck_building_repair: require('../../assets/skills/deck_building_repair.png'),
   dishwasher_hookup: require('../../assets/skills/dishwasher_hookup.png'),
+  door_alignment_hinge_repair: require('../../assets/skills/door_alignment_hinge_repair.png'),
   door_installation: require('../../assets/skills/door_installation.png'),
   drain_unclogging: require('../../assets/skills/drain_unclogging.png'),
   drywall_installation: require('../../assets/skills/drywall_installation.png'),
@@ -18,14 +20,18 @@ const skillImageSources: Record<string, ImageSourcePropType> = {
   framing: require('../../assets/skills/framing.png'),
   furniture_assembly: require('../../assets/skills/furniture_assembly.png'),
   garbage_disposal_installation: require('../../assets/skills/garbage_disposal_installation.png'),
+  general_home_maintenance: require('../../assets/skills/general_home_maintenance.png'),
   grout_repair: require('../../assets/skills/grout_repair.png'),
   interior_painting: require('../../assets/skills/interior_painting.png'),
   leak_detection_repair: require('../../assets/skills/leak_detection_repair.png'),
+  lock_replacement_repair: require('../../assets/skills/lock_replacement_repair.png'),
+  picture_hanging: require('../../assets/skills/picture_hanging.png'),
   pipe_replacement: require('../../assets/skills/pipe_replacement.png'),
   plaster_repair: require('../../assets/skills/plaster_repair.png'),
   security_camera_installation: require('../../assets/skills/security_camera_installation.png'),
   showerhead_installation: require('../../assets/skills/showerhead_installation.png'),
   sink_installation: require('../../assets/skills/sink_installation.png'),
+  small_appliance_repair: require('../../assets/skills/small_appliance_repair.png'),
   smart_home_device_installation: require('../../assets/skills/smart_home_device_installation.png'),
   solar_light_installation: require('../../assets/skills/solar_light_installation.png'),
   stair_repair: require('../../assets/skills/stair_repair.png'),
@@ -34,8 +40,10 @@ const skillImageSources: Record<string, ImageSourcePropType> = {
   toilet_installation_repair: require('../../assets/skills/toilet_installation_repair.png'),
   trim_molding_installation: require('../../assets/skills/trim_molding_installation.png'),
   wallpaper_installation_removal: require('../../assets/skills/wallpaper_installation_removal.png'),
+  weatherstripping_installation: require('../../assets/skills/weatherstripping_installation.png'),
   wifi_doorbell_installation: require('../../assets/skills/wifi_doorbell_installation.png'),
   window_installation: require('../../assets/skills/window_installation.png'),
+  window_screen_repair: require('../../assets/skills/window_screen_repair.png'),
 };
 
 export function getSkillImageSource(skillKey: string) {

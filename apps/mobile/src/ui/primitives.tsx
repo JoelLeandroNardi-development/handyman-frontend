@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   ActivityIndicator,
+  ImageBackground,
   Platform,
   Pressable,
   ScrollView,
@@ -8,10 +9,12 @@ import {
   Text,
   TextInput,
   View,
+  type ImageSourcePropType,
   type StyleProp,
   type TextInputProps,
   type ViewStyle,
 } from 'react-native';
+import { MAIN_APP_SCREEN_OVERLAY } from '../theme/appChrome';
 import { useTheme } from '../theme';
 import { useStyles } from './useStyles';
 
@@ -24,46 +27,64 @@ export function Screen({
   scroll = false,
   contentContainerStyle,
   style,
+  backgroundImage,
+  backgroundOverlayColor,
 }: {
   children: React.ReactNode;
   scroll?: boolean;
   contentContainerStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
+  backgroundImage?: ImageSourcePropType;
+  backgroundOverlayColor?: string;
 }) {
   const { tokens } = useTheme();
   const styles = useStyles();
   const topInset = getAndroidTopInset();
 
-  if (scroll) {
-    return (
-      <View style={[styles.screen.base, { paddingTop: topInset }, style]}>
-        <View
-          pointerEvents="none"
-          style={[styles.screen.backgroundGradient, { top: topInset }]}
-        />
-        <ScrollView
-          contentContainerStyle={[
-            {
-              padding: tokens.spacing.lg,
-              paddingBottom: tokens.spacing.xxl,
-              gap: tokens.spacing.lg,
-            },
-            contentContainerStyle,
-          ]}
-          keyboardShouldPersistTaps="handled">
-          {children}
-        </ScrollView>
-      </View>
-    );
-  }
+  const content = scroll ? (
+    <ScrollView
+      contentContainerStyle={[
+        {
+          padding: tokens.spacing.lg,
+          paddingBottom: tokens.spacing.xxl,
+          gap: tokens.spacing.lg,
+        },
+        contentContainerStyle,
+      ]}
+      keyboardShouldPersistTaps="handled">
+      {children}
+    </ScrollView>
+  ) : (
+    children
+  );
 
-  return (
-    <View style={[styles.screen.base, { paddingTop: topInset }, style]}>
+  const shell = (
+    <>
       <View
         pointerEvents="none"
         style={[styles.screen.backgroundGradient, { top: topInset }]}
       />
-      {children}
+      {content}
+    </>
+  );
+
+  const wrappedContent = backgroundImage ? (
+    <ImageBackground source={backgroundImage} resizeMode="cover" style={{ flex: 1 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: backgroundOverlayColor ?? MAIN_APP_SCREEN_OVERLAY,
+        }}>
+        {shell}
+      </View>
+    </ImageBackground>
+  ) : (
+    shell
+  );
+
+  return (
+    <View style={[styles.screen.base, { paddingTop: topInset }, style]}>
+      {wrappedContent}
     </View>
   );
 }
@@ -73,7 +94,7 @@ export function PageHeader({
   subtitle,
   action,
 }: {
-  title: string;
+  title: React.ReactNode;
   subtitle?: string;
   action?: React.ReactNode;
 }) {
@@ -83,7 +104,11 @@ export function PageHeader({
   return (
     <View style={styles.rowSpaceBetween}>
       <View style={{ flex: 1 }}>
-        <Text style={styles.displayText}>{title}</Text>
+        {typeof title === 'string' ? (
+          <Text style={styles.displayText}>{title}</Text>
+        ) : (
+          title
+        )}
         {subtitle ? (
           <Text style={[styles.faintText, { marginTop: tokens.spacing.sm }]}>
             {subtitle}

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  ScrollView,
   SectionList,
   Pressable,
   Text,
@@ -30,6 +31,7 @@ import {
   getUserBookingSections,
 } from '../../lib/bookingSections';
 import { formatDateTime } from '../../lib/dateTime';
+import { APP_BACKGROUND_IMAGE } from '../../theme/appChrome';
 import { useTheme } from '../../theme';
 import {
   AppButton,
@@ -97,10 +99,57 @@ function StarRating({
   );
 }
 
+function DetailRow({
+  label,
+  value,
+  mono = false,
+  colors,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  colors: {
+    text: string;
+    textSoft: string;
+    textFaint: string;
+  };
+}) {
+  return (
+    <View style={{ gap: 3 }}>
+      <Text
+        style={{
+          color: colors.textFaint,
+          fontSize: 12,
+          fontWeight: '700',
+          letterSpacing: 0.3,
+          textTransform: 'uppercase',
+        }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: colors.textSoft,
+          fontSize: 16,
+          lineHeight: 22,
+          fontFamily: mono ? 'monospace' : undefined,
+        }}>
+        {value}
+      </Text>
+    </View>
+  );
+}
+
 export default function BookingsPlaceholder() {
   const api = useMemo(() => createApiClient(), []);
-  const { colors } = useTheme();
+  const { colors, mode } = useTheme();
   const { unreadCount } = useNotifications();
+
+  const elevatedCardBackground =
+    mode === 'dark' ? 'rgba(13, 26, 47, 0.92)' : 'rgba(247, 248, 250, 0.92)';
+  const elevatedMutedBackground =
+    mode === 'dark' ? 'rgba(18, 35, 61, 0.90)' : 'rgba(247, 248, 250, 0.88)';
+  const sectionBadgeBackground =
+    mode === 'dark' ? 'rgba(13, 26, 47, 0.88)' : 'rgba(247, 248, 250, 0.90)';
 
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [selected, setSelected] = useState<BookingResponse | null>(null);
@@ -209,7 +258,13 @@ export default function BookingsPlaceholder() {
 
   function renderCard(item: BookingResponse) {
     return (
-      <Card key={item.booking_id} style={{ marginBottom: 10 }}>
+      <Card
+        key={item.booking_id}
+        style={{
+          marginBottom: 12,
+          backgroundColor: elevatedCardBackground,
+          gap: 14,
+        }}>
         <View
           style={{
             flexDirection: 'row',
@@ -218,7 +273,7 @@ export default function BookingsPlaceholder() {
           }}>
           <View style={{ flex: 1 }}>
             <Text
-              style={{ fontSize: 16, fontWeight: '800', color: colors.text }}>
+              style={{ fontSize: 18, fontWeight: '800', color: colors.text }}>
               {item.handyman_email}
             </Text>
             <Text
@@ -238,19 +293,80 @@ export default function BookingsPlaceholder() {
           />
         </View>
 
-        <View style={{ gap: 4 }}>
-          <Text style={{ color: colors.textSoft }}>
-            Start: {formatDateTime(item.desired_start)}
-          </Text>
-          <Text style={{ color: colors.textSoft }}>
-            End: {formatDateTime(item.desired_end)}
-          </Text>
-          {item.job_description ? (
-            <Text style={{ color: colors.textSoft }}>
-              Description: {item.job_description}
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View
+            style={{
+              flex: 1,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: colors.border,
+              backgroundColor: colors.surfaceMuted,
+              padding: 12,
+              gap: 4,
+            }}>
+            <Text
+              style={{
+                color: colors.textFaint,
+                fontSize: 12,
+                fontWeight: '700',
+                textTransform: 'uppercase',
+              }}>
+              Start
             </Text>
-          ) : null}
+            <Text style={{ color: colors.textSoft, lineHeight: 20 }}>
+              {formatDateTime(item.desired_start)}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flex: 1,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: colors.border,
+              backgroundColor: colors.surfaceMuted,
+              padding: 12,
+              gap: 4,
+            }}>
+            <Text
+              style={{
+                color: colors.textFaint,
+                fontSize: 12,
+                fontWeight: '700',
+                textTransform: 'uppercase',
+              }}>
+              End
+            </Text>
+            <Text style={{ color: colors.textSoft, lineHeight: 20 }}>
+              {formatDateTime(item.desired_end)}
+            </Text>
+          </View>
         </View>
+
+        {item.job_description ? (
+          <View
+            style={{
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: colors.border,
+              backgroundColor: colors.surface,
+              padding: 12,
+              gap: 4,
+            }}>
+            <Text
+              style={{
+                color: colors.textFaint,
+                fontSize: 12,
+                fontWeight: '700',
+                textTransform: 'uppercase',
+              }}>
+              Job description
+            </Text>
+            <Text style={{ color: colors.textSoft, lineHeight: 22 }}>
+              {item.job_description}
+            </Text>
+          </View>
+        ) : null}
 
         <AppButton
           label="Open details"
@@ -261,6 +377,7 @@ export default function BookingsPlaceholder() {
             setSelected(item);
           }}
           tone="secondary"
+          style={{ minHeight: 48 }}
         />
       </Card>
     );
@@ -279,7 +396,7 @@ export default function BookingsPlaceholder() {
 
   return (
     <>
-      <Screen>
+      <Screen backgroundImage={APP_BACKGROUND_IMAGE}>
         <ScreenHeader
           title="Bookings"
           subtitle="Your booking requests and status"
@@ -287,32 +404,46 @@ export default function BookingsPlaceholder() {
         />
 
         <View
-          style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 2 }}>
-          <AppButton
-            label="Refresh"
-            onPress={() =>
-              loadBookings(fetchBookings)
-            }
-            style={{ minWidth: 120 }}
-          />
+          style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
+          <Card style={{ backgroundColor: elevatedMutedBackground, gap: 10 }}>
+            <Text style={{ color: colors.textSoft, lineHeight: 22 }}>
+              Keep track of each request, open the full details, and leave a review once the work is complete.
+            </Text>
+            <AppButton
+              label="Refresh bookings"
+              onPress={() => loadBookings(fetchBookings)}
+              style={{ alignSelf: 'flex-start', minWidth: 168, minHeight: 48 }}
+            />
+          </Card>
         </View>
 
         <SectionList
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 28 }}
           sections={sections}
           stickySectionHeadersEnabled
           keyExtractor={item => item.booking_id}
           renderSectionHeader={({ section }) => (
             <View
               style={{
-                paddingTop: 6,
-                paddingBottom: 8,
-                backgroundColor: colors.bg,
+                paddingTop: 10,
+                paddingBottom: 10,
+                backgroundColor: 'transparent',
               }}>
-              <Text
-                style={{ fontSize: 18, fontWeight: '800', color: colors.text }}>
-                {section.title}
-              </Text>
+              <View
+                style={{
+                  alignSelf: 'flex-start',
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                    backgroundColor: sectionBadgeBackground,
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                }}>
+                <Text
+                  style={{ fontSize: 16, fontWeight: '800', color: colors.text }}>
+                  {section.title}
+                </Text>
+              </View>
             </View>
           )}
           renderItem={({ item }) => renderCard(item)}
@@ -340,60 +471,146 @@ export default function BookingsPlaceholder() {
         onClose={() => setSelected(null)}
         title="Booking details">
         {selected ? (
-          <>
-            <Text style={{ color: colors.textSoft }}>
-              Handyman: {selected.handyman_email}
-            </Text>
-            <Text style={{ color: colors.textSoft }}>
-              Booking ID: {selected.booking_id}
-            </Text>
-            <Text style={{ color: colors.textSoft }}>
-              Start: {formatDateTime(selected.desired_start)}
-            </Text>
-            <Text style={{ color: colors.textSoft }}>
-              End: {formatDateTime(selected.desired_end)}
-            </Text>
-            <Text style={{ color: colors.textSoft }}>
-              Status: {getBookingDisplayStatus(selected.status, 'user')}
-            </Text>
+          <ScrollView
+            style={{ maxHeight: 540 }}
+            contentContainerStyle={{ gap: 14, paddingBottom: 8 }}
+            showsVerticalScrollIndicator={false}>
+            <View
+              style={{
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: colors.border,
+                backgroundColor: colors.surfaceMuted,
+                padding: 14,
+                gap: 12,
+              }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  gap: 12,
+                }}>
+                <View style={{ flex: 1, gap: 4 }}>
+                  <Text
+                    style={{ fontSize: 22, fontWeight: '800', color: colors.text }}>
+                    {selected.handyman_email}
+                  </Text>
+                  <Text
+                    style={{ color: colors.textFaint, fontFamily: 'monospace', fontSize: 13 }}>
+                    {selected.booking_id}
+                  </Text>
+                </View>
 
-            {selected.job_description ? (
-              <Text style={{ color: colors.textSoft }}>
-                Description: {selected.job_description}
-              </Text>
-            ) : null}
+                <StatusBadge
+                  label={getBookingDisplayStatus(selected.status, 'user')}
+                  tone={getBookingStatusTone(selected.status)}
+                />
+              </View>
 
-            <Text style={{ color: colors.textSoft }}>
-              Completed by you: {selected.completed_by_user ? 'Yes' : 'No'}
-            </Text>
-            <Text style={{ color: colors.textSoft }}>
-              Completed by handyman:{' '}
-              {selected.completed_by_handyman ? 'Yes' : 'No'}
-            </Text>
-            {selected.completed_at ? (
-              <Text style={{ color: colors.textSoft }}>
-                Completed at: {formatDateTime(selected.completed_at)}
-              </Text>
-            ) : null}
+              {selected.job_description ? (
+                <Text style={{ color: colors.textSoft, lineHeight: 22 }}>
+                  {selected.job_description}
+                </Text>
+              ) : null}
+            </View>
 
-            {selected.cancellation_reason ? (
-              <Text style={{ color: colors.textSoft }}>
-                Cancel reason: {selected.cancellation_reason}
-              </Text>
-            ) : null}
-            {selected.failure_reason ? (
-              <Text style={{ color: colors.textSoft }}>
-                Failure reason: {selected.failure_reason}
-              </Text>
-            ) : null}
-            {selected.rejection_reason ? (
-              <Text style={{ color: colors.textSoft }}>
-                Rejection reason: {selected.rejection_reason}
-              </Text>
-            ) : null}
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <View
+                style={{
+                  flex: 1,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  backgroundColor: colors.surface,
+                  padding: 12,
+                }}>
+                <DetailRow
+                  label="Start"
+                  value={formatDateTime(selected.desired_start)}
+                  colors={colors}
+                />
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  backgroundColor: colors.surface,
+                  padding: 12,
+                }}>
+                <DetailRow
+                  label="End"
+                  value={formatDateTime(selected.desired_end)}
+                  colors={colors}
+                />
+              </View>
+            </View>
+
+            <View
+              style={{
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+                padding: 14,
+                gap: 12,
+              }}>
+              <DetailRow
+                label="Completed by you"
+                value={selected.completed_by_user ? 'Yes' : 'No'}
+                colors={colors}
+              />
+              <DetailRow
+                label="Completed by handyman"
+                value={selected.completed_by_handyman ? 'Yes' : 'No'}
+                colors={colors}
+              />
+              {selected.completed_at ? (
+                <DetailRow
+                  label="Completed at"
+                  value={formatDateTime(selected.completed_at)}
+                  colors={colors}
+                />
+              ) : null}
+              {selected.cancellation_reason ? (
+                <DetailRow
+                  label="Cancel reason"
+                  value={selected.cancellation_reason}
+                  colors={colors}
+                />
+              ) : null}
+              {selected.failure_reason ? (
+                <DetailRow
+                  label="Failure reason"
+                  value={selected.failure_reason}
+                  colors={colors}
+                />
+              ) : null}
+              {selected.rejection_reason ? (
+                <DetailRow
+                  label="Rejection reason"
+                  value={selected.rejection_reason}
+                  colors={colors}
+                />
+              ) : null}
+            </View>
 
             {!reviewDisabled ? (
-              <>
+              <View
+                style={{
+                  borderRadius: 18,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  backgroundColor: colors.surface,
+                  padding: 14,
+                  gap: 12,
+                }}>
+                <Text style={{ fontWeight: '800', color: colors.text, fontSize: 18 }}>
+                  Review this booking
+                </Text>
+
                 <View style={{ gap: 8 }}>
                   <Text style={{ fontWeight: '700', color: colors.text }}>
                     Review rating
@@ -409,9 +626,7 @@ export default function BookingsPlaceholder() {
                       primary: colors.primary,
                     }}
                   />
-                  <Text style={{ color: colors.textSoft }}>
-                    {reviewRating} / 5
-                  </Text>
+                  <Text style={{ color: colors.textSoft }}>{reviewRating} / 5</Text>
                 </View>
 
                 <View style={{ gap: 8 }}>
@@ -424,7 +639,7 @@ export default function BookingsPlaceholder() {
                     placeholder="Tell others how it went..."
                   />
                 </View>
-              </>
+              </View>
             ) : null}
 
             {canUserCompleteBooking(selected) ? (
@@ -437,7 +652,15 @@ export default function BookingsPlaceholder() {
 
             {normalizeBookingStatus(selected.status) !==
             BOOKING_STATUS_NORMALIZED.COMPLETED ? (
-              <View style={{ gap: 8 }}>
+              <View
+                style={{
+                  borderRadius: 18,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  backgroundColor: colors.surface,
+                  padding: 14,
+                  gap: 8,
+                }}>
                 <Text style={{ fontWeight: '700', color: colors.text }}>
                   Cancel reason
                 </Text>
@@ -474,7 +697,7 @@ export default function BookingsPlaceholder() {
                 />
               )}
             </ButtonRow>
-          </>
+          </ScrollView>
         ) : null}
       </BottomSheet>
     </>

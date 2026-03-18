@@ -41,7 +41,6 @@ export default function RegisterRolePicker({
 
   return (
     <View style={{ gap: 10 }}>
-      <Label>Choose account type</Label>
       <RoleOption
         title="I need a handyman"
         description="Book trusted professionals for home services."
@@ -49,7 +48,7 @@ export default function RegisterRolePicker({
       />
       <RoleOption
         title="I am a handyman"
-        description="Offer your services, set availability, and receive jobs."
+        description="Offer your services, set your availability, and receive jobs."
         onPress={onSelectHandyman}
       />
     </View>

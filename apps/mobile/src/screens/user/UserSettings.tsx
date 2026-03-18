@@ -1,28 +1,23 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import { getMeUser, updateMe, type UserResponse } from '@smart/api';
-import { createApiClient } from '../../lib/api';
-import { toNullableString } from '../../lib/profileForm';
-import { useTheme } from '../../theme';
 import { useSession } from '../../auth/SessionProvider';
 import { useAsyncOperation } from '../../hooks/useAsyncOperation';
 import { useBottomGuard } from '../../hooks/useBottomGuard';
 import { useFormState } from '../../hooks/useFormState';
 import { useAppLocation } from '../../location/AppLocationProvider';
-import { useNotifications } from '../../notifications/NotificationsProvider';
+import { createApiClient } from '../../lib/api';
 import { extractDeviceCoordinates } from '../../lib/coordinates';
-import {
-  AppButton,
-  ButtonRow,
-  Card,
-  CardTitle,
-} from '../../ui/primitives';
-import { ModalScreen } from '../../ui/ModalScreen';
+import { toNullableString } from '../../lib/profileForm';
+import { useNotifications } from '../../notifications/NotificationsProvider';
+import { useTheme } from '../../theme';
 import {
   ProfileIdentityFields,
   type ProfileIdentityFieldKey,
 } from '../../ui/ProfileIdentityFields';
-import { ScreenHeader } from '../../ui/ScreenHeader';
+import { SettingsAccountActions } from '../../ui/SettingsAccountActions';
+import { SettingsModalShell } from '../../ui/SettingsModalShell';
+import { AppButton, Card, CardTitle } from '../../ui/primitives';
 import ThemeToggleCard from '../../ui/ThemeToggleCard';
 
 interface UserFormData {
@@ -36,6 +31,17 @@ interface UserFormData {
   country: string;
 }
 
+const initialFormData: UserFormData = {
+  firstName: '',
+  lastName: '',
+  phone: '',
+  nationalId: '',
+  addressLine: '',
+  postalCode: '',
+  city: '',
+  country: '',
+};
+
 export default function UserSettings() {
   const api = useMemo(() => createApiClient(), []);
   const { colors } = useTheme();
@@ -43,24 +49,13 @@ export default function UserSettings() {
   const { unreadCount } = useNotifications();
   const { bottomGuardHeight, bottomContentPadding } = useBottomGuard();
 
-  const initialFormData: UserFormData = {
-    firstName: '',
-    lastName: '',
-    phone: '',
-    nationalId: '',
-    addressLine: '',
-    postalCode: '',
-    city: '',
-    country: '',
-  };
-
   const {
     data: formData,
     patch,
     patchMany,
   } = useFormState<UserFormData>(initialFormData);
 
-  const applyProfileData = React.useCallback(
+  const applyProfileData = useCallback(
     (data: UserResponse) => {
       patchMany({
         firstName: data.first_name ?? '',
@@ -76,7 +71,7 @@ export default function UserSettings() {
     [patchMany],
   );
 
-  const fetchProfile = React.useCallback(async () => {
+  const fetchProfile = useCallback(async () => {
     const data = await getMeUser(api);
     applyProfileData(data);
   }, [api, applyProfileData]);
@@ -123,81 +118,39 @@ export default function UserSettings() {
   }
 
   return (
-    <ModalScreen
-      scrollable={false}
-      style={{
-        paddingBottom: 10,
-      }}>
-      <ScreenHeader
-        title="Profile"
-        subtitle="Manage your settings and personal information"
-        notificationBadgeCount={unreadCount}
-        isModal={true}
-        modalVariant="compact"
-        closeButtonPosition="right"
+    <SettingsModalShell
+      subtitle="Manage your settings and personal information"
+      unreadCount={unreadCount}
+      bottomGuardHeight={bottomGuardHeight}
+      bottomContentPadding={bottomContentPadding}>
+      <Card>
+        <CardTitle title="User details" />
+
+        {loadingProfile ? (
+          <ActivityIndicator color={colors.primary} />
+        ) : (
+          <>
+            <ProfileIdentityFields
+              values={formData}
+              onChange={handleFieldChange}
+            />
+
+            <AppButton
+              label="Save profile"
+              onPress={() => handleProfileSave(saveProfile)}
+              loading={saving}
+            />
+          </>
+        )}
+      </Card>
+
+      <ThemeToggleCard />
+
+      <SettingsAccountActions
+        availableRoles={availableRoles}
+        pickRole={pickRole}
+        logout={logout}
       />
-
-      <View style={{ flex: 1, minHeight: 0 }}>
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            gap: 14,
-            paddingBottom: bottomContentPadding,
-          }}>
-          <Card>
-            <CardTitle title="User details" />
-
-            {loadingProfile ? (
-              <ActivityIndicator color={colors.primary} />
-            ) : (
-              <>
-                <ProfileIdentityFields
-                  values={formData}
-                  onChange={handleFieldChange}
-                />
-
-                <AppButton
-                  label="Save profile"
-                  onPress={() => handleProfileSave(saveProfile)}
-                  loading={saving}
-                />
-              </>
-            )}
-          </Card>
-
-          <ThemeToggleCard />
-
-          {availableRoles.length > 1 ? (
-            <Card>
-              <CardTitle title="Switch role" />
-              <ButtonRow>
-                <AppButton
-                  label="User"
-                  onPress={() => pickRole('user')}
-                  tone="secondary"
-                  style={{ flex: 1 }}
-                />
-                <AppButton
-                  label="Handyman"
-                  onPress={() => pickRole('handyman')}
-                  tone="secondary"
-                  style={{ flex: 1 }}
-                />
-              </ButtonRow>
-            </Card>
-          ) : null}
-
-          <AppButton label="Logout" onPress={logout} />
-        </ScrollView>
-        <View
-          pointerEvents="none"
-          style={{
-            height: bottomGuardHeight,
-            backgroundColor: colors.surface,
-          }}
-        />
-      </View>
-    </ModalScreen>
+    </SettingsModalShell>
   );
 }

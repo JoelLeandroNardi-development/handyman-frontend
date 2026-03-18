@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import { useNotifications } from '../notifications/NotificationsProvider';
+import { APP_BACKGROUND_IMAGE } from '../theme/appChrome';
 import { useTheme } from '../theme';
 import { Card, Screen } from '../ui/primitives';
 import { ScreenHeader } from '../ui/ScreenHeader';
@@ -10,7 +11,7 @@ export default function DiscoveryPlaceholderScreen() {
   const { unreadCount } = useNotifications();
 
   return (
-    <Screen>
+    <Screen backgroundImage={APP_BACKGROUND_IMAGE}>
       <ScreenHeader
         title="Discovery"
         subtitle="A curated feed of services and opportunities will live here."

@@ -12,8 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SkillCatalogFlatResponse } from '@smart/api';
 import { useTheme } from '../../../theme';
-import { SkillSelectionTile } from '../../../ui/SkillSelectionTile';
-import { getSkillImageSource } from '../../../ui/skillImageSources';
+import { SkillCategorySections } from '../../../ui/SkillCategorySections';
 import { useStyles } from '../../../ui/useStyles';
 
 export interface SkillSelectorProps {
@@ -112,46 +111,14 @@ export function SkillSelector({
             <ScrollView
               style={{ flexGrow: 0 }}
               contentContainerStyle={{ gap: 18, paddingBottom: 15 }}>
-              {catalog?.categories.map(category => {
-                const activeSkills = category.skills.filter(skill => skill.active);
-                if (activeSkills.length === 0) {
-                  return null;
-                }
-
-                return (
-                  <View key={category.key} style={{ gap: 10 }}>
-                    <Text
-                      style={{
-                        fontWeight: '800',
-                        color: colors.text,
-                        fontSize: 16,
-                      }}>
-                      {category.label}
-                    </Text>
-
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        flexWrap: 'wrap',
-                        justifyContent: 'flex-start',
-                        gap: 8,
-                      }}>
-                      {activeSkills.map(skill => (
-                        <SkillSelectionTile
-                          key={skill.key}
-                          label={skill.label}
-                          backgroundImage={getSkillImageSource(skill.key)}
-                          onPress={() => {
-                            onSkillSelected(skill.key);
-                            onClose();
-                          }}
-                          selected={selectedSkillKey === skill.key}
-                        />
-                      ))}
-                    </View>
-                  </View>
-                );
-              })}
+              <SkillCategorySections
+                categories={catalog?.categories ?? []}
+                isSelected={skillKey => selectedSkillKey === skillKey}
+                onSkillPress={skillKey => {
+                  onSkillSelected(skillKey);
+                  onClose();
+                }}
+              />
             </ScrollView>
           </View>
         </View>
