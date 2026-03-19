@@ -14,6 +14,8 @@ export type OnboardingHandymanBody =
 export type OnboardingHandymanResponse =
   components['schemas']['OnboardingHandymanResponse'];
 export type MeResponse = components['schemas']['MeResponse'];
+export type AuthUserResponse = components['schemas']['AuthUserResponse'];
+export type UpdateAuthUser = components['schemas']['UpdateAuthUser'];
 
 export async function login(
   api: ApiClient,
@@ -83,4 +85,59 @@ export async function logout(
 
 export async function getMe(api: ApiClient): Promise<MeResponse> {
   return api.request<MeResponse>('/me', { method: 'GET' });
+}
+
+export async function adminListAuthUsers(
+  api: ApiClient,
+  params?: { limit?: number; offset?: number },
+): Promise<AuthUserResponse[]> {
+  const qs = new URLSearchParams();
+  if (params?.limit != null) qs.set('limit', String(params.limit));
+  if (params?.offset != null) qs.set('offset', String(params.offset));
+  const suffix = qs.toString() ? `?${qs.toString()}` : '';
+
+  return api.request<AuthUserResponse[]>(`/auth-users${suffix}`, {
+    method: 'GET',
+  });
+}
+
+export async function adminGetAuthUser(
+  api: ApiClient,
+  userId: number,
+): Promise<AuthUserResponse> {
+  return api.request<AuthUserResponse>(`/auth-users/${userId}`, {
+    method: 'GET',
+  });
+}
+
+export async function adminGetAuthUserByEmail(
+  api: ApiClient,
+  email: string,
+): Promise<AuthUserResponse> {
+  return api.request<AuthUserResponse>(
+    `/auth-users/by-email/${encodeURIComponent(email)}`,
+    {
+      method: 'GET',
+    },
+  );
+}
+
+export async function adminUpdateAuthUser(
+  api: ApiClient,
+  userId: number,
+  body: UpdateAuthUser,
+): Promise<AuthUserResponse> {
+  return api.request<AuthUserResponse>(`/auth-users/${userId}`, {
+    method: 'PUT',
+    json: body,
+  });
+}
+
+export async function adminDeleteAuthUser(
+  api: ApiClient,
+  userId: number,
+): Promise<void> {
+  await api.request(`/auth-users/${userId}`, {
+    method: 'DELETE',
+  });
 }
