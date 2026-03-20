@@ -12,9 +12,11 @@ import {
   cancelBooking,
   completeBookingUser,
   createBookingReview,
+  getBooking,
   getMyBookings,
   type BookingResponse,
 } from '@smart/api';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAsyncOperation } from '../../hooks/useAsyncOperation';
 import { useNotifications } from '../../notifications/NotificationsProvider';
 import {
@@ -140,6 +142,8 @@ function DetailRow({
 }
 
 export default function BookingsPlaceholder() {
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const api = useMemo(() => createApiClient(), []);
   const { colors, mode } = useTheme();
   const { unreadCount } = useNotifications();
@@ -256,6 +260,71 @@ export default function BookingsPlaceholder() {
 
   const sections = getUserBookingSections(bookings);
 
+  const openBookingDetails = useCallback((booking: BookingResponse) => {
+    setCancelReason(booking.cancellation_reason ?? 'user_requested');
+    setReviewRating(5);
+    setReviewComment('');
+    setSelected(booking);
+  }, []);
+
+  const focusBookingId = route.params?.focusBookingId;
+  const focusNonce = route.params?.focusNonce;
+
+  useEffect(() => {
+    if (typeof focusBookingId !== 'string' || focusBookingId.length === 0) {
+      return;
+    }
+
+    const clearFocusParams = () => {
+      navigation.setParams({
+        focusBookingId: undefined,
+        focusNonce: undefined,
+      });
+    };
+
+    const existing = bookings.find(item => item.booking_id === focusBookingId);
+    if (existing) {
+      openBookingDetails(existing);
+      clearFocusParams();
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadById = async () => {
+      try {
+        const fetched = await getBooking(api, focusBookingId);
+        if (cancelled) return;
+
+        setBookings(prev => {
+          if (prev.some(item => item.booking_id === fetched.booking_id)) {
+            return prev;
+          }
+          return [fetched, ...prev];
+        });
+        openBookingDetails(fetched);
+      } catch {
+      } finally {
+        if (!cancelled) {
+          clearFocusParams();
+        }
+      }
+    };
+
+    void loadById();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    api,
+    bookings,
+    focusBookingId,
+    focusNonce,
+    navigation,
+    openBookingDetails,
+  ]);
+
   function renderCard(item: BookingResponse) {
     return (
       <Card
@@ -370,12 +439,7 @@ export default function BookingsPlaceholder() {
 
         <AppButton
           label="Open details"
-          onPress={() => {
-            setCancelReason(item.cancellation_reason ?? 'user_requested');
-            setReviewRating(5);
-            setReviewComment('');
-            setSelected(item);
-          }}
+          onPress={() => openBookingDetails(item)}
           tone="secondary"
           style={{ minHeight: 48 }}
         />

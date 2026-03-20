@@ -9,10 +9,12 @@ import {
 import {
   completeBookingHandyman,
   confirmBooking,
+  getBooking,
   getMyJobs,
   rejectBookingCompletion,
   type BookingResponse,
 } from "@smart/api";
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAsyncOperation } from "../../hooks/useAsyncOperation";
 import {
   BOOKING_STATUS_NORMALIZED,
@@ -44,6 +46,8 @@ import { useNotifications } from '../../notifications/NotificationsProvider';
 import { useTheme } from "../../theme";
 
 export default function JobsScreen() {
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const api = useMemo(() => createApiClient(), []);
   const { session } = useSession();
   const { colors } = useTheme();
@@ -138,6 +142,69 @@ export default function JobsScreen() {
 
   const sections = getHandymanJobSections(bookings);
 
+  const openJobDetails = useCallback((booking: BookingResponse) => {
+    setRejectReason(booking.rejection_reason ?? 'Job rejected after inspection');
+    setSelected(booking);
+  }, []);
+
+  const focusBookingId = route.params?.focusBookingId;
+  const focusNonce = route.params?.focusNonce;
+
+  useEffect(() => {
+    if (typeof focusBookingId !== 'string' || focusBookingId.length === 0) {
+      return;
+    }
+
+    const clearFocusParams = () => {
+      navigation.setParams({
+        focusBookingId: undefined,
+        focusNonce: undefined,
+      });
+    };
+
+    const existing = bookings.find(item => item.booking_id === focusBookingId);
+    if (existing) {
+      openJobDetails(existing);
+      clearFocusParams();
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadById = async () => {
+      try {
+        const fetched = await getBooking(api, focusBookingId);
+        if (cancelled) return;
+
+        setBookings(prev => {
+          if (prev.some(item => item.booking_id === fetched.booking_id)) {
+            return prev;
+          }
+          return [fetched, ...prev];
+        });
+        openJobDetails(fetched);
+      } catch {
+      } finally {
+        if (!cancelled) {
+          clearFocusParams();
+        }
+      }
+    };
+
+    void loadById();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    api,
+    bookings,
+    focusBookingId,
+    focusNonce,
+    navigation,
+    openJobDetails,
+  ]);
+
   function renderBookingCard(item: BookingResponse) {
     return (
       <Card key={item.booking_id} style={{ marginBottom: 10 }}>
@@ -184,8 +251,7 @@ export default function JobsScreen() {
         <AppButton
           label="Open actions"
           onPress={() => {
-            setRejectReason(item.rejection_reason ?? "Job rejected after inspection");
-            setSelected(item);
+            openJobDetails(item);
           }}
           tone="secondary"
         />

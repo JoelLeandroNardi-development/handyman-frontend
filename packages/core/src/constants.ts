@@ -67,14 +67,22 @@ export const QUERY_PARAMS = {
 } as const;
 
 export const NOTIFICATION_EVENT_LABELS = {
-  "slot.reserved": "Slot reserved",
-  "slot.confirmed": "Slot confirmed",
-  "slot.rejected": "Slot rejected",
-  "slot.expired": "Slot expired",
-  "slot.released": "Slot released",
-  "booking.completed": "Booking completed",
+  "job.requested": "New booking request",
+  "booking.reserved": "Time slot reserved",
+  "booking.confirmed": "Booking confirmed",
+  "job.confirmed": "New confirmed job",
+  "booking.rejected": "Time slot unavailable",
+  "booking.expired": "Reservation expired",
   "booking.cancelled": "Booking cancelled",
-  "review.reminder": "Review reminder",
+  "job.released": "Job released",
+  "booking.completed": "Booking completed",
+  "job.completed": "Job completed",
+  "booking.rejected_by_handyman": "Booking rejected",
+  "job.completion_requested": "Customer marked job as complete",
+  "booking.completion_requested": "Handyman marked job as complete",
+  "review.request": "Review requested",
+  "review.requested": "Review requested",
+  "booking.review_requested": "Review requested",
 } as const;
 
 export type NotificationEventType = keyof typeof NOTIFICATION_EVENT_LABELS;

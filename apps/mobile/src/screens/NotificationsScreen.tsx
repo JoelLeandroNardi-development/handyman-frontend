@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Text, View } from 'react-native';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   archiveNotification,
@@ -14,19 +14,36 @@ import { useTheme } from '../theme';
 import { useAsyncOperation } from '../hooks/useAsyncOperation';
 import { useBottomGuard } from '../hooks/useBottomGuard';
 import { useNotifications } from '../notifications/NotificationsProvider';
+import { getNotificationNavigationTarget } from '../notifications/notificationRouting';
 import { AppButton, Card, EmptyState } from '../ui/primitives';
 import { ModalScreen } from '../ui/ModalScreen';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { NOTIFICATION_EVENT_LABELS } from '@smart/core';
+import { useSession } from '../auth/SessionProvider';
 
 function getNotificationTitle(item: NotificationItem) {
   if (typeof item.title === 'string' && item.title.trim().length > 0)
     return item.title;
   if (typeof item.type === 'string' && item.type.trim().length > 0) {
+    const rawType = item.type.trim().toLowerCase();
+    const normalizedType =
+      rawType.includes('.')
+        ? rawType
+        : rawType.startsWith('booking_')
+          ? `booking.${rawType.slice('booking_'.length)}`
+          : rawType.startsWith('job_')
+            ? `job.${rawType.slice('job_'.length)}`
+            : rawType.startsWith('review_')
+              ? `review.${rawType.slice('review_'.length)}`
+              : rawType;
     return (
       NOTIFICATION_EVENT_LABELS[
-        item.type as keyof typeof NOTIFICATION_EVENT_LABELS
-      ] ?? item.type
+        rawType as keyof typeof NOTIFICATION_EVENT_LABELS
+      ] ??
+      NOTIFICATION_EVENT_LABELS[
+        normalizedType as keyof typeof NOTIFICATION_EVENT_LABELS
+      ] ??
+      item.type
     );
   }
   return 'Notification';
@@ -51,9 +68,11 @@ type PendingNotificationAction =
   | null;
 
 export default function NotificationsScreen() {
+  const navigation = useNavigation<any>();
   const api = useMemo(() => createApiClient(), []);
   const { colors } = useTheme();
   const isFocused = useIsFocused();
+  const { roleMode } = useSession();
   const { setUnreadCount, refreshUnreadCount, latestCreatedNotification } =
     useNotifications();
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -174,6 +193,44 @@ export default function NotificationsScreen() {
     });
   };
 
+  const onOpenDetails = (item: NotificationItem) => {
+    if (actionLoading) {
+      return;
+    }
+
+    const target = getNotificationNavigationTarget(item);
+    if (!target) {
+      return;
+    }
+
+    const targetTab = roleMode === 'handyman' ? 'Jobs' : 'Bookings';
+
+    runAction(async () => {
+      if (isUnread(item)) {
+        await markNotificationRead(api, item.notification_id);
+        setItems(prev =>
+          prev.map(current =>
+            current.notification_id === item.notification_id
+              ? {
+                  ...current,
+                  status: 'read',
+                }
+              : current,
+          ),
+        );
+        await refreshUnreadCount();
+      }
+
+      navigation.navigate('UserTabs', {
+        screen: targetTab,
+        params: {
+          focusBookingId: target.bookingId,
+          focusNonce: Date.now(),
+        },
+      });
+    });
+  };
+
   return (
     <ModalScreen
       scrollable={false}
@@ -226,6 +283,7 @@ export default function NotificationsScreen() {
               actionLoading &&
               pendingAction?.kind === 'archive' &&
               pendingAction.notificationId === item.notification_id;
+            const canOpenDetails = !!getNotificationNavigationTarget(item);
 
             return (
               <Card
@@ -258,6 +316,13 @@ export default function NotificationsScreen() {
                     onPress={() => onMarkRead(item.notification_id)}
                     loading={isMarkReadPending}
                     disabled={!unread || isMarkReadPending}
+                    style={{ flex: 1 }}
+                  />
+                  <AppButton
+                    label="Open details"
+                    tone="primary"
+                    onPress={() => onOpenDetails(item)}
+                    disabled={!canOpenDetails || actionLoading}
                     style={{ flex: 1 }}
                   />
                   <AppButton
