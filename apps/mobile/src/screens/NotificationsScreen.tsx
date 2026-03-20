@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Text, View } from 'react-native';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   archiveNotification,
   getMyNotifications,
@@ -14,28 +13,21 @@ import { useTheme } from '../theme';
 import { useAsyncOperation } from '../hooks/useAsyncOperation';
 import { useBottomGuard } from '../hooks/useBottomGuard';
 import { useNotifications } from '../notifications/NotificationsProvider';
-import { getNotificationNavigationTarget } from '../notifications/notificationRouting';
+import {
+  getNotificationNavigationTarget,
+  normalizeNotificationType,
+} from '../notifications/notificationRouting';
 import { AppButton, Card, EmptyState } from '../ui/primitives';
 import { ModalScreen } from '../ui/ModalScreen';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { NOTIFICATION_EVENT_LABELS } from '@smart/core';
-import { useSession } from '../auth/SessionProvider';
 
 function getNotificationTitle(item: NotificationItem) {
   if (typeof item.title === 'string' && item.title.trim().length > 0)
     return item.title;
   if (typeof item.type === 'string' && item.type.trim().length > 0) {
     const rawType = item.type.trim().toLowerCase();
-    const normalizedType =
-      rawType.includes('.')
-        ? rawType
-        : rawType.startsWith('booking_')
-          ? `booking.${rawType.slice('booking_'.length)}`
-          : rawType.startsWith('job_')
-            ? `job.${rawType.slice('job_'.length)}`
-            : rawType.startsWith('review_')
-              ? `review.${rawType.slice('review_'.length)}`
-              : rawType;
+    const normalizedType = normalizeNotificationType(rawType);
     return (
       NOTIFICATION_EVENT_LABELS[
         rawType as keyof typeof NOTIFICATION_EVENT_LABELS
@@ -72,7 +64,6 @@ export default function NotificationsScreen() {
   const api = useMemo(() => createApiClient(), []);
   const { colors } = useTheme();
   const isFocused = useIsFocused();
-  const { roleMode } = useSession();
   const { setUnreadCount, refreshUnreadCount, latestCreatedNotification } =
     useNotifications();
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -203,8 +194,6 @@ export default function NotificationsScreen() {
       return;
     }
 
-    const targetTab = roleMode === 'handyman' ? 'Jobs' : 'Bookings';
-
     runAction(async () => {
       if (isUnread(item)) {
         await markNotificationRead(api, item.notification_id);
@@ -222,7 +211,7 @@ export default function NotificationsScreen() {
       }
 
       navigation.navigate('UserTabs', {
-        screen: targetTab,
+        screen: target.tab,
         params: {
           focusBookingId: target.bookingId,
           focusNonce: Date.now(),

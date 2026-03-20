@@ -32,7 +32,7 @@ const HANDYMAN_NOTIFICATION_TYPES = new Set([
   'job.completion_requested',
 ]);
 
-function normalizeNotificationType(type: string): string {
+export function normalizeNotificationType(type: string): string {
   const normalized = type.trim().toLowerCase();
   if (normalized.length === 0) return normalized;
 
@@ -106,11 +106,11 @@ export function getNotificationNavigationTarget(
   if (!bookingId) return null;
 
   const actionUrl = asNonEmptyString(item.action_url);
-  const normalizedType = asNonEmptyString(item.type)?.toLowerCase() ?? null;
+  const type = asNonEmptyString(item.type);
 
   const tab =
     inferTabFromActionUrl(actionUrl) ??
-    inferTabFromType(normalizedType) ??
+    inferTabFromType(type) ??
     (item.entity_type === 'booking' ? 'Bookings' : null);
 
   if (!tab) return null;
