@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
+  buildNotificationsStreamUrl,
   getMyNotifications,
   getNotificationUnreadCount,
 } from "@smart/api";
@@ -10,6 +11,8 @@ import Card from "../ui/Card";
 import DataTable, { type DataTableColumn } from "../ui/DataTable";
 import OverlayPanel from "../ui/OverlayPanel";
 import Page from "../ui/Page";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 export default function NotificationsDashboard() {
   const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
@@ -40,11 +43,8 @@ export default function NotificationsDashboard() {
 
     const testSSE = () => {
       setSseStatus("connecting");
-      const eventSource = new EventSource("http://localhost:8000/me/notifications/stream", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      } as any);
+      const streamUrl = buildNotificationsStreamUrl(API_BASE_URL, token);
+      const eventSource = new EventSource(streamUrl);
 
       eventSource.onopen = () => {
         setSseStatus("connected");
