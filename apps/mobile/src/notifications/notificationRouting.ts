@@ -2,10 +2,17 @@ import type { NotificationItem } from '@smart/api';
 
 export type NotificationTargetTab = 'Bookings' | 'Jobs';
 
+export type NotificationTargetRole = 'user' | 'handyman';
+
 export type NotificationNavigationTarget = {
   tab: NotificationTargetTab;
   bookingId: string;
+  targetRole: NotificationTargetRole;
 };
+
+export function targetRoleForTab(tab: NotificationTargetTab): NotificationTargetRole {
+  return tab === 'Jobs' ? 'handyman' : 'user';
+}
 
 type AnyRecord = Record<string, unknown>;
 
@@ -118,5 +125,6 @@ export function getNotificationNavigationTarget(
   return {
     tab,
     bookingId,
+    targetRole: targetRoleForTab(tab),
   };
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Text, View } from 'react-native';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import {
@@ -12,10 +12,12 @@ import { createApiClient } from '../lib/api';
 import { useTheme } from '../theme';
 import { useAsyncOperation } from '../hooks/useAsyncOperation';
 import { useBottomGuard } from '../hooks/useBottomGuard';
+import { useSession } from '../auth/SessionProvider';
 import { useNotifications } from '../notifications/NotificationsProvider';
 import {
   getNotificationNavigationTarget,
   normalizeNotificationType,
+  type NotificationNavigationTarget,
 } from '../notifications/notificationRouting';
 import { AppButton, Card, EmptyState } from '../ui/primitives';
 import { ModalScreen } from '../ui/ModalScreen';
@@ -64,11 +66,13 @@ export default function NotificationsScreen() {
   const api = useMemo(() => createApiClient(), []);
   const { colors } = useTheme();
   const isFocused = useIsFocused();
+  const { roleMode, availableRoles, pickRole } = useSession();
   const { setUnreadCount, refreshUnreadCount, latestCreatedNotification } =
     useNotifications();
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [pendingAction, setPendingAction] =
     useState<PendingNotificationAction>(null);
+  const pendingNavRef = useRef<NotificationNavigationTarget | null>(null);
   const { bottomGuardHeight, bottomContentPadding } = useBottomGuard();
 
   const { execute: loadNotifications, loading } = useAsyncOperation({
@@ -184,6 +188,48 @@ export default function NotificationsScreen() {
     });
   };
 
+  // After a role switch, roleMode updates and this effect fires the
+  // pending navigation that was deferred while waiting for the new
+  // tab navigator to mount.
+  useEffect(() => {
+    const pending = pendingNavRef.current;
+    if (!pending) return;
+    if (pending.targetRole !== roleMode) return;
+
+    pendingNavRef.current = null;
+    navigation.navigate('UserTabs', {
+      screen: pending.tab,
+      params: {
+        focusBookingId: pending.bookingId,
+        focusNonce: Date.now(),
+      },
+    });
+  }, [roleMode, navigation]);
+
+  const navigateToTarget = (target: NotificationNavigationTarget) => {
+    if (target.targetRole === roleMode) {
+      navigation.navigate('UserTabs', {
+        screen: target.tab,
+        params: {
+          focusBookingId: target.bookingId,
+          focusNonce: Date.now(),
+        },
+      });
+      return;
+    }
+
+    // Target role differs from the current mode. If the user has the
+    // required role, switch first and let the useEffect above handle
+    // navigation once the new tabs navigator is mounted.
+    if (availableRoles.includes(target.targetRole as typeof availableRoles[number])) {
+      pendingNavRef.current = target;
+      pickRole(target.targetRole as typeof availableRoles[number]);
+      return;
+    }
+
+    // User doesn't have the target role — fail safely.
+  };
+
   const onOpenDetails = (item: NotificationItem) => {
     if (actionLoading) {
       return;
@@ -210,13 +256,7 @@ export default function NotificationsScreen() {
         await refreshUnreadCount();
       }
 
-      navigation.navigate('UserTabs', {
-        screen: target.tab,
-        params: {
-          focusBookingId: target.bookingId,
-          focusNonce: Date.now(),
-        },
-      });
+      navigateToTarget(target);
     });
   };
 
