@@ -1,15 +1,13 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Smart API Gateway",
+    "title": "NearHand API Gateway",
     "version": "0.1.0"
   },
   "paths": {
     "/health": {
       "get": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "Health",
         "operationId": "health_health_get",
         "responses": {
@@ -18,7 +16,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response Health Health Get"
                 }
               }
             }
@@ -28,9 +27,7 @@
     },
     "/system/health": {
       "get": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "System Health",
         "operationId": "system_health_system_health_get",
         "responses": {
@@ -39,7 +36,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response System Health System Health Get"
                 }
               }
             }
@@ -54,9 +52,7 @@
     },
     "/system/rabbit": {
       "get": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "System Rabbit",
         "operationId": "system_rabbit_system_rabbit_get",
         "responses": {
@@ -65,7 +61,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response System Rabbit System Rabbit Get"
                 }
               }
             }
@@ -80,9 +77,7 @@
     },
     "/system/outbox": {
       "get": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "System Outbox",
         "operationId": "system_outbox_system_outbox_get",
         "responses": {
@@ -91,7 +86,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response System Outbox System Outbox Get"
                 }
               }
             }
@@ -106,9 +102,7 @@
     },
     "/system/breakers": {
       "get": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "Breakers Status",
         "operationId": "breakers_status_system_breakers_get",
         "responses": {
@@ -117,7 +111,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response Breakers Status System Breakers Get"
                 }
               }
             }
@@ -132,9 +127,7 @@
     },
     "/system/breakers/{name}/close": {
       "post": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "Breaker Close",
         "operationId": "breaker_close_system_breakers__name__close_post",
         "security": [
@@ -159,7 +152,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response Breaker Close System Breakers  Name  Close Post"
                 }
               }
             }
@@ -179,9 +173,7 @@
     },
     "/system/breakers/{name}/open": {
       "post": {
-        "tags": [
-          "System"
-        ],
+        "tags": ["System"],
         "summary": "Breaker Open",
         "operationId": "breaker_open_system_breakers__name__open_post",
         "security": [
@@ -206,7 +198,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response Breaker Open System Breakers  Name  Open Post"
                 }
               }
             }
@@ -226,9 +219,7 @@
     },
     "/register": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Register",
         "operationId": "register_register_post",
         "requestBody": {
@@ -247,7 +238,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/RegisterResponse"
                 }
               }
             }
@@ -267,9 +258,7 @@
     },
     "/login": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Login",
         "operationId": "login_login_post",
         "requestBody": {
@@ -308,9 +297,7 @@
     },
     "/auth/google": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Google Login",
         "operationId": "google_login_auth_google_post",
         "requestBody": {
@@ -349,9 +336,7 @@
     },
     "/refresh": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Refresh",
         "operationId": "refresh_refresh_post",
         "requestBody": {
@@ -390,9 +375,7 @@
     },
     "/logout": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Logout",
         "operationId": "logout_logout_post",
         "requestBody": {
@@ -411,7 +394,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AuthActionResponse"
                 }
               }
             }
@@ -431,9 +414,7 @@
     },
     "/password/forgot": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Forgot Password Endpoint",
         "operationId": "forgot_password_endpoint_password_forgot_post",
         "requestBody": {
@@ -472,9 +453,7 @@
     },
     "/password/reset": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Reset Password Endpoint",
         "operationId": "reset_password_endpoint_password_reset_post",
         "requestBody": {
@@ -513,9 +492,7 @@
     },
     "/email/verify/request": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Email Verify Request Endpoint",
         "operationId": "email_verify_request_endpoint_email_verify_request_post",
         "requestBody": {
@@ -554,9 +531,7 @@
     },
     "/email/verify/confirm": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Email Verify Confirm Endpoint",
         "operationId": "email_verify_confirm_endpoint_email_verify_confirm_post",
         "requestBody": {
@@ -595,9 +570,7 @@
     },
     "/auth-users": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Admin List Auth Users",
         "operationId": "admin_list_auth_users_auth_users_get",
         "security": [
@@ -660,9 +633,7 @@
     },
     "/auth-users/{user_id}": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Admin Get Auth User",
         "operationId": "admin_get_auth_user_auth_users__user_id__get",
         "security": [
@@ -705,9 +676,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Admin Update Auth User",
         "operationId": "admin_update_auth_user_auth_users__user_id__put",
         "security": [
@@ -760,9 +729,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Admin Delete Auth User",
         "operationId": "admin_delete_auth_user_auth_users__user_id__delete",
         "security": [
@@ -787,7 +754,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/DeleteAuthUserResponse"
                 }
               }
             }
@@ -807,9 +774,7 @@
     },
     "/auth-users/by-email/{email}": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Admin Get Auth User By Email",
         "operationId": "admin_get_auth_user_by_email_auth_users_by_email__email__get",
         "security": [
@@ -854,9 +819,7 @@
     },
     "/onboarding/user": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Onboarding User",
         "operationId": "onboarding_user_onboarding_user_post",
         "requestBody": {
@@ -895,9 +858,7 @@
     },
     "/onboarding/handyman": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Onboarding Handyman",
         "operationId": "onboarding_handyman_onboarding_handyman_post",
         "requestBody": {
@@ -936,9 +897,7 @@
     },
     "/onboarding/combined": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Onboarding Combined",
         "operationId": "onboarding_combined_onboarding_combined_post",
         "requestBody": {
@@ -977,9 +936,7 @@
     },
     "/me": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Get Me",
         "operationId": "get_me_me_get",
         "responses": {
@@ -1001,9 +958,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Update Me",
         "operationId": "update_me_me_put",
         "requestBody": {
@@ -1047,9 +1002,7 @@
     },
     "/users": {
       "post": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Create User Endpoint",
         "operationId": "create_user_endpoint_users_post",
         "security": [
@@ -1073,7 +1026,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/UserResponse"
                 }
               }
             }
@@ -1091,9 +1044,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Admin List Users",
         "operationId": "admin_list_users_users_get",
         "security": [
@@ -1156,9 +1107,7 @@
     },
     "/users/{email}/location": {
       "put": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Update User Location Endpoint",
         "operationId": "update_user_location_endpoint_users__email__location_put",
         "security": [
@@ -1193,7 +1142,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/UserResponse"
                 }
               }
             }
@@ -1213,9 +1162,7 @@
     },
     "/users/{email}": {
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Get User Endpoint",
         "operationId": "get_user_endpoint_users__email__get",
         "security": [
@@ -1240,7 +1187,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/UserResponse"
                 }
               }
             }
@@ -1258,9 +1205,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Admin Update User Endpoint",
         "operationId": "admin_update_user_endpoint_users__email__put",
         "security": [
@@ -1313,9 +1258,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Admin Delete User Endpoint",
         "operationId": "admin_delete_user_endpoint_users__email__delete",
         "security": [
@@ -1340,7 +1283,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/DeleteUserResponse"
                 }
               }
             }
@@ -1360,9 +1303,7 @@
     },
     "/me/user": {
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Get Me User",
         "operationId": "get_me_user_me_user_get",
         "responses": {
@@ -1386,9 +1327,7 @@
     },
     "/handymen": {
       "get": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "List Handymen Endpoint",
         "operationId": "list_handymen_endpoint_handymen_get",
         "security": [
@@ -1427,7 +1366,11 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HandymanResponse"
+                  },
+                  "title": "Response List Handymen Endpoint Handymen Get"
                 }
               }
             }
@@ -1445,9 +1388,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Create Handyman Endpoint",
         "operationId": "create_handyman_endpoint_handymen_post",
         "security": [
@@ -1471,7 +1412,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/HandymanResponse"
                 }
               }
             }
@@ -1491,9 +1432,7 @@
     },
     "/handymen/{email}": {
       "get": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Get Handyman Endpoint",
         "operationId": "get_handyman_endpoint_handymen__email__get",
         "security": [
@@ -1518,7 +1457,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/HandymanResponse"
                 }
               }
             }
@@ -1536,9 +1475,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Admin Update Handyman Endpoint",
         "operationId": "admin_update_handyman_endpoint_handymen__email__put",
         "security": [
@@ -1591,9 +1528,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Admin Delete Handyman Endpoint",
         "operationId": "admin_delete_handyman_endpoint_handymen__email__delete",
         "security": [
@@ -1618,7 +1553,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/DeleteHandymanResponse"
                 }
               }
             }
@@ -1638,9 +1573,7 @@
     },
     "/handymen/{email}/location": {
       "put": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Update Handyman Location Endpoint",
         "operationId": "update_handyman_location_endpoint_handymen__email__location_put",
         "security": [
@@ -1675,7 +1608,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/HandymanResponse"
                 }
               }
             }
@@ -1695,9 +1628,7 @@
     },
     "/me/handyman": {
       "get": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Get Me Handyman",
         "operationId": "get_me_handyman_me_handyman_get",
         "responses": {
@@ -1719,9 +1650,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Update Me Handyman",
         "operationId": "update_me_handyman_me_handyman_put",
         "requestBody": {
@@ -1765,9 +1694,7 @@
     },
     "/handymen/{email}/reviews": {
       "get": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "List Handyman Reviews Endpoint",
         "operationId": "list_handyman_reviews_endpoint_handymen__email__reviews_get",
         "security": [
@@ -1839,16 +1766,9 @@
     },
     "/skills-catalog": {
       "get": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Get Skills Catalog Endpoint",
         "operationId": "get_skills_catalog_endpoint_skills_catalog_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
         "parameters": [
           {
             "name": "active_only",
@@ -1867,7 +1787,14 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "title": "Response Get Skills Catalog Endpoint Skills Catalog Get"
                 }
               }
             }
@@ -1887,16 +1814,9 @@
     },
     "/skills-catalog/flat": {
       "get": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Get Skills Catalog Flat Endpoint",
         "operationId": "get_skills_catalog_flat_endpoint_skills_catalog_flat_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
         "parameters": [
           {
             "name": "active_only",
@@ -1935,9 +1855,7 @@
     },
     "/admin/skills-catalog": {
       "put": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Replace Skills Catalog Endpoint",
         "operationId": "replace_skills_catalog_endpoint_admin_skills_catalog_put",
         "requestBody": {
@@ -1956,7 +1874,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/SkillsCatalogReplaceResponse"
                 }
               }
             }
@@ -1979,9 +1897,7 @@
         ]
       },
       "patch": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Patch Skills Catalog Endpoint",
         "operationId": "patch_skills_catalog_endpoint_admin_skills_catalog_patch",
         "requestBody": {
@@ -2000,7 +1916,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/SkillsCatalogPatchResponse"
                 }
               }
             }
@@ -2025,9 +1941,7 @@
     },
     "/admin/handymen/invalid-skills": {
       "get": {
-        "tags": [
-          "Handymen"
-        ],
+        "tags": ["Handymen"],
         "summary": "Invalid Handymen Skills Endpoint",
         "operationId": "invalid_handymen_skills_endpoint_admin_handymen_invalid_skills_get",
         "responses": {
@@ -2051,9 +1965,7 @@
     },
     "/availability/{email}": {
       "post": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Set Availability Endpoint",
         "operationId": "set_availability_endpoint_availability__email__post",
         "security": [
@@ -2088,7 +2000,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityMessageResponse"
                 }
               }
             }
@@ -2106,9 +2018,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Get Availability Endpoint",
         "operationId": "get_availability_endpoint_availability__email__get",
         "security": [
@@ -2133,7 +2043,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityResponse"
                 }
               }
             }
@@ -2151,9 +2061,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Clear Availability Endpoint",
         "operationId": "clear_availability_endpoint_availability__email__delete",
         "security": [
@@ -2178,7 +2086,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityMessageResponse"
                 }
               }
             }
@@ -2198,9 +2106,7 @@
     },
     "/availability": {
       "get": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Admin List All Availability",
         "operationId": "admin_list_all_availability_availability_get",
         "security": [
@@ -2239,7 +2145,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityListResponse"
                 }
               }
             }
@@ -2259,9 +2165,7 @@
     },
     "/me/availability": {
       "get": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Get My Availability",
         "operationId": "get_my_availability_me_availability_get",
         "responses": {
@@ -2270,7 +2174,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityResponse"
                 }
               }
             }
@@ -2283,9 +2187,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Set My Availability",
         "operationId": "set_my_availability_me_availability_post",
         "requestBody": {
@@ -2304,7 +2206,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityMessageResponse"
                 }
               }
             }
@@ -2327,9 +2229,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "Availability"
-        ],
+        "tags": ["Availability"],
         "summary": "Clear My Availability",
         "operationId": "clear_my_availability_me_availability_delete",
         "responses": {
@@ -2338,7 +2238,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityMessageResponse"
                 }
               }
             }
@@ -2353,9 +2253,7 @@
     },
     "/match": {
       "post": {
-        "tags": [
-          "Match"
-        ],
+        "tags": ["Match"],
         "summary": "Match Endpoint",
         "operationId": "match_endpoint_match_post",
         "requestBody": {
@@ -2403,9 +2301,7 @@
     },
     "/match-logs": {
       "get": {
-        "tags": [
-          "Match"
-        ],
+        "tags": ["Match"],
         "summary": "Admin List Match Logs",
         "operationId": "admin_list_match_logs_match_logs_get",
         "security": [
@@ -2460,7 +2356,11 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MatchLogResponse"
+                  },
+                  "title": "Response Admin List Match Logs Match Logs Get"
                 }
               }
             }
@@ -2480,9 +2380,7 @@
     },
     "/match-logs/{log_id}": {
       "delete": {
-        "tags": [
-          "Match"
-        ],
+        "tags": ["Match"],
         "summary": "Admin Delete Match Log",
         "operationId": "admin_delete_match_log_match_logs__log_id__delete",
         "security": [
@@ -2507,7 +2405,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/DeleteMatchLogResponse"
                 }
               }
             }
@@ -2527,9 +2425,7 @@
     },
     "/bookings": {
       "post": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Create Booking Endpoint",
         "operationId": "create_booking_endpoint_bookings_post",
         "security": [
@@ -2571,9 +2467,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Admin List Bookings",
         "operationId": "admin_list_bookings_bookings_get",
         "security": [
@@ -2660,7 +2554,11 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BookingResponse"
+                  },
+                  "title": "Response Admin List Bookings Bookings Get"
                 }
               }
             }
@@ -2680,9 +2578,7 @@
     },
     "/bookings/{booking_id}": {
       "get": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Get Booking Endpoint",
         "operationId": "get_booking_endpoint_bookings__booking_id__get",
         "security": [
@@ -2725,9 +2621,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Admin Update Booking Endpoint",
         "operationId": "admin_update_booking_endpoint_bookings__booking_id__put",
         "security": [
@@ -2762,7 +2656,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/BookingResponse"
                 }
               }
             }
@@ -2780,9 +2674,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Admin Delete Booking Endpoint",
         "operationId": "admin_delete_booking_endpoint_bookings__booking_id__delete",
         "security": [
@@ -2807,7 +2699,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/DeleteBookingResponse"
                 }
               }
             }
@@ -2827,9 +2719,7 @@
     },
     "/bookings/{booking_id}/confirm": {
       "post": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Confirm Booking Endpoint",
         "operationId": "confirm_booking_endpoint_bookings__booking_id__confirm_post",
         "security": [
@@ -2874,9 +2764,7 @@
     },
     "/bookings/{booking_id}/cancel": {
       "post": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Cancel Booking Endpoint",
         "operationId": "cancel_booking_endpoint_bookings__booking_id__cancel_post",
         "security": [
@@ -2931,9 +2819,7 @@
     },
     "/bookings/{booking_id}/complete/user": {
       "post": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Complete Booking User Endpoint",
         "operationId": "complete_booking_user_endpoint_bookings__booking_id__complete_user_post",
         "security": [
@@ -2978,9 +2864,7 @@
     },
     "/bookings/{booking_id}/complete/handyman": {
       "post": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Complete Booking Handyman Endpoint",
         "operationId": "complete_booking_handyman_endpoint_bookings__booking_id__complete_handyman_post",
         "security": [
@@ -3025,9 +2909,7 @@
     },
     "/bookings/{booking_id}/reject": {
       "post": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Reject Booking Completion Endpoint",
         "operationId": "reject_booking_completion_endpoint_bookings__booking_id__reject_post",
         "security": [
@@ -3082,9 +2964,7 @@
     },
     "/bookings/{booking_id}/review": {
       "post": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Create Booking Review Endpoint",
         "operationId": "create_booking_review_endpoint_bookings__booking_id__review_post",
         "security": [
@@ -3139,9 +3019,7 @@
     },
     "/me/bookings": {
       "get": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Get My Bookings",
         "operationId": "get_my_bookings_me_bookings_get",
         "security": [
@@ -3220,9 +3098,7 @@
     },
     "/me/jobs": {
       "get": {
-        "tags": [
-          "Bookings"
-        ],
+        "tags": ["Bookings"],
         "summary": "Get My Jobs",
         "operationId": "get_my_jobs_me_jobs_get",
         "security": [
@@ -3299,11 +3175,102 @@
         }
       }
     },
+    "/bookings/completed-count/{handyman_email}": {
+      "get": {
+        "tags": ["Bookings"],
+        "summary": "Completed Count Endpoint",
+        "operationId": "completed_count_endpoint_bookings_completed_count__handyman_email__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "handyman_email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Handyman Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletedJobsCountResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/completed-counts": {
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "Completed Counts Batch Endpoint",
+        "operationId": "completed_counts_batch_endpoint_bookings_completed_counts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "title": "Emails"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletedJobsCountsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/me/notifications": {
       "get": {
-        "tags": [
-          "Notifications"
-        ],
+        "tags": ["Notifications"],
         "summary": "Get Notifications",
         "operationId": "get_notifications_me_notifications_get",
         "security": [
@@ -3319,11 +3286,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "enum": [
-                    "unread",
-                    "read",
-                    "archived"
-                  ],
+                  "enum": ["unread", "read", "archived"],
                   "type": "string"
                 },
                 {
@@ -3388,9 +3351,7 @@
     },
     "/me/notifications/unread-count": {
       "get": {
-        "tags": [
-          "Notifications"
-        ],
+        "tags": ["Notifications"],
         "summary": "Get Unread Count",
         "operationId": "get_unread_count_me_notifications_unread_count_get",
         "responses": {
@@ -3414,9 +3375,7 @@
     },
     "/me/notifications/{notification_id}/read": {
       "post": {
-        "tags": [
-          "Notifications"
-        ],
+        "tags": ["Notifications"],
         "summary": "Mark Notification Read",
         "operationId": "mark_notification_read_me_notifications__notification_id__read_post",
         "security": [
@@ -3461,9 +3420,7 @@
     },
     "/me/notifications/read-all": {
       "post": {
-        "tags": [
-          "Notifications"
-        ],
+        "tags": ["Notifications"],
         "summary": "Mark All Read",
         "operationId": "mark_all_read_me_notifications_read_all_post",
         "responses": {
@@ -3487,9 +3444,7 @@
     },
     "/me/notifications/{notification_id}/archive": {
       "post": {
-        "tags": [
-          "Notifications"
-        ],
+        "tags": ["Notifications"],
         "summary": "Archive Notification",
         "operationId": "archive_notification_me_notifications__notification_id__archive_post",
         "security": [
@@ -3534,9 +3489,7 @@
     },
     "/me/notification-preferences": {
       "get": {
-        "tags": [
-          "Notifications"
-        ],
+        "tags": ["Notifications"],
         "summary": "Get Preferences",
         "operationId": "get_preferences_me_notification_preferences_get",
         "responses": {
@@ -3558,9 +3511,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "Notifications"
-        ],
+        "tags": ["Notifications"],
         "summary": "Update Preferences",
         "operationId": "update_preferences_me_notification_preferences_put",
         "requestBody": {
@@ -3604,9 +3555,7 @@
     },
     "/me/push-devices": {
       "post": {
-        "tags": [
-          "Notifications"
-        ],
+        "tags": ["Notifications"],
         "summary": "Register Push Device",
         "operationId": "register_push_device_me_push_devices_post",
         "requestBody": {
@@ -3650,9 +3599,7 @@
     },
     "/me/push-devices/{device_id}": {
       "delete": {
-        "tags": [
-          "Notifications"
-        ],
+        "tags": ["Notifications"],
         "summary": "Delete Push Device",
         "operationId": "delete_push_device_me_push_devices__device_id__delete",
         "security": [
@@ -3697,31 +3644,55 @@
     },
     "/me/notifications/stream": {
       "get": {
-        "tags": [
-          "Notifications"
-        ],
+        "tags": ["Notifications"],
         "summary": "Stream Notifications",
         "operationId": "stream_notifications_me_notifications_stream_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Server-Sent Events stream. Events: ready, ping, notification.created",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               },
               "text/event-stream": {
                 "example": "event: ready\\ndata: {\"ok\":true}\\n\\n"
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     }
   },
@@ -3801,12 +3772,73 @@
           }
         },
         "type": "object",
-        "required": [
-          "id",
-          "email",
-          "roles"
-        ],
+        "required": ["id", "email", "roles"],
         "title": "AuthUserResponse"
+      },
+      "AvailabilityListItem": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "slots": {
+            "items": {
+              "$ref": "#/components/schemas/AvailabilitySlot"
+            },
+            "type": "array",
+            "title": "Slots"
+          }
+        },
+        "type": "object",
+        "required": ["email"],
+        "title": "AvailabilityListItem"
+      },
+      "AvailabilityListResponse": {
+        "properties": {
+          "cursor": {
+            "type": "integer",
+            "title": "Cursor"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AvailabilityListItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": ["cursor"],
+        "title": "AvailabilityListResponse"
+      },
+      "AvailabilityMessageResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": ["message"],
+        "title": "AvailabilityMessageResponse"
+      },
+      "AvailabilityResponse": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "slots": {
+            "items": {
+              "$ref": "#/components/schemas/AvailabilitySlot"
+            },
+            "type": "array",
+            "title": "Slots"
+          }
+        },
+        "type": "object",
+        "required": ["email"],
+        "title": "AvailabilityResponse"
       },
       "AvailabilitySlot": {
         "properties": {
@@ -3822,10 +3854,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "start",
-          "end"
-        ],
+        "required": ["start", "end"],
         "title": "AvailabilitySlot"
       },
       "BookingResponse": {
@@ -3980,10 +4009,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "booking_id",
-          "status"
-        ],
+        "required": ["booking_id", "status"],
         "title": "CancelBookingResponse"
       },
       "CompleteBookingResponse": {
@@ -4026,6 +4052,35 @@
         ],
         "title": "CompleteBookingResponse"
       },
+      "CompletedJobsCountResponse": {
+        "properties": {
+          "handyman_email": {
+            "type": "string",
+            "title": "Handyman Email"
+          },
+          "completed_jobs_count": {
+            "type": "integer",
+            "title": "Completed Jobs Count"
+          }
+        },
+        "type": "object",
+        "required": ["handyman_email", "completed_jobs_count"],
+        "title": "CompletedJobsCountResponse"
+      },
+      "CompletedJobsCountsResponse": {
+        "properties": {
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts"
+          }
+        },
+        "type": "object",
+        "required": ["counts"],
+        "title": "CompletedJobsCountsResponse"
+      },
       "ConfirmBookingResponse": {
         "properties": {
           "booking_id": {
@@ -4038,10 +4093,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "booking_id",
-          "status"
-        ],
+        "required": ["booking_id", "status"],
         "title": "ConfirmBookingResponse"
       },
       "CreateBooking": {
@@ -4248,9 +4300,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "rating"
-        ],
+        "required": ["rating"],
         "title": "CreateHandymanReviewRequest"
       },
       "CreateUser": {
@@ -4371,10 +4421,83 @@
           }
         },
         "type": "object",
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "title": "CreateUser"
+      },
+      "DeleteAuthUserResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          }
+        },
+        "type": "object",
+        "required": ["message", "user_id"],
+        "title": "DeleteAuthUserResponse"
+      },
+      "DeleteBookingResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "booking_id": {
+            "type": "string",
+            "title": "Booking Id"
+          }
+        },
+        "type": "object",
+        "required": ["message", "booking_id"],
+        "title": "DeleteBookingResponse"
+      },
+      "DeleteHandymanResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": ["message", "email"],
+        "title": "DeleteHandymanResponse"
+      },
+      "DeleteMatchLogResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": ["message", "id"],
+        "title": "DeleteMatchLogResponse"
+      },
+      "DeleteUserResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": ["message", "email"],
+        "title": "DeleteUserResponse"
       },
       "EmailVerifyConfirmRequest": {
         "properties": {
@@ -4384,9 +4507,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "token"
-        ],
+        "required": ["token"],
         "title": "EmailVerifyConfirmRequest"
       },
       "EmailVerifyRequest": {
@@ -4397,9 +4518,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "title": "EmailVerifyRequest"
       },
       "ForgotPasswordRequest": {
@@ -4410,9 +4529,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "title": "ForgotPasswordRequest"
       },
       "GoogleLoginRequest": {
@@ -4423,9 +4540,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "id_token"
-        ],
+        "required": ["id_token"],
         "title": "GoogleLoginRequest"
       },
       "GoogleLoginResponse": {
@@ -4629,6 +4744,11 @@
             "title": "Rating Count",
             "default": 0
           },
+          "profile_completeness": {
+            "type": "integer",
+            "title": "Profile Completeness",
+            "default": 0
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -4747,10 +4867,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "items",
-          "count"
-        ],
+        "required": ["items", "count"],
         "title": "InvalidHandymanSkillsResponse"
       },
       "Login": {
@@ -4765,10 +4882,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "title": "Login"
       },
       "LogoutRequest": {
@@ -4779,9 +4893,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "refresh_token"
-        ],
+        "required": ["refresh_token"],
         "title": "LogoutRequest"
       },
       "MarkAllReadResponse": {
@@ -4793,10 +4905,42 @@
           }
         },
         "type": "object",
-        "required": [
-          "updated"
-        ],
+        "required": ["updated"],
         "title": "MarkAllReadResponse"
+      },
+      "MatchLogResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "user_latitude": {
+            "type": "number",
+            "title": "User Latitude"
+          },
+          "user_longitude": {
+            "type": "number",
+            "title": "User Longitude"
+          },
+          "skill": {
+            "type": "string",
+            "title": "Skill"
+          },
+          "job_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Description"
+          }
+        },
+        "type": "object",
+        "required": ["id", "user_latitude", "user_longitude", "skill"],
+        "title": "MatchLogResponse"
       },
       "MatchRequest": {
         "properties": {
@@ -4870,6 +5014,26 @@
             "type": "boolean",
             "title": "Availability Unknown",
             "default": false
+          },
+          "avg_rating": {
+            "type": "number",
+            "title": "Avg Rating",
+            "default": 0
+          },
+          "rating_count": {
+            "type": "integer",
+            "title": "Rating Count",
+            "default": 0
+          },
+          "profile_completeness": {
+            "type": "integer",
+            "title": "Profile Completeness",
+            "default": 0
+          },
+          "completed_jobs_count": {
+            "type": "integer",
+            "title": "Completed Jobs Count",
+            "default": 0
           }
         },
         "type": "object",
@@ -4917,10 +5081,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "roles"
-        ],
+        "required": ["email", "roles"],
         "title": "MeResponse"
       },
       "NotificationItem": {
@@ -5043,9 +5204,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "items"
-        ],
+        "required": ["items"],
         "title": "NotificationListResponse"
       },
       "NotificationPreferencesResponse": {
@@ -5179,12 +5338,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "password",
-          "user_profile",
-          "handyman_profile"
-        ],
+        "required": ["email", "password", "user_profile", "handyman_profile"],
         "title": "OnboardingCombinedRequest"
       },
       "OnboardingCombinedResponse": {
@@ -5200,11 +5354,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "auth_user",
-          "user_profile",
-          "handyman_profile"
-        ],
+        "required": ["auth_user", "user_profile", "handyman_profile"],
         "title": "OnboardingCombinedResponse"
       },
       "OnboardingHandymanRequest": {
@@ -5370,10 +5520,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "auth_user",
-          "handyman_profile"
-        ],
+        "required": ["auth_user", "handyman_profile"],
         "title": "OnboardingHandymanResponse"
       },
       "OnboardingUserRequest": {
@@ -5505,10 +5652,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "title": "OnboardingUserRequest"
       },
       "OnboardingUserResponse": {
@@ -5521,10 +5665,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "auth_user",
-          "user_profile"
-        ],
+        "required": ["auth_user", "user_profile"],
         "title": "OnboardingUserResponse"
       },
       "PushDeviceResponse": {
@@ -5590,9 +5731,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "refresh_token"
-        ],
+        "required": ["refresh_token"],
         "title": "RefreshRequest"
       },
       "Register": {
@@ -5614,21 +5753,14 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "title": "Register"
       },
       "RegisterPushDeviceRequest": {
         "properties": {
           "platform": {
             "type": "string",
-            "enum": [
-              "web",
-              "ios",
-              "android"
-            ],
+            "enum": ["web", "ios", "android"],
             "title": "Platform"
           },
           "device_token": {
@@ -5659,11 +5791,26 @@
           }
         },
         "type": "object",
-        "required": [
-          "platform",
-          "device_token"
-        ],
+        "required": ["platform", "device_token"],
         "title": "RegisterPushDeviceRequest"
+      },
+      "RegisterResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Roles"
+          }
+        },
+        "type": "object",
+        "required": ["message", "roles"],
+        "title": "RegisterResponse"
       },
       "RejectBookingRequest": {
         "properties": {
@@ -5674,9 +5821,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "reason"
-        ],
+        "required": ["reason"],
         "title": "RejectBookingRequest"
       },
       "RejectBookingResponse": {
@@ -5716,11 +5861,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "booking_id",
-          "status",
-          "rejected_by_handyman"
-        ],
+        "required": ["booking_id", "status", "rejected_by_handyman"],
         "title": "RejectBookingResponse"
       },
       "ResetPasswordRequest": {
@@ -5736,10 +5877,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "token",
-          "new_password"
-        ],
+        "required": ["token", "new_password"],
         "title": "ResetPasswordRequest"
       },
       "SetAvailability": {
@@ -5782,13 +5920,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "key",
-          "label",
-          "active",
-          "sort_order",
-          "skills"
-        ],
+        "required": ["key", "label", "active", "sort_order", "skills"],
         "title": "SkillCatalogCategoryItem"
       },
       "SkillCatalogFlatResponse": {
@@ -5809,10 +5941,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "categories",
-          "allowed_skill_keys"
-        ],
+        "required": ["categories", "allowed_skill_keys"],
         "title": "SkillCatalogFlatResponse"
       },
       "SkillCatalogPatchRequest": {
@@ -5895,13 +6024,49 @@
           }
         },
         "type": "object",
-        "required": [
-          "key",
-          "label",
-          "active",
-          "sort_order"
-        ],
+        "required": ["key", "label", "active", "sort_order"],
         "title": "SkillCatalogSkillItem"
+      },
+      "SkillsCatalogPatchResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "added_categories": {
+            "type": "integer",
+            "title": "Added Categories"
+          },
+          "added_skills": {
+            "type": "integer",
+            "title": "Added Skills"
+          },
+          "catalog": {
+            "$ref": "#/components/schemas/SkillCatalogFlatResponse"
+          }
+        },
+        "type": "object",
+        "required": ["message", "added_categories", "added_skills", "catalog"],
+        "title": "SkillsCatalogPatchResponse"
+      },
+      "SkillsCatalogReplaceResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "categories": {
+            "type": "integer",
+            "title": "Categories"
+          },
+          "skills": {
+            "type": "integer",
+            "title": "Skills"
+          }
+        },
+        "type": "object",
+        "required": ["message", "categories", "skills"],
+        "title": "SkillsCatalogReplaceResponse"
       },
       "TokenPairResponse": {
         "properties": {
@@ -5926,10 +6091,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "access_token",
-          "refresh_token"
-        ],
+        "required": ["access_token", "refresh_token"],
         "title": "TokenPairResponse"
       },
       "UnreadCountResponse": {
@@ -5941,9 +6103,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "count"
-        ],
+        "required": ["count"],
         "title": "UnreadCountResponse"
       },
       "UpdateAuthUser": {
@@ -6192,10 +6352,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "latitude",
-          "longitude"
-        ],
+        "required": ["latitude", "longitude"],
         "title": "UpdateLocation"
       },
       "UpdateNotificationPreferencesRequest": {
@@ -6475,10 +6632,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "latitude",
-          "longitude"
-        ],
+        "required": ["latitude", "longitude"],
         "title": "UpdateUserLocation"
       },
       "UserResponse": {
@@ -6604,10 +6758,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "created_at"
-        ],
+        "required": ["email", "created_at"],
         "title": "UserResponse"
       },
       "ValidationError": {
@@ -6636,11 +6787,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
+        "required": ["loc", "msg", "type"],
         "title": "ValidationError"
       }
     },
