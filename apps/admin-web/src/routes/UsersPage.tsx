@@ -18,14 +18,18 @@ import Page from "../ui/Page";
 
 type UserDraft = {
   email: string;
-  full_name: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
   latitude: string;
   longitude: string;
 };
 
 const emptyDraft: UserDraft = {
   email: "",
-  full_name: "",
+  first_name: "",
+  last_name: "",
+  phone: "",
   latitude: "",
   longitude: "",
 };
@@ -51,7 +55,7 @@ export default function UsersPage() {
 
   const rows = (listQ.data ?? []).filter((row) =>
     search.trim()
-      ? `${row.email} ${row.full_name ?? ""}`.toLowerCase().includes(search.toLowerCase())
+      ? `${row.email} ${row.first_name ?? ""} ${row.last_name ?? ""}`.toLowerCase().includes(search.toLowerCase())
       : true
   );
 
@@ -61,11 +65,13 @@ export default function UsersPage() {
     if (!selected) return;
     setDraft({
       email: selected.email ?? "",
-      full_name: selected.full_name ?? "",
+      first_name: selected.first_name ?? "",
+      last_name: selected.last_name ?? "",
+      phone: selected.phone ?? "",
       latitude: selected.latitude != null ? String(selected.latitude) : "",
       longitude: selected.longitude != null ? String(selected.longitude) : "",
     });
-  }, [selected?.email, selected?.full_name, selected?.latitude, selected?.longitude]);
+  }, [selected?.email, selected?.first_name, selected?.last_name, selected?.phone, selected?.latitude, selected?.longitude]);
 
   async function refreshAll() {
     await listQ.refetch();
@@ -83,7 +89,9 @@ export default function UsersPage() {
     try {
       await createUser(api, {
         email: draft.email,
-        full_name: draft.full_name || null,
+        first_name: draft.first_name || null,
+        last_name: draft.last_name || null,
+        phone: draft.phone || null,
         latitude: draft.latitude ? Number(draft.latitude) : null,
         longitude: draft.longitude ? Number(draft.longitude) : null,
       });
@@ -101,7 +109,9 @@ export default function UsersPage() {
     setActionBusy("save");
     try {
       await adminUpdateUser(api, selectedEmail, {
-        full_name: draft.full_name || null,
+        first_name: draft.first_name || null,
+        last_name: draft.last_name || null,
+        phone: draft.phone || null,
         latitude: draft.latitude ? Number(draft.latitude) : null,
         longitude: draft.longitude ? Number(draft.longitude) : null,
       });
@@ -137,9 +147,9 @@ export default function UsersPage() {
       ),
     },
     {
-      key: "full_name",
-      header: "Full name",
-      render: (row) => <span>{row.full_name ?? "-"}</span>,
+      key: "name",
+      header: "Name",
+      render: (row) => <span>{row.first_name && row.last_name ? `${row.first_name} ${row.last_name}` : row.first_name || row.last_name || "-"}</span>,
     },
     {
       key: "location",
@@ -195,8 +205,18 @@ export default function UsersPage() {
               </label>
 
               <label className="app-label">
-                <span>Full name</span>
-                <input value={draft.full_name} onChange={(e) => patchDraft("full_name", e.target.value)} />
+                <span>First name</span>
+                <input value={draft.first_name} onChange={(e) => patchDraft("first_name", e.target.value)} />
+              </label>
+
+              <label className="app-label">
+                <span>Last name</span>
+                <input value={draft.last_name} onChange={(e) => patchDraft("last_name", e.target.value)} />
+              </label>
+
+              <label className="app-label">
+                <span>Phone</span>
+                <input value={draft.phone} onChange={(e) => patchDraft("phone", e.target.value)} />
               </label>
 
               <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
@@ -233,8 +253,18 @@ export default function UsersPage() {
           </label>
 
           <label className="app-label">
-            <span>Full name</span>
-            <input value={draft.full_name} onChange={(e) => patchDraft("full_name", e.target.value)} />
+            <span>First name</span>
+            <input value={draft.first_name} onChange={(e) => patchDraft("first_name", e.target.value)} />
+          </label>
+
+          <label className="app-label">
+            <span>Last name</span>
+            <input value={draft.last_name} onChange={(e) => patchDraft("last_name", e.target.value)} />
+          </label>
+
+          <label className="app-label">
+            <span>Phone</span>
+            <input value={draft.phone} onChange={(e) => patchDraft("phone", e.target.value)} />
           </label>
 
           <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>

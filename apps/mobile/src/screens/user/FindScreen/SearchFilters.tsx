@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Text, View } from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 import DateTimePicker, {
   type DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
@@ -18,6 +18,7 @@ import {
   AppInput,
   ButtonRow,
   Card,
+  CardTitle,
   InputButton,
   Label,
 } from '../../../ui/primitives';
@@ -35,7 +36,6 @@ export interface SearchFiltersProps {
   jobDescription: string;
   userCoords: Coords | null;
   loadingMatch: boolean;
-  bookingSuccess: string | null;
 
   onCatalogLoaded: (catalog: SkillCatalogFlatResponse) => void;
   onSkillKeySelected: (skillKey: string) => void;
@@ -57,7 +57,6 @@ export function SearchFilters({
   jobDescription,
   userCoords,
   loadingMatch,
-  bookingSuccess,
   onCatalogLoaded,
   onSkillKeySelected,
   onDateChanged,
@@ -144,18 +143,50 @@ export function SearchFilters({
       ) : null}
 
       <Card>
+        <CardTitle
+          title="Search setup"
+          action={
+            selectedSkill ? (
+              <Text style={{ color: colors.textFaint, fontWeight: '700' }}>
+                {selectedSkill.categoryLabel}
+              </Text>
+            ) : undefined
+          }
+        />
+
         <View style={{ gap: 8 }}>
           <Label>Skill</Label>
-          <InputButton
-            label={
-              !catalog
-                ? 'Loading skills...'
-                : selectedSkill
-                  ? `${selectedSkill.categoryLabel} • ${selectedSkill.label}`
-                  : 'Choose a skill'
-            }
+          <Pressable
             onPress={onSkillModalOpen}
-          />
+            style={{
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: selectedSkill ? colors.primary : colors.border,
+              backgroundColor: selectedSkill ? colors.primarySoft : colors.surface,
+              padding: 14,
+              gap: 6,
+            }}>
+            <Text
+              style={{
+                color: colors.textFaint,
+                fontSize: 12,
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                letterSpacing: 0.6,
+              }}>
+              {!catalog ? 'Loading skills' : 'Selected skill'}
+            </Text>
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: 16,
+                fontWeight: '800',
+              }}>
+              {selectedSkill
+                ? selectedSkill.label
+                : 'Choose a skill to start matching'}
+            </Text>
+          </Pressable>
         </View>
 
         <View style={{ gap: 8 }}>
@@ -216,21 +247,6 @@ export function SearchFilters({
             style={{ flex: 1 }}
           />
         </ButtonRow>
-
-        {bookingSuccess ? (
-          <View
-            style={{
-              backgroundColor: colors.successSoft,
-              borderColor: colors.success,
-              borderWidth: 1,
-              borderRadius: 16,
-              padding: 12,
-            }}>
-            <Text style={{ color: colors.success, fontWeight: '700' }}>
-              {bookingSuccess}
-            </Text>
-          </View>
-        ) : null}
       </Card>
     </>
   );

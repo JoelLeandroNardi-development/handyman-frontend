@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "NearHand",
+    "slug": "nearhand",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

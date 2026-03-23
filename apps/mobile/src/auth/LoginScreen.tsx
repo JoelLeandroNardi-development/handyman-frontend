@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, ImageBackground, ScrollView, Text, View, useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
 import {
   getSkillsCatalogFlat,
@@ -11,7 +12,10 @@ import {
 import { createApiClient, API_BASE_URL } from "../lib/api";
 import { storeTokenPair } from "./session";
 import { useSession } from "./SessionProvider";
-import { AppButton, AppInput, Card, Label, MutedText, PageHeader, Screen, SkillChip } from "../ui/primitives";
+import { AppButton, AppInput, Card, Label, MutedText, PageHeader, Screen } from "../ui/primitives";
+import { BrandWordmark } from "../ui/BrandWordmark";
+import { SkillCategorySections } from "../ui/SkillCategorySections";
+import { APP_BACKGROUND_IMAGE, LOGIN_SCREEN_OVERLAY } from "../theme/appChrome";
 import { useTheme } from "../theme";
 import { toNullableString } from "../lib/profileForm";
 import RegisterRolePicker from "./RegisterRolePicker";
@@ -39,15 +43,30 @@ export default function LoginScreen() {
   const api = useMemo(() => createApiClient(), []);
   const { refresh } = useSession();
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const maxCardHeight = Math.max(460, windowHeight - insets.top - insets.bottom - 48);
 
-  const signupSteps: Array<{ key: "role" | "onboarding" | "handyman-skills"; label: string }> = [
-    { key: "role", label: "Role" },
-    { key: "onboarding", label: "Details" },
-    { key: "handyman-skills", label: "Skills" },
-  ];
+  const signupSteps: Array<{ key: "role" | "onboarding" | "handyman-skills" | "ready"; label: string }> =
+    registerRole === "handyman"
+      ? [
+          { key: "role", label: "Let's start" },
+          { key: "onboarding", label: "Your details" },
+          { key: "handyman-skills", label: "Your skills" },
+          { key: "ready", label: "Ready" },
+        ]
+      : [
+          { key: "role", label: "Let's start" },
+          { key: "onboarding", label: "Your details" },
+          { key: "ready", label: "Ready" },
+        ];
 
-  const activeSignupIndex =
-    step === "role" ? 0 : step === "onboarding" ? 1 : step === "handyman-skills" ? 2 : -1;
+  const activeSignupStep =
+    step === "role" ? "role" : step === "onboarding" ? "onboarding" : step === "handyman-skills" ? "handyman-skills" : null;
+
+  const activeSignupIndex = activeSignupStep
+    ? signupSteps.findIndex((item) => item.key === activeSignupStep)
+    : -1;
 
   function updateOnboardingField(field: RegisterOnboardingField, value: string) {
     setOnboarding((prev) => ({ ...prev, [field]: value }));
@@ -70,6 +89,13 @@ export default function LoginScreen() {
   function selectRegisterRole(role: RegisterRole) {
     setRegisterRole(role);
     setStep("onboarding");
+  }
+
+  function changeAccountType() {
+    setRegisterRole(null);
+    setSkillsCatalog(null);
+    setSelectedSkills([]);
+    setStep("role");
   }
 
   function toggleSkill(skillKey: string) {
@@ -220,229 +246,222 @@ export default function LoginScreen() {
   }
 
   return (
-    <Screen scroll contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}>
-      <Card style={{ padding: 20 }}>
-        <PageHeader
-          title="Smart"
-          subtitle={
-            step === "login"
-              ? "Sign in"
-              : step === "role"
-                ? "Choose your role"
-                : step === "handyman-skills"
-                  ? "Pick your skills"
-                : registerRole
-                  ? `Create ${registerRole} account`
-                  : "Create account"
-          }
-        />
-
-        {step !== "login" ? (
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: 6 }}>
-            {signupSteps.map((item, index) => {
-              const isActive = index === activeSignupIndex;
-              const isDone = index < activeSignupIndex;
-
-              return (
-                <View
-                  key={item.key}
-                  style={{
-                    flex: 1,
-                    borderWidth: 1,
-                    borderColor: isActive || isDone ? colors.primary : colors.border,
-                    backgroundColor: isActive || isDone ? colors.primarySoft : colors.surface,
-                    borderRadius: 999,
-                    paddingVertical: 7,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: isActive || isDone ? colors.primary : colors.textSoft,
-                      fontSize: 12,
-                      fontWeight: "800",
-                    }}
-                  >
-                    {item.label}
-                  </Text>
-                </View>
-              );
-            })}
-          </View>
-        ) : (
-          <Text style={{ color: colors.textSoft, fontSize: 14, marginBottom: 4 }}>
-            Welcome back. Sign in to manage bookings, jobs, and notifications.
-          </Text>
-        )}
-
-        {step === "login" ? (
-          <>
-            <View style={{ gap: 8 }}>
-              <Label>Email</Label>
-              <AppInput value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>Password</Label>
-              <AppInput value={password} onChangeText={setPassword} secureTextEntry />
-            </View>
-
-            <AppButton
-              label="Login"
-              onPress={onLogin}
-              loading={busy}
+    <Screen style={{ backgroundColor: "transparent" }}>
+      <ImageBackground
+        source={APP_BACKGROUND_IMAGE}
+        resizeMode="cover"
+        style={{ flex: 1 }}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            backgroundColor: LOGIN_SCREEN_OVERLAY,
+            paddingTop: 16,
+            paddingHorizontal: 16,
+            paddingBottom: Math.max(insets.bottom + 16, 24),
+          }}>
+          <Card
+            style={{
+              padding: 20,
+              maxHeight: maxCardHeight,
+              backgroundColor: "rgba(247, 248, 250, 0.88)",
+            }}>
+            <PageHeader
+              title={<BrandWordmark />}
+              subtitle={
+                step === "login"
+                  ? "Ready to get your home tasks done by someone else?"
+                  : step === "role"
+                    ? "Here to find a handyman or offer your services? Let's start with choosing your account type."
+                    : step === "handyman-skills"
+                      ? "Choose the skills you want to offer."
+                      : registerRole
+                        ? "Tell us a bit about yourself to get your account ready."
+                        : "Create account"
+              }
             />
 
-            <AppButton
-              tone="surface"
-              label="I am new here, let's sign up!"
-              onPress={openSignUpFlow}
-              disabled={busy}
-            />
-          </>
-        ) : null}
-
-        {step === "role" ? (
-          <>
-            <RegisterRolePicker
-              onSelectUser={() => selectRegisterRole("user")}
-              onSelectHandyman={() => selectRegisterRole("handyman")}
-            />
-
-            <AppButton
-              tone="surface"
-              label="Back to login"
-              onPress={backToLogin}
-              disabled={busy}
-            />
-          </>
-        ) : null}
-
-        {step === "onboarding" ? (
-          <>
-            <View style={{ gap: 8 }}>
-              <Label>Email</Label>
-              <AppInput value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>Password</Label>
-              <AppInput value={password} onChangeText={setPassword} secureTextEntry />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <Label>Confirm password</Label>
-              <AppInput value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
-            </View>
-
-            {registerRole === "user" ? (
-              <RegisterUserOnboardingForm values={onboarding} onChange={updateOnboardingField} />
-            ) : (
-              <RegisterHandymanOnboardingForm values={onboarding} onChange={updateOnboardingField} />
-            )}
-
-            <AppButton
-              label={registerRole === "handyman" ? "Next: Select skills" : "Create account"}
-              onPress={registerRole === "handyman" ? openHandymanSkillsStep : onRegister}
-              loading={busy || (registerRole === "handyman" && loadingSkillsCatalog)}
-              disabled={!registerRole}
-            />
-
-            <AppButton
-              label="Change account type"
-              tone="surface"
-              onPress={() => setStep("role")}
-              disabled={busy}
-            />
-
-            <AppButton
-              tone="surface"
-              label="Back to login"
-              onPress={backToLogin}
-              disabled={busy}
-            />
-          </>
-        ) : null}
-
-        {step === "handyman-skills" ? (
-          <>
-            <Text style={{ color: colors.textSoft, fontSize: 14 }}>
-              Select one or more skills to personalize your handyman profile.
-            </Text>
-
-            {loadingSkillsCatalog ? (
-              <ActivityIndicator color={colors.primary} />
-            ) : !skillsCatalog || skillsCatalog.categories.length === 0 ? (
-              <Text style={{ color: colors.textSoft }}>No active skills found in catalog.</Text>
-            ) : (
-              <>
-                <Text style={{ color: colors.text, fontWeight: "800", fontSize: 15 }}>
-                  Selected skills: {selectedSkills.length}
-                </Text>
-                {skillsCatalog.categories.map((category) => {
-                  const activeSkills = category.skills.filter((skill) => skill.active);
-                  if (activeSkills.length === 0) return null;
+            {step !== "login" ? (
+              <View style={{ flexDirection: "row", gap: 8, marginBottom: 14 }}>
+                {signupSteps.map((item, index) => {
+                  const isActive = index === activeSignupIndex;
+                  const isDone = index < activeSignupIndex;
 
                   return (
-                    <View key={category.key} style={{ gap: 10 }}>
-                      <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>{category.label}</Text>
-                      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                        {activeSkills.map((skill) => (
-                          <SkillChip
-                            key={skill.key}
-                            label={skill.label}
-                            selected={selectedSkills.includes(skill.key)}
-                            onPress={() => toggleSkill(skill.key)}
-                          />
-                        ))}
-                      </View>
+                    <View
+                      key={item.key}
+                      style={{
+                        flex: 1,
+                        borderWidth: 1,
+                        borderColor: isActive || isDone ? colors.primary : colors.border,
+                        backgroundColor: isActive || isDone ? colors.primarySoft : colors.surface,
+                        borderRadius: 999,
+                        paddingVertical: 7,
+                        alignItems: "center",
+                      }}>
+                      <Text
+                        style={{
+                          color: isActive || isDone ? colors.primary : colors.textSoft,
+                          fontSize: 12,
+                          fontWeight: "800",
+                        }}>
+                        {item.label}
+                      </Text>
                     </View>
                   );
                 })}
-              </>
-            )}
+              </View>
+            ) : null}
 
-            <AppButton
-              label="Create account"
-              onPress={onRegister}
-              loading={busy}
-              disabled={selectedSkills.length === 0 || loadingSkillsCatalog}
-            />
+            <ScrollView
+              style={{ flexGrow: 0 }}
+              contentContainerStyle={{ gap: 16, paddingBottom: 8 }}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled">
+              {step === "login" ? (
+                <Text style={{ color: colors.textSoft, fontSize: 14, marginBottom: 4 }}>
+                  Sign in to find trusted handymen nearby, or create an account if you are new here.
+                </Text>
+              ) : null}
 
-            <AppButton
-              label="Back to details"
-              tone="surface"
-              onPress={() => setStep("onboarding")}
-              disabled={busy}
-            />
+              {step === "login" ? (
+                <>
+                  <View style={{ gap: 8 }}>
+                    <Label>Email</Label>
+                    <AppInput value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} />
+                  </View>
 
-            <AppButton
-              label="Change account type"
-              tone="surface"
-              onPress={() => setStep("role")}
-              disabled={busy}
-            />
+                  <View style={{ gap: 8 }}>
+                    <Label>Password</Label>
+                    <AppInput value={password} onChangeText={setPassword} secureTextEntry />
+                  </View>
 
-            <AppButton
-              tone="surface"
-              label="Back to login"
-              onPress={backToLogin}
-              disabled={busy}
-            />
-          </>
-        ) : null}
+                  <Text
+                    style={{
+                      color: status.startsWith("Login failed") || status.startsWith("Register failed") ? colors.danger : colors.textSoft,
+                      fontSize: 14,
+                    }}>
+                    {status === "Not logged in" ? null : status}
+                  </Text>
 
-        <Text
-          style={{
-            color: status.startsWith("Login failed") || status.startsWith("Register failed") ? colors.danger : colors.textSoft,
-            fontSize: 14,
-          }}
-        >
-          {status}
-        </Text>
+                  <AppButton label="Login" onPress={onLogin} loading={busy} />
 
-        <MutedText>API: {API_BASE_URL}</MutedText>
-      </Card>
+                  <AppButton
+                    tone="surface"
+                    label="I am new here, let's sign up!"
+                    onPress={openSignUpFlow}
+                    disabled={busy}
+                  />
+                </>
+              ) : null}
+
+              {step === "role" ? (
+                <>
+                  <RegisterRolePicker
+                    onSelectUser={() => selectRegisterRole("user")}
+                    onSelectHandyman={() => selectRegisterRole("handyman")}
+                  />
+
+                  <AppButton tone="surface" label="Back to login" onPress={backToLogin} disabled={busy} />
+                </>
+              ) : null}
+
+              {step === "onboarding" ? (
+                <>
+                  <View style={{ gap: 8 }}>
+                    <Label>Email</Label>
+                    <AppInput value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} />
+                  </View>
+
+                  <View style={{ gap: 8 }}>
+                    <Label>Password</Label>
+                    <AppInput value={password} onChangeText={setPassword} secureTextEntry />
+                  </View>
+
+                  <View style={{ gap: 8 }}>
+                    <Label>Confirm password</Label>
+                    <AppInput value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
+                  </View>
+
+                  {registerRole === "user" ? (
+                    <RegisterUserOnboardingForm values={onboarding} onChange={updateOnboardingField} />
+                  ) : (
+                    <RegisterHandymanOnboardingForm values={onboarding} onChange={updateOnboardingField} />
+                  )}
+
+                  <AppButton
+                    label={registerRole === "handyman" ? "Next: Your skills" : "Create account"}
+                    onPress={registerRole === "handyman" ? openHandymanSkillsStep : onRegister}
+                    loading={busy || (registerRole === "handyman" && loadingSkillsCatalog)}
+                    disabled={!registerRole}
+                  />
+
+                  <AppButton
+                    label="Change account type"
+                    tone="surface"
+                    onPress={changeAccountType}
+                    disabled={busy}
+                  />
+
+                  <AppButton tone="surface" label="Back to login" onPress={backToLogin} disabled={busy} />
+                </>
+              ) : null}
+
+              {step === "handyman-skills" ? (
+                <>
+                  <Text style={{ color: colors.textSoft, fontSize: 14 }}>
+                    Select one or more skills to personalize your handyman profile.
+                  </Text>
+
+                  {loadingSkillsCatalog ? (
+                    <ActivityIndicator color={colors.primary} />
+                  ) : !skillsCatalog || skillsCatalog.categories.length === 0 ? (
+                    <Text style={{ color: colors.textSoft }}>No active skills found in catalog.</Text>
+                  ) : (
+                    <>
+                      <Text style={{ color: colors.text, fontWeight: "800", fontSize: 15 }}>
+                        Selected skills: {selectedSkills.length}
+                      </Text>
+                      <Text style={{ color: colors.textSoft, fontSize: 13, lineHeight: 18 }}>
+                        Choose the services you want to be discoverable for.
+                      </Text>
+                      <SkillCategorySections
+                        categories={skillsCatalog.categories}
+                        isSelected={(skillKey) => selectedSkills.includes(skillKey)}
+                        onSkillPress={toggleSkill}
+                      />
+                    </>
+                  )}
+
+                  <AppButton
+                    label="Create account"
+                    onPress={onRegister}
+                    loading={busy}
+                    disabled={selectedSkills.length === 0 || loadingSkillsCatalog}
+                  />
+
+                  <AppButton
+                    label="Back to details"
+                    tone="surface"
+                    onPress={() => setStep("onboarding")}
+                    disabled={busy}
+                  />
+
+                  <AppButton
+                    label="Change account type"
+                    tone="surface"
+                    onPress={changeAccountType}
+                    disabled={busy}
+                  />
+
+                  <AppButton tone="surface" label="Back to login" onPress={backToLogin} disabled={busy} />
+                </>
+              ) : null}
+            </ScrollView>
+          </Card>
+        </View>
+      </ImageBackground>
     </Screen>
   );
 }

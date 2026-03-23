@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   NavigationContainer,
   DefaultTheme,
@@ -12,9 +12,10 @@ import RolePickerScreen from './RolePickerScreen';
 import UserTabsNavigator from './UserTabsNavigator';
 import HandymanTabsNavigator from './HandymanTabsNavigator';
 import NotificationsScreen from '../screens/NotificationsScreen';
-import UserProfilePlaceholder from '../screens/user/ProfilePlaceholder';
-import HandymanProfilePlaceholder from '../screens/handyman/ProfilePlaceholder';
+import UserSettings from '../screens/user/ProfilePlaceholder';
+import HandymanSettings from '../screens/handyman/ProfilePlaceholder';
 import { SearchProvider } from '../context/SearchContext';
+import { AUTH_THEME_MODE } from '../theme/appChrome';
 import { useSession } from '../auth/SessionProvider';
 import { useTheme } from '../theme';
 
@@ -22,7 +23,13 @@ const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
   const { loading, session, roleMode, availableRoles } = useSession();
-  const { mode, colors } = useTheme();
+  const { mode, colors, setMode } = useTheme();
+
+  useEffect(() => {
+    if (!session && mode !== AUTH_THEME_MODE) {
+      setMode(AUTH_THEME_MODE);
+    }
+  }, [mode, session, setMode]);
 
   const navTheme =
     mode === 'dark'
@@ -108,9 +115,7 @@ export default function RootNavigator() {
   const TabsComponent =
     roleMode === 'handyman' ? HandymanTabsNavigator : UserTabsNavigator;
   const ProfileComponent =
-    roleMode === 'handyman'
-      ? HandymanProfilePlaceholder
-      : UserProfilePlaceholder;
+    roleMode === 'handyman' ? HandymanSettings : UserSettings;
 
   return (
     <SearchProvider>

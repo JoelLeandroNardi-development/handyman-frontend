@@ -97,9 +97,28 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     let closed = false;
     let closeStream: (() => void) | null = null;
     let pollTimer: ReturnType<typeof setInterval> | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let attempt = 0;
+
+    const MAX_BACKOFF_MS = 30_000;
+    const BASE_DELAY_MS = 1_000;
+
+    function backoffDelay(n: number): number {
+      return Math.min(BASE_DELAY_MS * Math.pow(2, n), MAX_BACKOFF_MS);
+    }
+
+    const scheduleReconnect = () => {
+      if (closed) return;
+      const delay = backoffDelay(attempt);
+      attempt += 1;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        void connect();
+      }, delay);
+    };
 
     const connect = async () => {
-      if (!session) return;
+      if (!session || closed) return;
 
       const EventSourceCtor = (globalThis as unknown as { EventSource?: new (url: string) => {
         onmessage: ((event: { data?: string }) => void) | null;
@@ -109,6 +128,8 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
           listener: (event: { data?: string }) => void,
         ) => void;
         close: () => void;
+        readyState?: number;
+        CLOSED?: number;
       } }).EventSource;
 
       if (!EventSourceCtor) {
@@ -136,14 +157,27 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
           }
           showCreatedToast(next);
         } catch {
+          // Malformed SSE payload — ignore
         }
       };
 
       source.addEventListener?.("notification.created", handleIncomingEvent);
 
-      source.onmessage = handleIncomingEvent;
+      source.onmessage = (event: { data?: string }) => {
+        // Reset backoff on any successful message (including "ready" / "ping")
+        attempt = 0;
+        handleIncomingEvent(event);
+      };
 
       source.onerror = () => {
+        // EventSource API does not expose HTTP status codes.
+        // On any error (401, network drop, etc.) close and schedule a
+        // reconnect with exponential backoff. If the token has expired
+        // the next connect() call will fetch a fresh one via getStoredToken()
+        // (which reads from SecureStore after the ApiClient refresh cycle).
+        source.close();
+        closeStream = null;
+        scheduleReconnect();
       };
 
       closeStream = () => source.close();
@@ -155,6 +189,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
       closed = true;
       closeStream?.();
       if (pollTimer) clearInterval(pollTimer);
+      if (reconnectTimer) clearTimeout(reconnectTimer);
     };
   }, [session, showCreatedToast, refreshUnreadCount]);
 

@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { getMe, logout as logoutApi } from "@smart/api";
 import { createApiClient } from "../lib/api";
+import { AUTH_THEME_MODE } from '../theme/appChrome';
+import { useTheme } from "../theme";
 import {
   buildSession,
   clearRoleMode,
@@ -31,6 +33,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<MobileSession | null>(null);
   const [roleMode, setRoleMode] = useState<RoleMode | null>(null);
   const [availableRoles, setAvailableRoles] = useState<RoleMode[]>([]);
+  const { setMode } = useTheme();
 
   async function refresh() {
     setLoading(true);
@@ -91,6 +94,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
     await clearToken();
     await clearRoleMode();
+    setMode(AUTH_THEME_MODE);
     await refresh();
   }
 

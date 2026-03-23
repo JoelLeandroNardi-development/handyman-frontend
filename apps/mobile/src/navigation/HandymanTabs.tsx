@@ -6,14 +6,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { View } from 'react-native';
 import JobsScreen from '../screens/handyman/JobsScreen';
 import AvailabilityPlaceholder from '../screens/handyman/AvailabilityPlaceholder';
+import ChatPlaceholderScreen from '../screens/ChatPlaceholderScreen';
+import DiscoveryPlaceholderScreen from '../screens/DiscoveryPlaceholderScreen';
 import { useTheme } from '../theme';
 import { createTabBarConfig } from '../lib/tabBarConfig';
 
 const Tab = createBottomTabNavigator();
-
-function PlaceholderTabScreen() {
-  return null;
-}
 
 function getHandymanTabIconName(
   routeName: string,
@@ -41,7 +39,9 @@ export default function HandymanTabs() {
   const bottomPadding = Math.max(insets.bottom, tokens.spacing.sm);
   const tabBarHeight = 76 + bottomPadding;
 
-  const createModalAwareTabListener = (tabName: 'Jobs' | 'Availability') => ({
+  const createModalAwareTabListener = (
+    tabName: 'Jobs' | 'Discovery' | 'Availability' | 'Chat',
+  ) => ({
     tabPress: (e: any) => {
       const parentNav = navigation.getParent();
       const parentState = parentNav?.getState();
@@ -56,12 +56,6 @@ export default function HandymanTabs() {
       }
     },
   });
-
-  const noopTabListener = {
-    tabPress: (e: any) => {
-      e.preventDefault();
-    },
-  };
 
   return (
     <Tab.Navigator
@@ -105,8 +99,8 @@ export default function HandymanTabs() {
       />
       <Tab.Screen
         name="Discovery"
-        component={PlaceholderTabScreen}
-        listeners={noopTabListener}
+        component={DiscoveryPlaceholderScreen}
+        listeners={createModalAwareTabListener('Discovery')}
       />
       <Tab.Screen
         name="Availability"
@@ -115,8 +109,8 @@ export default function HandymanTabs() {
       />
       <Tab.Screen
         name="Chat"
-        component={PlaceholderTabScreen}
-        listeners={noopTabListener}
+        component={ChatPlaceholderScreen}
+        listeners={createModalAwareTabListener('Chat')}
       />
     </Tab.Navigator>
   );

@@ -52,10 +52,13 @@ export default function Sidebar() {
           ["/", "Overview"],
           ["/bookings", "Bookings"],
           ["/users", "Users"],
+          ["/auth-users", "Auth Users"],
           ["/handymen", "Handymen"],
+          ["/reviews", "Reviews"],
           ["/skills", "Skills Catalog"],
           ["/availability", "Availability"],
           ["/match-logs", "Match Logs"],
+          ["/notifications", "Notifications"],
           ["/system/health", "System Health"],
         ].map(([to, label]) => (
           <NavLink

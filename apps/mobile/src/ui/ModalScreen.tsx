@@ -1,7 +1,8 @@
 import React from 'react';
+import { BlurView } from 'expo-blur';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Dimensions } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 import { useTheme } from '../theme';
 import { useStyles } from './useStyles';
 
@@ -26,7 +27,7 @@ export function ModalScreen({
   contentContainerStyle,
   style,
 }: ModalScreenProps) {
-  const { tokens } = useTheme();
+  const { mode, tokens } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const screenHeight = Dimensions.get('window').height;
@@ -38,6 +39,8 @@ export function ModalScreen({
     styles.modalBase,
     {
       maxHeight,
+      height: scrollable ? undefined : maxHeight,
+      width: '100%',
       backgroundColor: tokens.colors.surface,
     },
     style,
@@ -45,20 +48,61 @@ export function ModalScreen({
 
   if (scrollable) {
     return (
-      <View style={modalStyle}>
-        <ScrollView
-          contentContainerStyle={[
+      <View style={styles.modalOverlay}>
+        <BlurView
+          intensity={mode === 'dark' ? 28 : 36}
+          tint={mode}
+          style={StyleSheet.absoluteFillObject}
+        />
+        <View
+          pointerEvents="none"
+          style={[
+            StyleSheet.absoluteFillObject,
             {
-              paddingHorizontal: tokens.spacing.lg,
-              gap: tokens.spacing.md,
+              backgroundColor:
+                mode === 'dark'
+                  ? 'rgba(5, 10, 18, 0.42)'
+                  : 'rgba(12, 18, 26, 0.18)',
             },
-            contentContainerStyle,
-          ]}>
-          {children}
-        </ScrollView>
+          ]}
+        />
+        <View style={modalStyle}>
+          <ScrollView
+            contentContainerStyle={[
+              {
+                paddingHorizontal: tokens.spacing.lg,
+                gap: tokens.spacing.md,
+              },
+              contentContainerStyle,
+            ]}
+            keyboardShouldPersistTaps="handled">
+            {children}
+          </ScrollView>
+        </View>
       </View>
     );
   }
 
-  return <View style={modalStyle}>{children}</View>;
+  return (
+    <View style={styles.modalOverlay}>
+      <BlurView
+        intensity={mode === 'dark' ? 28 : 36}
+        tint={mode}
+        style={StyleSheet.absoluteFillObject}
+      />
+      <View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFillObject,
+          {
+            backgroundColor:
+              mode === 'dark'
+                ? 'rgba(5, 10, 18, 0.42)'
+                : 'rgba(12, 18, 26, 0.18)',
+          },
+        ]}
+      />
+      <View style={modalStyle}>{children}</View>
+    </View>
+  );
 }

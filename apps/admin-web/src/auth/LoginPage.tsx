@@ -59,18 +59,20 @@ export default function LoginPage() {
         <div style={{ marginBottom: 22 }}>
           <div
             style={{
-              width: 44,
-              height: 44,
+              width: 52,
+              height: 52,
               borderRadius: 14,
-              background: "var(--primary)",
-              color: "#fff",
-              display: "grid",
-              placeItems: "center",
-              fontWeight: 800,
               marginBottom: 14,
+              overflow: "hidden",
+              border: "1px solid var(--border)",
+              background: "var(--surface-muted, var(--surface))",
             }}
           >
-            S
+            <img
+              src="/logo.png"
+              alt="NearHand logo"
+              style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+            />
           </div>
 
           <h1
@@ -87,7 +89,7 @@ export default function LoginPage() {
           </h1>
 
           <div style={{ marginTop: 8, color: "var(--text-soft)", fontSize: 14 }}>
-            Sign in to the Smart back office.
+            Sign in to the NearHand back office.
           </div>
 
           <div style={{ marginTop: 8, color: "var(--text-faint)", fontSize: 13 }}>

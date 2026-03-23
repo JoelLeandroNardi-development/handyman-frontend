@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, Text, View, Dimensions } from 'react-native';
-import { useIsFocused } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { FlatList, Text, View } from 'react-native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import {
   archiveNotification,
   getMyNotifications,
@@ -12,8 +11,16 @@ import {
 import { createApiClient } from '../lib/api';
 import { useTheme } from '../theme';
 import { useAsyncOperation } from '../hooks/useAsyncOperation';
+import { useBottomGuard } from '../hooks/useBottomGuard';
+import { useSession } from '../auth/SessionProvider';
 import { useNotifications } from '../notifications/NotificationsProvider';
-import { AppButton, Card, EmptyState, Screen } from '../ui/primitives';
+import {
+  getNotificationNavigationTarget,
+  normalizeNotificationType,
+  type NotificationNavigationTarget,
+} from '../notifications/notificationRouting';
+import { AppButton, Card, EmptyState } from '../ui/primitives';
+import { ModalScreen } from '../ui/ModalScreen';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { NOTIFICATION_EVENT_LABELS } from '@smart/core';
 
@@ -21,10 +28,16 @@ function getNotificationTitle(item: NotificationItem) {
   if (typeof item.title === 'string' && item.title.trim().length > 0)
     return item.title;
   if (typeof item.type === 'string' && item.type.trim().length > 0) {
+    const rawType = item.type.trim().toLowerCase();
+    const normalizedType = normalizeNotificationType(rawType);
     return (
       NOTIFICATION_EVENT_LABELS[
-        item.type as keyof typeof NOTIFICATION_EVENT_LABELS
-      ] ?? item.type
+        rawType as keyof typeof NOTIFICATION_EVENT_LABELS
+      ] ??
+      NOTIFICATION_EVENT_LABELS[
+        normalizedType as keyof typeof NOTIFICATION_EVENT_LABELS
+      ] ??
+      item.type
     );
   }
   return 'Notification';
@@ -42,17 +55,25 @@ function isUnread(item: NotificationItem) {
   return item.status === 'unread';
 }
 
+type PendingNotificationAction =
+  | { kind: 'mark-all-read' }
+  | { kind: 'mark-read'; notificationId: string }
+  | { kind: 'archive'; notificationId: string }
+  | null;
+
 export default function NotificationsScreen() {
+  const navigation = useNavigation<any>();
   const api = useMemo(() => createApiClient(), []);
   const { colors } = useTheme();
   const isFocused = useIsFocused();
-  const insets = useSafeAreaInsets();
+  const { roleMode, availableRoles, pickRole } = useSession();
   const { setUnreadCount, refreshUnreadCount, latestCreatedNotification } =
     useNotifications();
   const [items, setItems] = useState<NotificationItem[]>([]);
-
-  const screenHeight = Dimensions.get('window').height;
-  const maxHeight = screenHeight - Math.max(insets.bottom);
+  const [pendingAction, setPendingAction] =
+    useState<PendingNotificationAction>(null);
+  const pendingNavRef = useRef<NotificationNavigationTarget | null>(null);
+  const { bottomGuardHeight, bottomContentPadding } = useBottomGuard();
 
   const { execute: loadNotifications, loading } = useAsyncOperation({
     alertTitle: 'Load Notifications',
@@ -105,59 +126,152 @@ export default function NotificationsScreen() {
   };
 
   const onMarkRead = (notificationId: string) => {
+    if (actionLoading) {
+      return;
+    }
+
+    setPendingAction({ kind: 'mark-read', notificationId });
     runAction(async () => {
-      await markNotificationRead(api, notificationId);
-      setItems(prev =>
-        prev.map(item =>
-          item.notification_id === notificationId
-            ? {
-                ...item,
-                status: 'read',
-              }
-            : item,
-        ),
-      );
-      await refreshUnreadCount();
+      try {
+        await markNotificationRead(api, notificationId);
+        setItems(prev =>
+          prev.map(item =>
+            item.notification_id === notificationId
+              ? {
+                  ...item,
+                  status: 'read',
+                }
+              : item,
+          ),
+        );
+        await refreshUnreadCount();
+      } finally {
+        setPendingAction(null);
+      }
     });
   };
 
   const onArchive = (notificationId: string) => {
+    if (actionLoading) {
+      return;
+    }
+
+    setPendingAction({ kind: 'archive', notificationId });
     runAction(async () => {
-      await archiveNotification(api, notificationId);
-      setItems(prev =>
-        prev.filter(item => item.notification_id !== notificationId),
-      );
-      await refreshUnreadCount();
+      try {
+        await archiveNotification(api, notificationId);
+        setItems(prev =>
+          prev.filter(item => item.notification_id !== notificationId),
+        );
+        await refreshUnreadCount();
+      } finally {
+        setPendingAction(null);
+      }
     });
   };
 
   const onMarkAllRead = () => {
+    if (actionLoading) {
+      return;
+    }
+
+    setPendingAction({ kind: 'mark-all-read' });
     runAction(async () => {
-      await markAllNotificationsRead(api);
-      setItems(prev => prev.map(item => ({ ...item, status: 'read' })));
-      setUnreadCount(0);
-      await refreshUnreadCount();
+      try {
+        await markAllNotificationsRead(api);
+        setItems(prev => prev.map(item => ({ ...item, status: 'read' })));
+        setUnreadCount(0);
+        await refreshUnreadCount();
+      } finally {
+        setPendingAction(null);
+      }
+    });
+  };
+
+  // After a role switch, roleMode updates and this effect fires the
+  // pending navigation that was deferred while waiting for the new
+  // tab navigator to mount.
+  useEffect(() => {
+    const pending = pendingNavRef.current;
+    if (!pending) return;
+    if (pending.targetRole !== roleMode) return;
+
+    pendingNavRef.current = null;
+    navigation.navigate('UserTabs', {
+      screen: pending.tab,
+      params: {
+        focusBookingId: pending.bookingId,
+        focusNonce: Date.now(),
+      },
+    });
+  }, [roleMode, navigation]);
+
+  const navigateToTarget = (target: NotificationNavigationTarget) => {
+    if (target.targetRole === roleMode) {
+      navigation.navigate('UserTabs', {
+        screen: target.tab,
+        params: {
+          focusBookingId: target.bookingId,
+          focusNonce: Date.now(),
+        },
+      });
+      return;
+    }
+
+    // Target role differs from the current mode. If the user has the
+    // required role, switch first and let the useEffect above handle
+    // navigation once the new tabs navigator is mounted.
+    if (availableRoles.includes(target.targetRole as typeof availableRoles[number])) {
+      pendingNavRef.current = target;
+      pickRole(target.targetRole as typeof availableRoles[number]);
+      return;
+    }
+
+    // User doesn't have the target role — fail safely.
+  };
+
+  const onOpenDetails = (item: NotificationItem) => {
+    if (actionLoading) {
+      return;
+    }
+
+    const target = getNotificationNavigationTarget(item);
+    if (!target) {
+      return;
+    }
+
+    runAction(async () => {
+      if (isUnread(item)) {
+        await markNotificationRead(api, item.notification_id);
+        setItems(prev =>
+          prev.map(current =>
+            current.notification_id === item.notification_id
+              ? {
+                  ...current,
+                  status: 'read',
+                }
+              : current,
+          ),
+        );
+        await refreshUnreadCount();
+      }
+
+      navigateToTarget(target);
     });
   };
 
   return (
-    <Screen
+    <ModalScreen
+      scrollable={false}
       style={{
         paddingBottom: 10,
-        maxHeight,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        overflow: 'hidden',
-        elevation: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
       }}>
       <ScreenHeader
         title="Notifications"
         subtitle="Updates about bookings and slots"
         isModal={true}
+        modalVariant="compact"
+        closeButtonPosition="right"
       />
 
       <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
@@ -165,72 +279,102 @@ export default function NotificationsScreen() {
           label="Read all"
           tone="secondary"
           onPress={onMarkAllRead}
-          disabled={items.length === 0 || actionLoading}
+          loading={
+            actionLoading && pendingAction?.kind === 'mark-all-read'
+          }
+          disabled={items.length === 0}
         />
       </View>
 
-      <FlatList
-        data={items}
-        keyExtractor={item => item.notification_id}
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingBottom: 80,
-          gap: 10,
-        }}
-        refreshing={loading}
-        onRefresh={reload}
-        ListEmptyComponent={
-          loading ? null : (
-            <EmptyState text="No notifications. You are all caught up." />
-          )
-        }
-        renderItem={({ item }) => {
-          const unread = isUnread(item);
+      <View style={{ flex: 1, minHeight: 0 }}>
+        <FlatList
+          data={items}
+          keyExtractor={item => item.notification_id}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingBottom: bottomContentPadding,
+            gap: 10,
+          }}
+          refreshing={loading}
+          onRefresh={reload}
+          ListEmptyComponent={
+            loading ? null : (
+              <EmptyState text="No notifications. You are all caught up." />
+            )
+          }
+          renderItem={({ item }) => {
+            const unread = isUnread(item);
+            const isMarkReadPending =
+              actionLoading &&
+              pendingAction?.kind === 'mark-read' &&
+              pendingAction.notificationId === item.notification_id;
+            const isArchivePending =
+              actionLoading &&
+              pendingAction?.kind === 'archive' &&
+              pendingAction.notificationId === item.notification_id;
+            const canOpenDetails = !!getNotificationNavigationTarget(item);
 
-          return (
-            <Card
-              style={{
-                borderColor: unread ? colors.primary : colors.border,
-              }}>
-              <View style={{ gap: 4 }}>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: '800',
-                    color: colors.text,
-                  }}>
-                  {getNotificationTitle(item)}
-                </Text>
-                <Text style={{ color: colors.textSoft, fontSize: 14 }}>
-                  {getNotificationBody(item)}
-                </Text>
-                <Text style={{ color: colors.textFaint, fontSize: 12 }}>
-                  {item.created_at
-                    ? new Date(item.created_at).toLocaleString()
-                    : ''}
-                </Text>
-              </View>
+            return (
+              <Card
+                style={{
+                  borderColor: unread ? colors.primary : colors.border,
+                }}>
+                <View style={{ gap: 4 }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: '800',
+                      color: colors.text,
+                    }}>
+                    {getNotificationTitle(item)}
+                  </Text>
+                  <Text style={{ color: colors.textSoft, fontSize: 14 }}>
+                    {getNotificationBody(item)}
+                  </Text>
+                  <Text style={{ color: colors.textFaint, fontSize: 12 }}>
+                    {item.created_at
+                      ? new Date(item.created_at).toLocaleString()
+                      : ''}
+                  </Text>
+                </View>
 
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <AppButton
-                  label={unread ? 'Mark read' : 'Read'}
-                  tone="secondary"
-                  onPress={() => onMarkRead(item.notification_id)}
-                  disabled={!unread || actionLoading}
-                  style={{ flex: 1 }}
-                />
-                <AppButton
-                  label="Archive"
-                  tone="surface"
-                  onPress={() => onArchive(item.notification_id)}
-                  disabled={actionLoading}
-                  style={{ flex: 1 }}
-                />
-              </View>
-            </Card>
-          );
-        }}
-      />
-    </Screen>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <AppButton
+                    label={unread ? 'Mark read' : 'Read'}
+                    tone="secondary"
+                    onPress={() => onMarkRead(item.notification_id)}
+                    loading={isMarkReadPending}
+                    disabled={!unread || isMarkReadPending}
+                    style={{ flex: 1 }}
+                  />
+                  <AppButton
+                    label="Open details"
+                    tone="primary"
+                    onPress={() => onOpenDetails(item)}
+                    disabled={!canOpenDetails || actionLoading}
+                    style={{ flex: 1 }}
+                  />
+                  <AppButton
+                    label="Archive"
+                    tone="surface"
+                    onPress={() => onArchive(item.notification_id)}
+                    loading={isArchivePending}
+                    disabled={isArchivePending}
+                    style={{ flex: 1 }}
+                  />
+                </View>
+              </Card>
+            );
+          }}
+        />
+        <View
+          pointerEvents="none"
+          style={{
+            height: bottomGuardHeight,
+            backgroundColor: colors.surface,
+          }}
+        />
+      </View>
+    </ModalScreen>
   );
 }

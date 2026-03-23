@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -9,10 +9,12 @@ import {
 import {
   completeBookingHandyman,
   confirmBooking,
+  getBooking,
   getMyJobs,
   rejectBookingCompletion,
   type BookingResponse,
 } from "@smart/api";
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAsyncOperation } from "../../hooks/useAsyncOperation";
 import {
   BOOKING_STATUS_NORMALIZED,
@@ -20,9 +22,13 @@ import {
   getBookingDisplayStatus,
   getBookingStatusTone,
   isIncomingLikeBookingStatus,
-  normalizeBookingStatus,
 } from "@smart/core";
 import { createApiClient } from "../../lib/api";
+import {
+  canCompleteJob,
+  canRejectJob,
+  getHandymanJobSections,
+} from '../../lib/bookingSections';
 import { formatDateTime } from "../../lib/dateTime";
 import { useSession } from "../../auth/SessionProvider";
 import {
@@ -32,59 +38,45 @@ import {
   ButtonRow,
   Card,
   EmptyState,
-  PageHeader,
   Screen,
   StatusBadge,
 } from "../../ui/primitives";
+import { ScreenHeader } from '../../ui/ScreenHeader';
+import { useNotifications } from '../../notifications/NotificationsProvider';
 import { useTheme } from "../../theme";
 
-function canRejectJob(booking: BookingResponse) {
-  const status = normalizeBookingStatus(booking.status);
-  return (
-    (status === BOOKING_STATUS_NORMALIZED.PENDING ||
-      status === BOOKING_STATUS_NORMALIZED.RESERVED ||
-      status === BOOKING_STATUS_NORMALIZED.CONFIRMED) &&
-    !booking.rejected_by_handyman
-  );
-}
-
-function canCompleteJob(booking: BookingResponse) {
-  const status = normalizeBookingStatus(booking.status);
-  return (
-    status === BOOKING_STATUS_NORMALIZED.CONFIRMED &&
-    !booking.completed_by_handyman &&
-    !booking.rejected_by_handyman
-  );
-}
-
 export default function JobsScreen() {
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const api = useMemo(() => createApiClient(), []);
   const { session } = useSession();
   const { colors } = useTheme();
+  const { unreadCount } = useNotifications();
 
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [selected, setSelected] = useState<BookingResponse | null>(null);
   const [rejectReason, setRejectReason] = useState("Job rejected after inspection");
 
+  const fetchJobs = useCallback(async () => {
+    const data = await getMyJobs(api, {
+      limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
+      offset: PAGINATION_DEFAULTS.OFFSET,
+    });
+    setBookings(data);
+  }, [api]);
+
   const { execute: loadBookings, loading } = useAsyncOperation({
-    onSuccess: () => {},
     alertTitle: "Load Jobs",
   });
 
   useEffect(() => {
-    loadBookings(async () => {
-      const data = await getMyJobs(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
-      setBookings(data);
-    });
-  }, [session?.email]);
+    loadBookings(fetchJobs);
+  }, [fetchJobs, loadBookings, session?.email]);
 
   const { execute: executeConfirm, loading: confirming } = useAsyncOperation({
     onSuccess: () => {
       setSelected(null);
-      loadBookings(async () => {
-        const data = await getMyJobs(api, { limit: 100, offset: 0 });
-        setBookings(data);
-      });
+      loadBookings(fetchJobs);
     },
     alertTitle: "Confirm Booking",
   });
@@ -101,10 +93,7 @@ export default function JobsScreen() {
   const { execute: executeReject, loading: rejecting } = useAsyncOperation({
     onSuccess: () => {
       setSelected(null);
-      loadBookings(async () => {
-        const data = await getMyJobs(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
-        setBookings(data);
-      });
+      loadBookings(fetchJobs);
     },
     alertTitle: "Reject Job",
   });
@@ -126,10 +115,7 @@ export default function JobsScreen() {
 
   const { execute: executeComplete, loading: completing } = useAsyncOperation({
     onSuccess: () => {
-      loadBookings(async () => {
-        const data = await getMyJobs(api, { limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM, offset: PAGINATION_DEFAULTS.OFFSET });
-        setBookings(data);
-      });
+      loadBookings(fetchJobs);
     },
     alertTitle: "Complete Job",
   });
@@ -154,28 +140,70 @@ export default function JobsScreen() {
     });
   };
 
-  const incoming = bookings.filter((b) => isIncomingLikeBookingStatus(b.status));
-  const active = bookings.filter(
-    (b) =>
-      normalizeBookingStatus(b.status) === BOOKING_STATUS_NORMALIZED.CONFIRMED &&
-      !b.completed_at &&
-      !b.rejected_by_handyman
-  );
-  const completed = bookings.filter((b) => !!b.completed_at);
-  const other = bookings.filter((b) => {
-    const s = normalizeBookingStatus(b.status);
-    if (s === BOOKING_STATUS_NORMALIZED.PENDING || s === BOOKING_STATUS_NORMALIZED.RESERVED) return false;
-    if (s === BOOKING_STATUS_NORMALIZED.CONFIRMED && !b.completed_at && !b.rejected_by_handyman) return false;
-    if (b.completed_at) return false;
-    return true;
-  });
+  const sections = getHandymanJobSections(bookings);
 
-  const sections = [
-    { title: "Incoming requests", data: incoming },
-    { title: "Active jobs", data: active },
-    { title: "Completed jobs", data: completed },
-    { title: "Other", data: other },
-  ];
+  const openJobDetails = useCallback((booking: BookingResponse) => {
+    setRejectReason(booking.rejection_reason ?? 'Job rejected after inspection');
+    setSelected(booking);
+  }, []);
+
+  const focusBookingId = route.params?.focusBookingId;
+  const focusNonce = route.params?.focusNonce;
+
+  useEffect(() => {
+    if (typeof focusBookingId !== 'string' || focusBookingId.length === 0) {
+      return;
+    }
+
+    const clearFocusParams = () => {
+      navigation.setParams({
+        focusBookingId: undefined,
+        focusNonce: undefined,
+      });
+    };
+
+    const existing = bookings.find(item => item.booking_id === focusBookingId);
+    if (existing) {
+      openJobDetails(existing);
+      clearFocusParams();
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadById = async () => {
+      try {
+        const fetched = await getBooking(api, focusBookingId);
+        if (cancelled) return;
+
+        setBookings(prev => {
+          if (prev.some(item => item.booking_id === fetched.booking_id)) {
+            return prev;
+          }
+          return [fetched, ...prev];
+        });
+        openJobDetails(fetched);
+      } catch {
+      } finally {
+        if (!cancelled) {
+          clearFocusParams();
+        }
+      }
+    };
+
+    void loadById();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    api,
+    bookings,
+    focusBookingId,
+    focusNonce,
+    navigation,
+    openJobDetails,
+  ]);
 
   function renderBookingCard(item: BookingResponse) {
     return (
@@ -223,8 +251,7 @@ export default function JobsScreen() {
         <AppButton
           label="Open actions"
           onPress={() => {
-            setRejectReason(item.rejection_reason ?? "Job rejected after inspection");
-            setSelected(item);
+            openJobDetails(item);
           }}
           tone="secondary"
         />
@@ -235,25 +262,17 @@ export default function JobsScreen() {
   return (
     <>
       <Screen>
-        <View style={{ paddingHorizontal: 16, paddingTop: 16, marginBottom: 14 }}>
-          <PageHeader
-            title="Jobs"
-            subtitle="Incoming, active, completed, and rejected jobs"
-            action={
-              <AppButton
-                label="Refresh"
-                onPress={() =>
-                  loadBookings(async () => {
-                    const data = await getMyJobs(api, {
-                      limit: PAGINATION_DEFAULTS.LIMIT_MEDIUM,
-                      offset: PAGINATION_DEFAULTS.OFFSET,
-                    });
-                    setBookings(data);
-                  })
-                }
-                style={{ minWidth: 120 }}
-              />
-            }
+        <ScreenHeader
+          title="Jobs"
+          subtitle="Incoming, active, completed, and rejected jobs"
+          notificationBadgeCount={unreadCount}
+        />
+
+        <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 2 }}>
+          <AppButton
+            label="Refresh"
+            onPress={() => loadBookings(fetchJobs)}
+            style={{ minWidth: 120 }}
           />
         </View>
 
