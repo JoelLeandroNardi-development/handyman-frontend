@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  ScrollView,
   SectionList,
   Text,
   View,
@@ -19,34 +18,25 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAsyncOperation } from "../../hooks/useAsyncOperation";
 import {
-  BOOKING_STATUS_NORMALIZED,
   PAGINATION_DEFAULTS,
-  getBookingDisplayStatus,
-  getBookingStatusTone,
-  isIncomingLikeBookingStatus,
 } from "@smart/core";
 import { createApiClient } from "../../lib/api";
 import {
-  canCompleteJob,
-  canRejectJob,
   getHandymanJobSections,
 } from '../../lib/bookingSections';
-import { formatDateTime } from "../../lib/dateTime";
 import { useSession } from "../../auth/SessionProvider";
 import {
   AppButton,
-  AppInput,
   BottomSheet,
-  ButtonRow,
   Card,
-  DetailRow,
   EmptyState,
   Screen,
-  StatusBadge,
 } from "../../ui/primitives";
 import { ScreenHeader } from '../../ui/ScreenHeader';
 import { useNotifications } from '../../notifications/NotificationsProvider';
 import { useTheme } from "../../theme";
+import { JobCard } from './JobCard';
+import { JobDetailsSheet } from './JobDetailsSheet';
 
 export default function JobsScreen() {
   const navigation = useNavigation<any>();
@@ -210,62 +200,11 @@ export default function JobsScreen() {
 
   function renderBookingCard(item: BookingResponse) {
     return (
-      <Card key={item.booking_id} style={{ marginBottom: 12, backgroundColor: colors.surfaceElevated, gap: 14 }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>{item.user_email}</Text>
-            <Text
-              style={{
-                marginTop: 4,
-                color: colors.textFaint,
-                fontFamily: "monospace",
-                fontSize: 13,
-              }}
-            >
-              {item.booking_id}
-            </Text>
-          </View>
-
-          <StatusBadge
-            label={getBookingDisplayStatus(item.status, "handyman")}
-            tone={getBookingStatusTone(item.status)}
-          />
-        </View>
-
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <View style={{ flex: 1, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceMuted, padding: 12, gap: 4 }}>
-            <Text style={{ color: colors.textFaint, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>Start</Text>
-            <Text style={{ color: colors.textSoft, lineHeight: 20 }}>{formatDateTime(item.desired_start)}</Text>
-          </View>
-          <View style={{ flex: 1, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceMuted, padding: 12, gap: 4 }}>
-            <Text style={{ color: colors.textFaint, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>End</Text>
-            <Text style={{ color: colors.textSoft, lineHeight: 20 }}>{formatDateTime(item.desired_end)}</Text>
-          </View>
-        </View>
-
-        {item.job_description ? (
-          <View style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 12, gap: 4 }}>
-            <Text style={{ color: colors.textFaint, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>Job description</Text>
-            <Text style={{ color: colors.textSoft, lineHeight: 22 }}>{item.job_description}</Text>
-          </View>
-        ) : null}
-
-        {item.rejected_by_handyman ? (
-          <View style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.danger, backgroundColor: colors.dangerSoft, padding: 12, gap: 4 }}>
-            <Text style={{ color: colors.danger, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>Rejected</Text>
-            <Text style={{ color: colors.danger, lineHeight: 22 }}>{item.rejection_reason || "No reason given"}</Text>
-          </View>
-        ) : null}
-
-        <AppButton
-          label="Open actions"
-          onPress={() => {
-            openJobDetails(item);
-          }}
-          tone="secondary"
-          style={{ minHeight: 48 }}
-        />
-      </Card>
+      <JobCard
+        key={item.booking_id}
+        item={item}
+        onPress={() => openJobDetails(item)}
+      />
     );
   }
 
@@ -342,117 +281,18 @@ export default function JobsScreen() {
 
       <BottomSheet visible={!!selected} onClose={() => setSelected(null)} title="Job actions">
         {selected ? (
-          <ScrollView
-            style={{ maxHeight: 540 }}
-            contentContainerStyle={{ gap: 14, paddingBottom: 8 }}
-            showsVerticalScrollIndicator={false}>
-            <View
-              style={{
-                borderRadius: 18,
-                borderWidth: 1,
-                borderColor: colors.border,
-                backgroundColor: colors.surfaceMuted,
-                padding: 14,
-                gap: 12,
-              }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                <View style={{ flex: 1, gap: 4 }}>
-                  <Text style={{ fontSize: 22, fontWeight: '800', color: colors.text }}>
-                    {selected.user_email}
-                  </Text>
-                  <Text style={{ color: colors.textFaint, fontFamily: 'monospace', fontSize: 13 }}>
-                    {selected.booking_id}
-                  </Text>
-                </View>
-                <StatusBadge
-                  label={getBookingDisplayStatus(selected.status, "handyman")}
-                  tone={getBookingStatusTone(selected.status)}
-                />
-              </View>
-
-              {selected.job_description ? (
-                <Text style={{ color: colors.textSoft, lineHeight: 22 }}>
-                  {selected.job_description}
-                </Text>
-              ) : null}
-            </View>
-
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <View style={{ flex: 1, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 12 }}>
-                <DetailRow label="Start" value={formatDateTime(selected.desired_start)} />
-              </View>
-              <View style={{ flex: 1, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 12 }}>
-                <DetailRow label="End" value={formatDateTime(selected.desired_end)} />
-              </View>
-            </View>
-
-            <View
-              style={{
-                borderRadius: 18,
-                borderWidth: 1,
-                borderColor: colors.border,
-                backgroundColor: colors.surface,
-                padding: 14,
-                gap: 12,
-              }}>
-              <DetailRow label="Completed by user" value={selected.completed_by_user ? "Yes" : "No"} />
-              <DetailRow label="Completed by handyman" value={selected.completed_by_handyman ? "Yes" : "No"} />
-              {selected.completed_at ? (
-                <DetailRow label="Completed at" value={formatDateTime(selected.completed_at)} />
-              ) : null}
-              {selected.rejection_reason ? (
-                <DetailRow label="Rejection reason" value={selected.rejection_reason} />
-              ) : null}
-            </View>
-
-            {canRejectJob(selected) ? (
-              <View style={{ gap: 8 }}>
-                <Text style={{ fontWeight: "700", color: colors.text }}>Reject reason</Text>
-                <AppInput
-                  value={rejectReason}
-                  onChangeText={setRejectReason}
-                  placeholder="Why are you rejecting this job?"
-                />
-              </View>
-            ) : null}
-
-            <ButtonRow>
-              <AppButton
-                label="Close"
-                onPress={() => setSelected(null)}
-                tone="secondary"
-                style={{ flex: 1 }}
-              />
-
-              {isIncomingLikeBookingStatus(selected.status) ? (
-                <AppButton
-                  label="Confirm"
-                  onPress={onConfirm}
-                  loading={confirming}
-                  style={{ flex: 1 }}
-                />
-              ) : null}
-
-              {canCompleteJob(selected) ? (
-                <AppButton
-                  label="Mark complete"
-                  onPress={onComplete}
-                  loading={completing}
-                  style={{ flex: 1 }}
-                />
-              ) : null}
-
-              {canRejectJob(selected) ? (
-                <AppButton
-                  label="Reject job"
-                  onPress={onReject}
-                  tone="danger"
-                  loading={rejecting}
-                  style={{ flex: 1 }}
-                />
-              ) : null}
-            </ButtonRow>
-          </ScrollView>
+          <JobDetailsSheet
+            selected={selected}
+            rejectReason={rejectReason}
+            setRejectReason={setRejectReason}
+            onClose={() => setSelected(null)}
+            onConfirm={onConfirm}
+            confirming={confirming}
+            onComplete={onComplete}
+            completing={completing}
+            onReject={onReject}
+            rejecting={rejecting}
+          />
         ) : null}
       </BottomSheet>
     </>

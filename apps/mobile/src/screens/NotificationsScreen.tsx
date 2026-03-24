@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, Text, View } from 'react-native';
+import { FlatList, View } from 'react-native';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import {
   archiveNotification,
@@ -16,44 +16,12 @@ import { useSession } from '../auth/SessionProvider';
 import { useNotifications } from '../notifications/NotificationsProvider';
 import {
   getNotificationNavigationTarget,
-  normalizeNotificationType,
   type NotificationNavigationTarget,
 } from '../notifications/notificationRouting';
-import { AppButton, Card, EmptyState } from '../ui/primitives';
+import { AppButton, EmptyState } from '../ui/primitives';
 import { ModalScreen } from '../ui/ModalScreen';
 import { ScreenHeader } from '../ui/ScreenHeader';
-import { NOTIFICATION_EVENT_LABELS } from '@smart/core';
-
-function getNotificationTitle(item: NotificationItem) {
-  if (typeof item.title === 'string' && item.title.trim().length > 0)
-    return item.title;
-  if (typeof item.type === 'string' && item.type.trim().length > 0) {
-    const rawType = item.type.trim().toLowerCase();
-    const normalizedType = normalizeNotificationType(rawType);
-    return (
-      NOTIFICATION_EVENT_LABELS[
-        rawType as keyof typeof NOTIFICATION_EVENT_LABELS
-      ] ??
-      NOTIFICATION_EVENT_LABELS[
-        normalizedType as keyof typeof NOTIFICATION_EVENT_LABELS
-      ] ??
-      item.type
-    );
-  }
-  return 'Notification';
-}
-
-function getNotificationBody(item: NotificationItem) {
-  if (typeof item.body === 'string' && item.body.trim().length > 0)
-    return item.body;
-  if (typeof item.message === 'string' && item.message.trim().length > 0)
-    return item.message;
-  return 'Open this notification for details.';
-}
-
-function isUnread(item: NotificationItem) {
-  return item.status === 'unread';
-}
+import { NotificationCard, isUnread } from './NotificationCard';
 
 type PendingNotificationAction =
   | { kind: 'mark-all-read' }
@@ -295,7 +263,6 @@ export default function NotificationsScreen() {
             )
           }
           renderItem={({ item }) => {
-            const unread = isUnread(item);
             const isMarkReadPending =
               actionLoading &&
               pendingAction?.kind === 'mark-read' &&
@@ -304,58 +271,18 @@ export default function NotificationsScreen() {
               actionLoading &&
               pendingAction?.kind === 'archive' &&
               pendingAction.notificationId === item.notification_id;
-            const canOpenDetails = !!getNotificationNavigationTarget(item);
 
             return (
-              <Card
-                style={{
-                  borderColor: unread ? colors.primary : colors.border,
-                }}>
-                <View style={{ gap: 4 }}>
-                  <Text
-                    style={{
-                      fontSize: 16,
-                      fontWeight: '800',
-                      color: colors.text,
-                    }}>
-                    {getNotificationTitle(item)}
-                  </Text>
-                  <Text style={{ color: colors.textSoft, fontSize: 14 }}>
-                    {getNotificationBody(item)}
-                  </Text>
-                  <Text style={{ color: colors.textFaint, fontSize: 12 }}>
-                    {item.created_at
-                      ? new Date(item.created_at).toLocaleString()
-                      : ''}
-                  </Text>
-                </View>
-
-                <View style={{ flexDirection: 'row', gap: 8 }}>
-                  <AppButton
-                    label={unread ? 'Mark read' : 'Read'}
-                    tone="secondary"
-                    onPress={() => onMarkRead(item.notification_id)}
-                    loading={isMarkReadPending}
-                    disabled={!unread || isMarkReadPending}
-                    style={{ flex: 1 }}
-                  />
-                  <AppButton
-                    label="Open details"
-                    tone="primary"
-                    onPress={() => onOpenDetails(item)}
-                    disabled={!canOpenDetails || actionLoading}
-                    style={{ flex: 1 }}
-                  />
-                  <AppButton
-                    label="Archive"
-                    tone="surface"
-                    onPress={() => onArchive(item.notification_id)}
-                    loading={isArchivePending}
-                    disabled={isArchivePending}
-                    style={{ flex: 1 }}
-                  />
-                </View>
-              </Card>
+              <NotificationCard
+                item={item}
+                actionLoading={actionLoading}
+                isMarkReadPending={isMarkReadPending}
+                isArchivePending={isArchivePending}
+                canOpenDetails={!!getNotificationNavigationTarget(item)}
+                onMarkRead={() => onMarkRead(item.notification_id)}
+                onOpenDetails={() => onOpenDetails(item)}
+                onArchive={() => onArchive(item.notification_id)}
+              />
             );
           }}
         />
