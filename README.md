@@ -1455,5 +1455,68 @@ For mobile app issues or questions:
 
 ---
 
+## 🧠 Codebase Architecture Notes
+
+The following notes document non-obvious design decisions and behavioral details across the codebase.
+
+### Availability Pipeline (`apps/mobile/src/lib/availability.ts`)
+
+- **Weekday type** uses the JS `Date.getDay()` convention: Sunday = 0, Saturday = 6.
+- **`RecurringRule`** defines weekdays + start/end hour-minute pairs. Rules are materialised into concrete `AvailabilitySlot` entries over a 14-day horizon.
+- **`toDateKey()`** returns `"YYYY-MM-DD"` for a `Date` or ISO string.
+- **`slotsOverlap()`** uses exclusive boundary comparison (touching endpoints are not considered overlapping).
+- **`removeOverlaps()`** keeps the first occurrence when conflicts are found.
+- **`materializeSchedule()`** runs the full pipeline: expand recurrence → apply blockouts → deduplicate → remove overlaps → sort.
+- **`previewGenerateCount()`** computes how many new slots would be generated without actually committing them.
+
+### SSE & Notifications (`apps/mobile/src/notifications/NotificationsProvider.tsx`)
+
+- The `EventSource` API does not expose HTTP status codes. On any error (401, network drop, etc.) the connection is closed and a reconnect is scheduled with exponential backoff.
+- When a token has expired, the next `connect()` call fetches a fresh token via `getStoredToken()` (which reads from SecureStore after the ApiClient refresh cycle).
+- Backoff resets on **any** successful message including `"ready"` / `"ping"` heartbeats.
+- Malformed SSE payloads are silently ignored.
+
+### Role-Based Navigation (`apps/mobile/src/screens/NotificationsScreen.tsx`)
+
+- After a role switch, `roleMode` updates and a `useEffect` fires the pending navigation that was deferred while waiting for the new tab navigator to mount.
+- When the target role differs from the current mode, the app switches roles first and defers navigation to the effect. If the user lacks the target role, it fails silently.
+
+### Session Management (`apps/mobile/src/auth/SessionProvider.tsx`)
+
+- Server logout is best-effort; local token clearing always proceeds even if the server call fails.
+
+### Modal Architecture (`apps/mobile/src/ui/ModalScreen.tsx`)
+
+- The `ModalScreen` component consolidates all modal presentation logic into a single reusable component rather than duplicating modal styling across multiple screens.
+
+### Admin Reviews (`apps/admin-web/src/routes/ReviewsManagementPage.tsx`)
+
+- Reviews are fetched using `useEffect` + `Promise.all()` instead of calling `useQuery` inside a `.map()` loop, which would violate React's Rules of Hooks.
+
+### Hooks
+
+- **`useFormState`** reduces boilerplate from multiple `useState` hooks to a single state object. Usage: `const { data, patch, reset } = useFormState({ name: '', email: '' })`.
+- **`useAsyncOperation`** provides loading state, error handling, retry logic with exponential delay, and granular callbacks for any async operation.
+
+### Styling
+
+- **`createStyles()`** in `styles.ts` is the centralized style factory — all components access styles through the `useStyles()` hook to maintain consistent design tokens.
+- **`createTabBarConfig()`** is the single source of truth for tab bar styling, eliminating duplication between `UserTabs` and `HandymanTabs`.
+
+### Coordinates (`apps/mobile/src/lib/coordinates.ts`)
+
+- `extractDeviceCoordinates()` centralises coordinate handling to avoid duplication.
+- `parseCoordinate()` validates geographic bounds (latitude: -90..90, longitude: -180..180).
+
+### Screen Header (`apps/mobile/src/ui/ScreenHeader.tsx`)
+
+- Search value precedence: explicit `searchValue` prop > `SearchContext` fallback.
+
+### Navigation Structure (`apps/mobile/src/navigation/RootNavigator.tsx`)
+
+- Modal screens (`NotificationsModal`, `ProfileModal`) are declared at the root stack level with `transparentModal` presentation so they overlay the tab navigator.
+
+---
+
 **Last Updated:** March 2026
 **Status:** Active Development (65% API coverage)

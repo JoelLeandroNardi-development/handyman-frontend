@@ -95,6 +95,24 @@ export function normalizeRabbitRows(input: unknown): RabbitEntry[] {
   return [];
 }
 
+export type BreakerRow = {
+  name?: string;
+  state?: string;
+  failures?: number;
+  failure_threshold?: number;
+  reset_timeout_seconds?: number;
+  open_for_seconds?: number | null;
+};
+
+export type BreakersResponse = {
+  breakers?: BreakerRow[];
+};
+
+export function formatHttpStatus(value?: number) {
+  if (typeof value !== "number") return "-";
+  return String(value);
+}
+
 export function normalizeOutboxRows(input: unknown): OutboxRow[] {
   if (Array.isArray(input)) {
     return input as OutboxRow[];

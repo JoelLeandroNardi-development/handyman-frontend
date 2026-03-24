@@ -124,10 +124,8 @@ export default function RootNavigator() {
           screenOptions={{
             headerShown: false,
           }}>
-          {/* Main tabs screen */}
           <Stack.Screen name="UserTabs" component={TabsComponent} />
 
-          {/* Modal screens at root level - these will overlay tabs */}
           <Stack.Group
             screenOptions={{
               presentation: 'transparentModal',

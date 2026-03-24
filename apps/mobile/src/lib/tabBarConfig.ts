@@ -1,10 +1,5 @@
 import { type ThemeTokens } from '@smart/theme';
 
-/**
- * Centralized tab navigator configuration
- * Eliminates duplication of tabBarStyle between UserTabs and HandymanTabs
- * Follows DRY principle - single source of truth for tab styling
- */
 export const createTabBarConfig = (tokens: ThemeTokens) => ({
   tabBarStyle: {
     paddingTop: tokens.spacing.sm,

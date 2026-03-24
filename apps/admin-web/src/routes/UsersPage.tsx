@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   adminDeleteUser,
@@ -9,7 +9,7 @@ import {
   type UserResponse,
 } from "@smart/api";
 import { PAGINATION_DEFAULTS } from "@smart/core";
-import { createApiClient } from "../lib/api";
+import { useAdminApiClient, useActionBusy } from "../lib/api";
 import { formatDateTime } from "../lib/adminFormat";
 import Card from "../ui/Card";
 import DataTable, { type DataTableColumn } from "../ui/DataTable";
@@ -35,12 +35,12 @@ const emptyDraft: UserDraft = {
 };
 
 export default function UsersPage() {
-  const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
+  const api = useAdminApiClient();
   const [search, setSearch] = useState("");
   const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [draft, setDraft] = useState<UserDraft>(emptyDraft);
-  const [actionBusy, setActionBusy] = useState("");
+  const { busy, is, run } = useActionBusy();
 
   const listQ = useQuery({
     queryKey: ["admin-users"],
@@ -85,8 +85,7 @@ export default function UsersPage() {
   }
 
   async function handleCreate() {
-    setActionBusy("create");
-    try {
+    await run("create", async () => {
       await createUser(api, {
         email: draft.email,
         first_name: draft.first_name || null,
@@ -98,16 +97,12 @@ export default function UsersPage() {
       setCreateOpen(false);
       setDraft(emptyDraft);
       await listQ.refetch();
-    } finally {
-      setActionBusy("");
-    }
+    });
   }
 
   async function handleSave() {
     if (!selectedEmail) return;
-
-    setActionBusy("save");
-    try {
+    await run("save", async () => {
       await adminUpdateUser(api, selectedEmail, {
         first_name: draft.first_name || null,
         last_name: draft.last_name || null,
@@ -116,24 +111,18 @@ export default function UsersPage() {
         longitude: draft.longitude ? Number(draft.longitude) : null,
       });
       await refreshAll();
-    } finally {
-      setActionBusy("");
-    }
+    });
   }
 
   async function handleDelete() {
     if (!selectedEmail) return;
     const ok = window.confirm(`Delete user ${selectedEmail}?`);
     if (!ok) return;
-
-    setActionBusy("delete");
-    try {
+    await run("delete", async () => {
       await adminDeleteUser(api, selectedEmail);
       setSelectedEmail(null);
       await listQ.refetch();
-    } finally {
-      setActionBusy("");
-    }
+    });
   }
 
   const columns: DataTableColumn<UserResponse>[] = [
@@ -231,15 +220,15 @@ export default function UsersPage() {
                 </label>
               </div>
 
-              <button onClick={handleSave} disabled={actionBusy !== ""} className="app-button app-button-primary">
-                {actionBusy === "save" ? "Saving…" : "Save user"}
+              <button onClick={handleSave} disabled={busy} className="app-button app-button-primary">
+                {is("save") ? "Saving…" : "Save user"}
               </button>
             </div>
           </Card>
 
           <Card title="Danger zone">
-            <button onClick={handleDelete} disabled={actionBusy !== ""} className="app-button app-button-danger">
-              {actionBusy === "delete" ? "Deleting…" : "Delete user"}
+            <button onClick={handleDelete} disabled={busy} className="app-button app-button-danger">
+              {is("delete") ? "Deleting…" : "Delete user"}
             </button>
           </Card>
         </div>
@@ -279,8 +268,8 @@ export default function UsersPage() {
             </label>
           </div>
 
-          <button onClick={handleCreate} disabled={actionBusy !== ""} className="app-button app-button-success">
-            {actionBusy === "create" ? "Creating…" : "Create user"}
+          <button onClick={handleCreate} disabled={busy} className="app-button app-button-success">
+            {is("create") ? "Creating…" : "Create user"}
           </button>
         </div>
       </OverlayPanel>

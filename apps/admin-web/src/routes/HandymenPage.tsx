@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   adminDeleteHandyman,
@@ -9,7 +9,7 @@ import {
   type HandymanResponse,
 } from "@smart/api";
 import { PAGINATION_DEFAULTS } from "@smart/core";
-import { createApiClient } from "../lib/api";
+import { useAdminApiClient, useActionBusy } from "../lib/api";
 import { formatDateTime } from "../lib/adminFormat";
 import Card from "../ui/Card";
 import DataTable, { type DataTableColumn } from "../ui/DataTable";
@@ -42,12 +42,12 @@ function skillsToArray(value: string) {
 }
 
 export default function HandymenPage() {
-  const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
+  const api = useAdminApiClient();
   const [search, setSearch] = useState("");
   const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [draft, setDraft] = useState<HandymanDraft>(emptyDraft);
-  const [actionBusy, setActionBusy] = useState("");
+  const { busy, is, run } = useActionBusy();
 
   const listQ = useQuery({
     queryKey: ["admin-handymen"],
@@ -100,8 +100,7 @@ export default function HandymenPage() {
   }
 
   async function handleCreate() {
-    setActionBusy("create");
-    try {
+    await run("create", async () => {
       await createHandyman(api, {
         email: draft.email,
         skills: skillsToArray(draft.skills),
@@ -113,16 +112,12 @@ export default function HandymenPage() {
       setCreateOpen(false);
       setDraft(emptyDraft);
       await listQ.refetch();
-    } finally {
-      setActionBusy("");
-    }
+    });
   }
 
   async function handleSave() {
     if (!selectedEmail) return;
-
-    setActionBusy("save");
-    try {
+    await run("save", async () => {
       await adminUpdateHandyman(api, selectedEmail, {
         skills: skillsToArray(draft.skills),
         years_experience: Number(draft.years_experience || 0),
@@ -131,24 +126,18 @@ export default function HandymenPage() {
         longitude: draft.longitude ? Number(draft.longitude) : null,
       });
       await refreshAll();
-    } finally {
-      setActionBusy("");
-    }
+    });
   }
 
   async function handleDelete() {
     if (!selectedEmail) return;
     const ok = window.confirm(`Delete handyman ${selectedEmail}?`);
     if (!ok) return;
-
-    setActionBusy("delete");
-    try {
+    await run("delete", async () => {
       await adminDeleteHandyman(api, selectedEmail);
       setSelectedEmail(null);
       await listQ.refetch();
-    } finally {
-      setActionBusy("");
-    }
+    });
   }
 
   const columns: DataTableColumn<HandymanResponse>[] = [
@@ -263,15 +252,15 @@ export default function HandymenPage() {
                 </label>
               </div>
 
-              <button onClick={handleSave} disabled={actionBusy !== ""} className="app-button app-button-primary">
-                {actionBusy === "save" ? "Saving…" : "Save handyman"}
+              <button onClick={handleSave} disabled={busy} className="app-button app-button-primary">
+                {is("save") ? "Saving…" : "Save handyman"}
               </button>
             </div>
           </Card>
 
           <Card title="Danger zone">
-            <button onClick={handleDelete} disabled={actionBusy !== ""} className="app-button app-button-danger">
-              {actionBusy === "delete" ? "Deleting…" : "Delete handyman"}
+            <button onClick={handleDelete} disabled={busy} className="app-button app-button-danger">
+              {is("delete") ? "Deleting…" : "Delete handyman"}
             </button>
           </Card>
         </div>
@@ -317,8 +306,8 @@ export default function HandymenPage() {
             </label>
           </div>
 
-          <button onClick={handleCreate} disabled={actionBusy !== ""} className="app-button app-button-success">
-            {actionBusy === "create" ? "Creating…" : "Create handyman"}
+          <button onClick={handleCreate} disabled={busy} className="app-button app-button-success">
+            {is("create") ? "Creating…" : "Create handyman"}
           </button>
         </div>
       </OverlayPanel>

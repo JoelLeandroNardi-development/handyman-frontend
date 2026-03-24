@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ApiClient, login } from "@smart/api";
 import { decodeJwt } from "@smart/core";
-import { API_BASE_URL, createApiClient } from "../lib/api";
+import { useAdminApiClient, API_BASE_URL } from "../lib/api";
 import { storeToken } from "./session";
 
 const styles = {
@@ -31,7 +31,7 @@ export default function LoginPage() {
   const [status, setStatus] = useState<string>("");
 
   const navigate = useNavigate();
-  const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
+  const api = useAdminApiClient();
 
   async function onLogin() {
     setStatus("Signing in…");

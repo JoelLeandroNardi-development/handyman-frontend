@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { adminDeleteMatchLog, adminListMatchLogs } from "@smart/api";
 import { PAGINATION_DEFAULTS } from "@smart/core";
-import { createApiClient } from "../lib/api";
+import { useAdminApiClient } from "../lib/api";
 import Card from "../ui/Card";
 import Page from "../ui/Page";
 
@@ -31,7 +31,7 @@ function normalizeRows(data: unknown): MatchLogRow[] {
 }
 
 export default function MatchLogsPage() {
-  const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
+  const api = useAdminApiClient();
   const [skill, setSkill] = useState("");
 
   const q = useQuery({

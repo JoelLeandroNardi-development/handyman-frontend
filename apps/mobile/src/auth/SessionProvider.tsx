@@ -88,9 +88,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         const api = createApiClient();
         await logoutApi(api, { refresh_token: refreshToken });
       }
-    } catch {
-      // Best-effort server logout; local token clear still proceeds.
-    }
+    } catch { }
 
     await clearToken();
     await clearRoleMode();

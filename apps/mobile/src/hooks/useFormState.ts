@@ -1,13 +1,5 @@
 import { useCallback, useState } from 'react';
 
-/**
- * Generic form state management hook that reduces boilerplate
- * from multiple individual useState hooks to a single state object.
- *
- * @example
- * const { data, patch, reset } = useFormState({ name: '', email: '' });
- * <TextInput value={data.name} onChangeText={(v) => patch('name', v)} />
- */
 export function useFormState<T extends object>(initial: T) {
   const [data, setData] = useState<T>(initial);
 
@@ -23,7 +15,6 @@ export function useFormState<T extends object>(initial: T) {
     setData(prev => ({ ...prev, ...updates }));
   }, []);
 
-  // Backward-compatible alias.
   const patch_multiple = patchMany;
 
   return {

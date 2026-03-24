@@ -1,10 +1,6 @@
 import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 
-/**
- * Generic async operation handler with support for loading state, error handling,
- * retry logic, and granular callbacks
- */
 interface UseAsyncOperationOptions<T = void> {
   onSuccess?: (result?: T) => void;
   onError?: (error: Error) => void;
@@ -49,19 +45,16 @@ export function useAsyncOperation<T = void>(
           lastError = e as Error;
           const message = (e as Error).message || 'An error occurred';
 
-          // Check if error is retryable
           const isRetryable = onRetryableError?.(lastError) ?? false;
 
           if (isRetryable && retryCount < maxRetries) {
             retryCount++;
-            // Wait before retrying
             await new Promise(resolve =>
               setTimeout(resolve, retryDelay * retryCount),
             );
             continue;
           }
 
-          // Error is not retryable or max retries reached
           setError(message);
 
           if (showAlert) {

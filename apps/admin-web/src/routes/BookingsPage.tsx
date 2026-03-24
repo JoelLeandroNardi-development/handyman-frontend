@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   adminDeleteBooking,
@@ -9,7 +9,7 @@ import {
   getBooking,
 } from "@smart/api";
 import { BOOKING_STATUS, PAGINATION_DEFAULTS } from "@smart/core";
-import { createApiClient } from "../lib/api";
+import { useAdminApiClient, useActionBusy } from "../lib/api";
 import { formatDateTime, getStatusTone } from "../lib/adminFormat";
 import Badge from "../ui/Badge";
 import Card from "../ui/Card";
@@ -31,7 +31,7 @@ type AnyBooking = {
 const STATUS_OPTIONS = ["", BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.FAILED, BOOKING_STATUS.CANCELLED];
 
 export default function BookingsPage() {
-  const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
+  const api = useAdminApiClient();
 
   const [status, setStatus] = useState("");
   const [userEmail, setUserEmail] = useState("");
@@ -41,7 +41,7 @@ export default function BookingsPage() {
   const [editStatus, setEditStatus] = useState("");
   const [editFailureReason, setEditFailureReason] = useState("");
   const [editCancellationReason, setEditCancellationReason] = useState("");
-  const [actionBusy, setActionBusy] = useState("");
+  const { busy, is, run } = useActionBusy();
 
   const listQ = useQuery({
     queryKey: ["admin-bookings", status, userEmail, handymanEmail],
@@ -80,59 +80,43 @@ export default function BookingsPage() {
 
   async function handleSaveUpdate() {
     if (!selectedId) return;
-
-    setActionBusy("save");
-    try {
+    await run("save", async () => {
       await adminUpdateBooking(api, selectedId, {
         status: editStatus || null,
         failure_reason: editFailureReason || null,
         cancellation_reason: editCancellationReason || null,
       });
       await refreshAll();
-    } finally {
-      setActionBusy("");
-    }
+    });
   }
 
   async function handleConfirm() {
     if (!selectedId) return;
-
-    setActionBusy("confirm");
-    try {
+    await run("confirm", async () => {
       await confirmBooking(api, selectedId);
       await refreshAll();
-    } finally {
-      setActionBusy("");
-    }
+    });
   }
 
   async function handleCancel() {
     if (!selectedId) return;
-
-    setActionBusy("cancel");
-    try {
+    await run("cancel", async () => {
       await cancelBooking(api, selectedId, {
         reason: editCancellationReason || "admin_cancelled",
       });
       await refreshAll();
-    } finally {
-      setActionBusy("");
-    }
+    });
   }
 
   async function handleDelete() {
     if (!selectedId) return;
     const ok = window.confirm(`Delete booking ${selectedId}?`);
     if (!ok) return;
-
-    setActionBusy("delete");
-    try {
+    await run("delete", async () => {
       await adminDeleteBooking(api, selectedId);
       setSelectedId(null);
       await listQ.refetch();
-    } finally {
-      setActionBusy("");
-    }
+    });
   }
 
   function clearFilters() {
@@ -309,24 +293,24 @@ export default function BookingsPage() {
                   <input value={editCancellationReason} onChange={(e) => setEditCancellationReason(e.target.value)} />
                 </label>
 
-                <button onClick={handleSaveUpdate} disabled={actionBusy !== ""} className="app-button app-button-primary">
-                  {actionBusy === "save" ? "Saving…" : "Save update"}
+                <button onClick={handleSaveUpdate} disabled={busy} className="app-button app-button-primary">
+                  {is("save") ? "Saving…" : "Save update"}
                 </button>
               </div>
             </Card>
 
             <Card title="Actions">
               <div style={{ display: "grid", gap: 10 }}>
-                <button onClick={handleConfirm} disabled={actionBusy !== ""} className="app-button app-button-success">
-                  {actionBusy === "confirm" ? "Confirming…" : "Confirm booking"}
+                <button onClick={handleConfirm} disabled={busy} className="app-button app-button-success">
+                  {is("confirm") ? "Confirming…" : "Confirm booking"}
                 </button>
 
-                <button onClick={handleCancel} disabled={actionBusy !== ""} className="app-button app-button-warning">
-                  {actionBusy === "cancel" ? "Cancelling…" : "Cancel booking"}
+                <button onClick={handleCancel} disabled={busy} className="app-button app-button-warning">
+                  {is("cancel") ? "Cancelling…" : "Cancel booking"}
                 </button>
 
-                <button onClick={handleDelete} disabled={actionBusy !== ""} className="app-button app-button-danger">
-                  {actionBusy === "delete" ? "Deleting…" : "Delete booking"}
+                <button onClick={handleDelete} disabled={busy} className="app-button app-button-danger">
+                  {is("delete") ? "Deleting…" : "Delete booking"}
                 </button>
               </div>
             </Card>

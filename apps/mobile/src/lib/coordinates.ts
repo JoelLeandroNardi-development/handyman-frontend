@@ -1,9 +1,5 @@
 import type { AppCoords } from '../location/AppLocationProvider';
 
-/**
- * Extract latitude and longitude from device coordinates
- * Centralizes coordinate handling logic to avoid duplication
- */
 export function extractDeviceCoordinates(coords: AppCoords | null) {
   return {
     latitude: coords?.latitude ?? null,
@@ -11,10 +7,6 @@ export function extractDeviceCoordinates(coords: AppCoords | null) {
   };
 }
 
-/**
- * Validate and parse coordinate string input
- * Throws descriptive error if invalid
- */
 export function parseCoordinate(
   value: string,
   name: 'latitude' | 'longitude',
@@ -28,7 +20,6 @@ export function parseCoordinate(
     throw new Error(`${name} must be a valid number.`);
   }
 
-  // Basic geographic bounds validation
   if (name === 'latitude' && (parsed < -90 || parsed > 90)) {
     throw new Error('Latitude must be between -90 and 90.');
   }
@@ -39,22 +30,6 @@ export function parseCoordinate(
   return parsed;
 }
 
-/**
- * Parse both latitude and longitude inputs
- */
-export function parseOptionalCoordinates(
-  latitudeInput: string,
-  longitudeInput: string,
-): { latitude: number | null; longitude: number | null } {
-  return {
-    latitude: parseCoordinate(latitudeInput, 'latitude'),
-    longitude: parseCoordinate(longitudeInput, 'longitude'),
-  };
-}
-
-/**
- * Type guard to check if object has valid coordinates
- */
 export function hasCoordinates(
   obj: any,
 ): obj is { latitude: number; longitude: number } {

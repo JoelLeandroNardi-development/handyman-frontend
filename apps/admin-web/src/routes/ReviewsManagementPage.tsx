@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   listHandymen,
@@ -6,7 +6,7 @@ import {
   type HandymanReviewResponse,
 } from "@smart/api";
 import { PAGINATION_DEFAULTS } from "@smart/core";
-import { createApiClient } from "../lib/api";
+import { useAdminApiClient } from "../lib/api";
 import { formatDateTime } from "../lib/adminFormat";
 import Card from "../ui/Card";
 import DataTable, { type DataTableColumn } from "../ui/DataTable";
@@ -18,7 +18,7 @@ type ReviewWithHandyman = HandymanReviewResponse & {
 };
 
 export default function ReviewsManagementPage() {
-  const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
+  const api = useAdminApiClient();
   const [search, setSearch] = useState("");
   const [minRating, setMinRating] = useState(0);
   const [selectedReviewIndex, setSelectedReviewIndex] = useState<number | null>(null);
@@ -34,7 +34,6 @@ export default function ReviewsManagementPage() {
       }),
   });
 
-  // Fetch reviews for all handymen using an effect (not in a loop with useQuery)
   useEffect(() => {
     const fetchAllReviews = async () => {
       if (!handymenQ.data || handymenQ.data.length === 0) return;
@@ -66,7 +65,6 @@ export default function ReviewsManagementPage() {
     fetchAllReviews();
   }, [handymenQ.data, api]);
 
-  // Filter and sort reviews
   const filteredReviews = allReviewsData
     .filter((review) => {
       const matchesSearch = search.trim()

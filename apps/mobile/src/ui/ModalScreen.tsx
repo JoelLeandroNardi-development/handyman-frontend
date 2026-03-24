@@ -13,14 +13,6 @@ interface ModalScreenProps {
   style?: any;
 }
 
-/**
- * Reusable modal screen component
- * Encapsulates consistent modal styling, sizing, and layout
- * Ensures all modals (Notifications, Profile, etc.) have identical structure
- *
- * SOLID Principle: Single Responsibility - only handles modal presentation
- * DRY Principle: Consolidates modal styling from 3 files into 1
- */
 export function ModalScreen({
   children,
   scrollable = true,
@@ -32,7 +24,6 @@ export function ModalScreen({
   const insets = useSafeAreaInsets();
   const screenHeight = Dimensions.get('window').height;
 
-  // Reserve space for tab bar
   const maxHeight = screenHeight - Math.max(insets.bottom);
 
   const modalStyle = [

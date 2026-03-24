@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   adminListAllAvailability,
@@ -7,7 +7,7 @@ import {
   setAvailability,
   type AvailabilitySlot,
 } from "@smart/api";
-import { createApiClient } from "../lib/api";
+import { useAdminApiClient, useActionBusy } from "../lib/api";
 import { formatDateTime, safeJsonParse } from "../lib/adminFormat";
 import Card from "../ui/Card";
 import Page from "../ui/Page";
@@ -27,10 +27,10 @@ function normalizeAvailabilityResponse(data: unknown): { email: string; slots: A
 }
 
 export default function AvailabilityPage() {
-  const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
+  const api = useAdminApiClient();
   const [email, setEmail] = useState("");
   const [slotsJson, setSlotsJson] = useState(JSON.stringify({ slots: [] }, null, 2));
-  const [busy, setBusy] = useState("");
+  const { busy, is, run } = useActionBusy();
 
   const listQ = useQuery({
     queryKey: ["admin-availability"],
@@ -41,40 +41,30 @@ export default function AvailabilityPage() {
 
   async function loadByEmail() {
     if (!email.trim()) return;
-    setBusy("load");
-    try {
+    await run("load", async () => {
       const res = await getAvailability(api, email.trim());
       setSlotsJson(JSON.stringify(res, null, 2));
-    } finally {
-      setBusy("");
-    }
+    });
   }
 
   async function saveByEmail() {
     if (!email.trim()) return;
-    setBusy("save");
-    try {
+    await run("save", async () => {
       const parsed = safeJsonParse<{ slots: AvailabilitySlot[] }>(slotsJson);
       await setAvailability(api, email.trim(), parsed);
       await listQ.refetch();
-    } finally {
-      setBusy("");
-    }
+    });
   }
 
   async function clearByEmail() {
     if (!email.trim()) return;
     const ok = window.confirm(`Clear availability for ${email}?`);
     if (!ok) return;
-
-    setBusy("clear");
-    try {
+    await run("clear", async () => {
       await clearAvailability(api, email.trim());
       setSlotsJson(JSON.stringify({ slots: [] }, null, 2));
       await listQ.refetch();
-    } finally {
-      setBusy("");
-    }
+    });
   }
 
   return (
@@ -116,26 +106,26 @@ export default function AvailabilityPage() {
             >
               <button
                 onClick={loadByEmail}
-                disabled={busy !== ""}
+                disabled={busy}
                 className="app-button app-button-primary"
               >
-                {busy === "load" ? "Loading…" : "Load"}
+                {is("load") ? "Loading…" : "Load"}
               </button>
 
               <button
                 onClick={saveByEmail}
-                disabled={busy !== ""}
+                disabled={busy}
                 className="app-button app-button-success"
               >
-                {busy === "save" ? "Saving…" : "Save"}
+                {is("save") ? "Saving…" : "Save"}
               </button>
 
               <button
                 onClick={clearByEmail}
-                disabled={busy !== ""}
+                disabled={busy}
                 className="app-button app-button-danger"
               >
-                {busy === "clear" ? "Clearing…" : "Clear"}
+                {is("clear") ? "Clearing…" : "Clear"}
               </button>
             </div>
           </div>

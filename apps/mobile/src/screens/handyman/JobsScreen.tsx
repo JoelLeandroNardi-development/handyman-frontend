@@ -6,6 +6,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { APP_BACKGROUND_IMAGE } from '../../theme/appChrome';
 import {
   completeBookingHandyman,
   confirmBooking,
@@ -261,7 +262,7 @@ export default function JobsScreen() {
 
   return (
     <>
-      <Screen>
+      <Screen backgroundImage={APP_BACKGROUND_IMAGE}>
         <ScreenHeader
           title="Jobs"
           subtitle="Incoming, active, completed, and rejected jobs"

@@ -18,7 +18,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response Health Health Get"
                 }
               }
             }
@@ -39,7 +40,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response System Health System Health Get"
                 }
               }
             }
@@ -65,7 +67,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response System Rabbit System Rabbit Get"
                 }
               }
             }
@@ -91,7 +94,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response System Outbox System Outbox Get"
                 }
               }
             }
@@ -117,7 +121,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response Breakers Status System Breakers Get"
                 }
               }
             }
@@ -159,7 +164,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response Breaker Close System Breakers  Name  Close Post"
                 }
               }
             }
@@ -206,7 +212,8 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "title": "Response Breaker Open System Breakers  Name  Open Post"
                 }
               }
             }
@@ -247,7 +254,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/RegisterResponse"
                 }
               }
             }
@@ -411,7 +418,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AuthActionResponse"
                 }
               }
             }
@@ -787,7 +794,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/DeleteAuthUserResponse"
                 }
               }
             }
@@ -1073,7 +1080,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/UserResponse"
                 }
               }
             }
@@ -1193,7 +1200,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/UserResponse"
                 }
               }
             }
@@ -1240,7 +1247,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/UserResponse"
                 }
               }
             }
@@ -1340,7 +1347,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/DeleteUserResponse"
                 }
               }
             }
@@ -1427,7 +1434,11 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HandymanResponse"
+                  },
+                  "title": "Response List Handymen Endpoint Handymen Get"
                 }
               }
             }
@@ -1471,7 +1482,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/HandymanResponse"
                 }
               }
             }
@@ -1518,7 +1529,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/HandymanResponse"
                 }
               }
             }
@@ -1618,7 +1629,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/DeleteHandymanResponse"
                 }
               }
             }
@@ -1675,7 +1686,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/HandymanResponse"
                 }
               }
             }
@@ -1844,11 +1855,6 @@
         ],
         "summary": "Get Skills Catalog Endpoint",
         "operationId": "get_skills_catalog_endpoint_skills_catalog_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
         "parameters": [
           {
             "name": "active_only",
@@ -1867,7 +1873,14 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "title": "Response Get Skills Catalog Endpoint Skills Catalog Get"
                 }
               }
             }
@@ -1892,11 +1905,6 @@
         ],
         "summary": "Get Skills Catalog Flat Endpoint",
         "operationId": "get_skills_catalog_flat_endpoint_skills_catalog_flat_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
         "parameters": [
           {
             "name": "active_only",
@@ -1956,7 +1964,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/SkillsCatalogReplaceResponse"
                 }
               }
             }
@@ -2000,7 +2008,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/SkillsCatalogPatchResponse"
                 }
               }
             }
@@ -2088,7 +2096,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityMessageResponse"
                 }
               }
             }
@@ -2133,7 +2141,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityResponse"
                 }
               }
             }
@@ -2178,7 +2186,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityMessageResponse"
                 }
               }
             }
@@ -2239,7 +2247,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityListResponse"
                 }
               }
             }
@@ -2270,7 +2278,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityResponse"
                 }
               }
             }
@@ -2304,7 +2312,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityMessageResponse"
                 }
               }
             }
@@ -2338,7 +2346,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/AvailabilityMessageResponse"
                 }
               }
             }
@@ -2460,7 +2468,11 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MatchLogResponse"
+                  },
+                  "title": "Response Admin List Match Logs Match Logs Get"
                 }
               }
             }
@@ -2507,7 +2519,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/DeleteMatchLogResponse"
                 }
               }
             }
@@ -2660,7 +2672,11 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BookingResponse"
+                  },
+                  "title": "Response Admin List Bookings Bookings Get"
                 }
               }
             }
@@ -2762,7 +2778,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/BookingResponse"
                 }
               }
             }
@@ -2807,7 +2823,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/components/schemas/DeleteBookingResponse"
                 }
               }
             }
@@ -3299,6 +3315,103 @@
         }
       }
     },
+    "/bookings/completed-count/{handyman_email}": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Completed Count Endpoint",
+        "operationId": "completed_count_endpoint_bookings_completed_count__handyman_email__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "handyman_email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Handyman Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletedJobsCountResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/completed-counts": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Completed Counts Batch Endpoint",
+        "operationId": "completed_counts_batch_endpoint_bookings_completed_counts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "title": "Emails"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletedJobsCountsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/me/notifications": {
       "get": {
         "tags": [
@@ -3702,6 +3815,29 @@
         ],
         "summary": "Stream Notifications",
         "operationId": "stream_notifications_me_notifications_stream_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Server-Sent Events stream. Events: ready, ping, notification.created",
@@ -3715,13 +3851,18 @@
                 "example": "event: ready\\ndata: {\"ok\":true}\\n\\n"
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     }
   },
@@ -3807,6 +3948,79 @@
           "roles"
         ],
         "title": "AuthUserResponse"
+      },
+      "AvailabilityListItem": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "slots": {
+            "items": {
+              "$ref": "#/components/schemas/AvailabilitySlot"
+            },
+            "type": "array",
+            "title": "Slots"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "AvailabilityListItem"
+      },
+      "AvailabilityListResponse": {
+        "properties": {
+          "cursor": {
+            "type": "integer",
+            "title": "Cursor"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AvailabilityListItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cursor"
+        ],
+        "title": "AvailabilityListResponse"
+      },
+      "AvailabilityMessageResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "AvailabilityMessageResponse"
+      },
+      "AvailabilityResponse": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "slots": {
+            "items": {
+              "$ref": "#/components/schemas/AvailabilitySlot"
+            },
+            "type": "array",
+            "title": "Slots"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "AvailabilityResponse"
       },
       "AvailabilitySlot": {
         "properties": {
@@ -4025,6 +4239,40 @@
           "completed_by_handyman"
         ],
         "title": "CompleteBookingResponse"
+      },
+      "CompletedJobsCountResponse": {
+        "properties": {
+          "handyman_email": {
+            "type": "string",
+            "title": "Handyman Email"
+          },
+          "completed_jobs_count": {
+            "type": "integer",
+            "title": "Completed Jobs Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "handyman_email",
+          "completed_jobs_count"
+        ],
+        "title": "CompletedJobsCountResponse"
+      },
+      "CompletedJobsCountsResponse": {
+        "properties": {
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "counts"
+        ],
+        "title": "CompletedJobsCountsResponse"
       },
       "ConfirmBookingResponse": {
         "properties": {
@@ -4376,6 +4624,96 @@
         ],
         "title": "CreateUser"
       },
+      "DeleteAuthUserResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "user_id"
+        ],
+        "title": "DeleteAuthUserResponse"
+      },
+      "DeleteBookingResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "booking_id": {
+            "type": "string",
+            "title": "Booking Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "booking_id"
+        ],
+        "title": "DeleteBookingResponse"
+      },
+      "DeleteHandymanResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "email"
+        ],
+        "title": "DeleteHandymanResponse"
+      },
+      "DeleteMatchLogResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "id"
+        ],
+        "title": "DeleteMatchLogResponse"
+      },
+      "DeleteUserResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "email"
+        ],
+        "title": "DeleteUserResponse"
+      },
       "EmailVerifyConfirmRequest": {
         "properties": {
           "token": {
@@ -4629,6 +4967,11 @@
             "title": "Rating Count",
             "default": 0
           },
+          "profile_completeness": {
+            "type": "integer",
+            "title": "Profile Completeness",
+            "default": 0
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -4798,6 +5141,45 @@
         ],
         "title": "MarkAllReadResponse"
       },
+      "MatchLogResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "user_latitude": {
+            "type": "number",
+            "title": "User Latitude"
+          },
+          "user_longitude": {
+            "type": "number",
+            "title": "User Longitude"
+          },
+          "skill": {
+            "type": "string",
+            "title": "Skill"
+          },
+          "job_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "user_latitude",
+          "user_longitude",
+          "skill"
+        ],
+        "title": "MatchLogResponse"
+      },
       "MatchRequest": {
         "properties": {
           "latitude": {
@@ -4870,6 +5252,26 @@
             "type": "boolean",
             "title": "Availability Unknown",
             "default": false
+          },
+          "avg_rating": {
+            "type": "number",
+            "title": "Avg Rating",
+            "default": 0
+          },
+          "rating_count": {
+            "type": "integer",
+            "title": "Rating Count",
+            "default": 0
+          },
+          "profile_completeness": {
+            "type": "integer",
+            "title": "Profile Completeness",
+            "default": 0
+          },
+          "completed_jobs_count": {
+            "type": "integer",
+            "title": "Completed Jobs Count",
+            "default": 0
           }
         },
         "type": "object",
@@ -5665,6 +6067,27 @@
         ],
         "title": "RegisterPushDeviceRequest"
       },
+      "RegisterResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Roles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "roles"
+        ],
+        "title": "RegisterResponse"
+      },
       "RejectBookingRequest": {
         "properties": {
           "reason": {
@@ -5902,6 +6325,56 @@
           "sort_order"
         ],
         "title": "SkillCatalogSkillItem"
+      },
+      "SkillsCatalogPatchResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "added_categories": {
+            "type": "integer",
+            "title": "Added Categories"
+          },
+          "added_skills": {
+            "type": "integer",
+            "title": "Added Skills"
+          },
+          "catalog": {
+            "$ref": "#/components/schemas/SkillCatalogFlatResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "added_categories",
+          "added_skills",
+          "catalog"
+        ],
+        "title": "SkillsCatalogPatchResponse"
+      },
+      "SkillsCatalogReplaceResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "categories": {
+            "type": "integer",
+            "title": "Categories"
+          },
+          "skills": {
+            "type": "integer",
+            "title": "Skills"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "categories",
+          "skills"
+        ],
+        "title": "SkillsCatalogReplaceResponse"
       },
       "TokenPairResponse": {
         "properties": {

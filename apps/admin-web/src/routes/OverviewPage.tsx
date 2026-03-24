@@ -1,67 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { breakersStatus, systemHealth } from "@smart/api";
 import { SYSTEM_STATUS } from "@smart/core";
-import { createApiClient } from "../lib/api";
+import { useAdminApiClient } from "../lib/api";
+import {
+  type BreakerRow,
+  type BreakersResponse,
+  type HealthServiceRow,
+  type SystemHealthResponse,
+  formatHttpStatus,
+  formatLatency,
+  getStatusTone,
+} from "../lib/systemHealth";
 import Badge from "../ui/Badge";
 import Card from "../ui/Card";
 import DataTable, { type DataTableColumn } from "../ui/DataTable";
 import Page from "../ui/Page";
 import StatCard from "../ui/StatCard";
-
-type HealthServiceRow = {
-  service?: string;
-  status?: string;
-  http_status?: number;
-  latency_ms?: number;
-  url?: string;
-  data?: unknown;
-};
-
-type SystemHealthResponse = {
-  status?: string;
-  services?: HealthServiceRow[];
-};
-
-type BreakerRow = {
-  name?: string;
-  state?: string;
-  failures?: number;
-  failure_threshold?: number;
-  reset_timeout_seconds?: number;
-  open_for_seconds?: number | null;
-};
-
-type BreakersResponse = {
-  breakers?: BreakerRow[];
-};
-
-function getStatusTone(value?: string): "success" | "warning" | "danger" | "neutral" {
-  const normalized = (value ?? "").toLowerCase();
-
-  if (normalized === "up" || normalized === "closed" || normalized === "ok") {
-    return "success";
-  }
-
-  if (normalized === "open" || normalized === "down" || normalized === "error") {
-    return "danger";
-  }
-
-  if (normalized === "half-open" || normalized === "degraded") {
-    return "warning";
-  }
-
-  return "neutral";
-}
-
-function formatLatency(value?: number) {
-  if (typeof value !== "number" || Number.isNaN(value)) return "-";
-  return `${value.toFixed(1)} ms`;
-}
-
-function formatHttpStatus(value?: number) {
-  if (typeof value !== "number") return "-";
-  return String(value);
-}
 
 function getPendingOutboxCount(services: HealthServiceRow[]) {
   return services.reduce((sum, service) => {
@@ -100,7 +54,7 @@ function getOpenBreakersCount(breakers: BreakerRow[]) {
 }
 
 export default function OverviewPage() {
-  const api = createApiClient(() => localStorage.getItem("token"));
+  const api = useAdminApiClient();
 
   const healthQ = useQuery({
     queryKey: ["system-health"],

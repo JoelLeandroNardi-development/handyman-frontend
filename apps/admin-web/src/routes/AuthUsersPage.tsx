@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   adminDeleteAuthUser,
@@ -8,7 +8,7 @@ import {
   type UpdateAuthUser,
 } from "@smart/api";
 import { PAGINATION_DEFAULTS } from "@smart/core";
-import { createApiClient } from "../lib/api";
+import { useAdminApiClient, useActionBusy } from "../lib/api";
 import { formatDateTime } from "../lib/adminFormat";
 import Card from "../ui/Card";
 import DataTable, { type DataTableColumn } from "../ui/DataTable";
@@ -26,11 +26,11 @@ const emptyDraft: AuthUserDraft = {
 };
 
 export default function AuthUsersPage() {
-  const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
+  const api = useAdminApiClient();
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [draft, setDraft] = useState<AuthUserDraft>(emptyDraft);
-  const [actionBusy, setActionBusy] = useState("");
+  const { busy, is, run } = useActionBusy();
 
   const listQ = useQuery({
     queryKey: ["admin-auth-users"],
@@ -70,9 +70,7 @@ export default function AuthUsersPage() {
 
   async function handleSave() {
     if (!selected) return;
-
-    setActionBusy("save");
-    try {
+    await run("save", async () => {
       const body: UpdateAuthUser = {};
       if (draft.password) {
         body.password = draft.password;
@@ -83,24 +81,18 @@ export default function AuthUsersPage() {
       await adminUpdateAuthUser(api, selected.id, body);
       await refreshAll();
       setSelectedId(null);
-    } finally {
-      setActionBusy("");
-    }
+    });
   }
 
   async function handleDelete() {
     if (!selected) return;
     const ok = window.confirm(`Delete auth user ${selected.email}?`);
     if (!ok) return;
-
-    setActionBusy("delete");
-    try {
+    await run("delete", async () => {
       await adminDeleteAuthUser(api, selected.id);
       setSelectedId(null);
       await listQ.refetch();
-    } finally {
-      setActionBusy("");
-    }
+    });
   }
 
   const columns: DataTableColumn<AuthUserResponse>[] = [
@@ -251,10 +243,10 @@ export default function AuthUsersPage() {
 
               <button
                 onClick={handleSave}
-                disabled={actionBusy !== ""}
+                disabled={busy}
                 className="app-button app-button-primary"
               >
-                {actionBusy === "save" ? "Saving…" : "Save changes"}
+                {is("save") ? "Saving…" : "Save changes"}
               </button>
             </div>
           </Card>
@@ -262,10 +254,10 @@ export default function AuthUsersPage() {
           <Card title="Danger Zone">
             <button
               onClick={handleDelete}
-              disabled={actionBusy !== ""}
+              disabled={busy}
               className="app-button app-button-danger"
             >
-              {actionBusy === "delete" ? "Deleting…" : "Delete user"}
+              {is("delete") ? "Deleting…" : "Delete user"}
             </button>
           </Card>
         </div>

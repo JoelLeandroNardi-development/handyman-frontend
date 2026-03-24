@@ -1,8 +1,7 @@
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { systemHealth, systemOutbox, systemRabbit } from "@smart/api";
 import { SYSTEM_STATUS } from "@smart/core";
-import { createApiClient } from "../lib/api";
+import { useAdminApiClient } from "../lib/api";
 import Badge from "../ui/Badge";
 import Card from "../ui/Card";
 import DataTable, { type DataTableColumn } from "../ui/DataTable";
@@ -20,7 +19,7 @@ import {
 } from "../lib/systemHealth";
 
 export default function SystemHealthPage() {
-  const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
+  const api = useAdminApiClient();
 
   const healthQ = useQuery({
     queryKey: ["system-health"],

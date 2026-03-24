@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   getInvalidHandymenSkills,
@@ -8,7 +8,7 @@ import {
   type InvalidHandymanSkillsResponse,
   type SkillCatalogFlatResponse,
 } from "@smart/api";
-import { createApiClient } from "../lib/api";
+import { useAdminApiClient, useActionBusy } from "../lib/api";
 import { safeJsonParse } from "../lib/adminFormat";
 import Badge from "../ui/Badge";
 import Card from "../ui/Card";
@@ -35,10 +35,10 @@ const defaultReplaceJson = JSON.stringify(
 );
 
 export default function SkillsCatalogPage() {
-  const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
+  const api = useAdminApiClient();
   const [patchJson, setPatchJson] = useState(defaultPatchJson);
   const [replaceJson, setReplaceJson] = useState(defaultReplaceJson);
-  const [busy, setBusy] = useState("");
+  const { busy, is, run } = useActionBusy();
 
   const catalogQ = useQuery({
     queryKey: ["skills-catalog-flat"],
@@ -54,28 +54,21 @@ export default function SkillsCatalogPage() {
   const invalid = invalidQ.data as InvalidHandymanSkillsResponse | undefined;
 
   async function onPatch() {
-    setBusy("patch");
-    try {
+    await run("patch", async () => {
       await patchSkillsCatalog(api, safeJsonParse(patchJson));
       await catalogQ.refetch();
       await invalidQ.refetch();
-    } finally {
-      setBusy("");
-    }
+    });
   }
 
   async function onReplace() {
     const ok = window.confirm("Replace the whole skills catalog?");
     if (!ok) return;
-
-    setBusy("replace");
-    try {
+    await run("replace", async () => {
       await replaceSkillsCatalog(api, safeJsonParse(replaceJson));
       await catalogQ.refetch();
       await invalidQ.refetch();
-    } finally {
-      setBusy("");
-    }
+    });
   }
 
   return (
@@ -132,8 +125,8 @@ export default function SkillsCatalogPage() {
                 rows={14}
                 style={{ resize: "vertical" }}
               />
-              <button onClick={onPatch} disabled={busy !== ""} className="app-button app-button-primary">
-                {busy === "patch" ? "Applying patch…" : "Apply patch"}
+              <button onClick={onPatch} disabled={busy} className="app-button app-button-primary">
+                {is("patch") ? "Applying patch…" : "Apply patch"}
               </button>
             </div>
           </Card>
@@ -146,8 +139,8 @@ export default function SkillsCatalogPage() {
                 rows={10}
                 style={{ resize: "vertical" }}
               />
-              <button onClick={onReplace} disabled={busy !== ""} className="app-button app-button-warning">
-                {busy === "replace" ? "Replacing…" : "Replace catalog"}
+              <button onClick={onReplace} disabled={busy} className="app-button app-button-warning">
+                {is("replace") ? "Replacing…" : "Replace catalog"}
               </button>
             </div>
           </Card>

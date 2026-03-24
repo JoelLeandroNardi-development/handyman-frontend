@@ -157,24 +157,17 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
           }
           showCreatedToast(next);
         } catch {
-          // Malformed SSE payload — ignore
         }
       };
 
       source.addEventListener?.("notification.created", handleIncomingEvent);
 
       source.onmessage = (event: { data?: string }) => {
-        // Reset backoff on any successful message (including "ready" / "ping")
         attempt = 0;
         handleIncomingEvent(event);
       };
 
       source.onerror = () => {
-        // EventSource API does not expose HTTP status codes.
-        // On any error (401, network drop, etc.) close and schedule a
-        // reconnect with exponential backoff. If the token has expired
-        // the next connect() call will fetch a fresh one via getStoredToken()
-        // (which reads from SecureStore after the ApiClient refresh cycle).
         source.close();
         closeStream = null;
         scheduleReconnect();

@@ -52,7 +52,6 @@ export function ScreenHeader({
   const actionButtonSize = 36;
   const isCompactModal = isModal && modalVariant === 'compact';
 
-  // Use passed search value, or fall back to context
   const finalSearchValue =
     searchValue !== undefined ? searchValue : searchQuery;
   const handleSearchChange = onSearchChange || setSearchQuery;

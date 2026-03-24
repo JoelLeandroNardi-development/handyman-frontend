@@ -1,16 +1,9 @@
 import { type ThemeTokens } from '@smart/theme';
 
-/**
- * Centralized style definitions and utilities
- * Ensures consistency across all screens and components
- * Follows DRY principle - no style duplication
- */
-
 export const createStyles = (tokens: ThemeTokens) => {
   const { colors, spacing, typography, nativeRadius, nativeShadow } = tokens;
 
   return {
-    // Screen backgrounds
     screen: {
       base: {
         flex: 1 as const,
@@ -25,7 +18,6 @@ export const createStyles = (tokens: ThemeTokens) => {
       },
     },
 
-    // Layout
     container: {
       flex: 1 as const,
       gap: spacing.md,
@@ -45,7 +37,6 @@ export const createStyles = (tokens: ThemeTokens) => {
       gap: spacing.lg,
     },
 
-    // Cards
     card: {
       backgroundColor: colors.surface,
       borderWidth: 1,
@@ -64,7 +55,6 @@ export const createStyles = (tokens: ThemeTokens) => {
       gap: spacing.md,
     },
 
-    // Typography
     displayText: {
       fontSize: typography.display.size,
       lineHeight: typography.display.lineHeight,
@@ -122,7 +112,6 @@ export const createStyles = (tokens: ThemeTokens) => {
       color: colors.textFaint,
     },
 
-    // Form fields
     formFieldGroup: {
       gap: spacing.sm,
     },
@@ -148,7 +137,6 @@ export const createStyles = (tokens: ThemeTokens) => {
       gap: spacing.xs,
     },
 
-    // Buttons
     buttonBase: {
       minHeight: 44,
       flexDirection: 'row' as const,
@@ -162,7 +150,6 @@ export const createStyles = (tokens: ThemeTokens) => {
       gap: spacing.md,
     },
 
-    // Modal
     modalBase: {
       paddingBottom: spacing.sm,
       borderTopLeftRadius: nativeRadius.lg,
@@ -177,7 +164,6 @@ export const createStyles = (tokens: ThemeTokens) => {
       backgroundColor: 'rgba(0,0,0,0.36)',
     },
 
-    // Tab bar
     tabBarStyle: {
       paddingTop: spacing.sm,
       paddingBottom: spacing.md,
@@ -198,7 +184,6 @@ export const createStyles = (tokens: ThemeTokens) => {
       marginBottom: spacing.xs,
     },
 
-    // Status badge
     statusBadge: {
       minHeight: 34,
       paddingHorizontal: spacing.md,
@@ -208,7 +193,6 @@ export const createStyles = (tokens: ThemeTokens) => {
       justifyContent: 'center' as const,
     },
 
-    // Rating/Star
     starButton: {
       width: 44,
       height: 44,
@@ -218,7 +202,6 @@ export const createStyles = (tokens: ThemeTokens) => {
       justifyContent: 'center' as const,
     },
 
-    // Bottom sheet
     bottomSheet: {
       backgroundColor: colors.surface,
       borderTopLeftRadius: nativeRadius.lg,
@@ -229,7 +212,6 @@ export const createStyles = (tokens: ThemeTokens) => {
       gap: spacing.md,
     },
 
-    // Overlay
     overlayNative: {
       position: 'absolute' as const,
       inset: 0,
@@ -238,13 +220,11 @@ export const createStyles = (tokens: ThemeTokens) => {
       alignItems: 'flex-end' as const,
     },
 
-    // Slider label
     sliderLabelRow: {
       flexDirection: 'row' as const,
       justifyContent: 'space-between' as const,
     },
 
-    // Empty state
     emptyState: {
       alignItems: 'center' as const,
       justifyContent: 'center' as const,
@@ -252,14 +232,12 @@ export const createStyles = (tokens: ThemeTokens) => {
       gap: spacing.md,
     },
 
-    // Notification item
     notificationItem: {
       padding: spacing.md,
       borderRadius: nativeRadius.md,
       gap: spacing.sm,
     },
 
-    // List
     listContent: {
       paddingHorizontal: spacing.lg,
       paddingBottom: 80,
@@ -271,7 +249,6 @@ export const createStyles = (tokens: ThemeTokens) => {
       gap: spacing.md,
     },
 
-    // Icon sizes (for use with spacing)
     iconSize: {
       small: 15,
       medium: 20,

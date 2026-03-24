@@ -188,9 +188,6 @@ export default function NotificationsScreen() {
     });
   };
 
-  // After a role switch, roleMode updates and this effect fires the
-  // pending navigation that was deferred while waiting for the new
-  // tab navigator to mount.
   useEffect(() => {
     const pending = pendingNavRef.current;
     if (!pending) return;
@@ -218,16 +215,11 @@ export default function NotificationsScreen() {
       return;
     }
 
-    // Target role differs from the current mode. If the user has the
-    // required role, switch first and let the useEffect above handle
-    // navigation once the new tabs navigator is mounted.
     if (availableRoles.includes(target.targetRole as typeof availableRoles[number])) {
       pendingNavRef.current = target;
       pickRole(target.targetRole as typeof availableRoles[number]);
       return;
     }
-
-    // User doesn't have the target role — fail safely.
   };
 
   const onOpenDetails = (item: NotificationItem) => {

@@ -906,6 +906,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bookings/completed-count/{handyman_email}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Completed Count Endpoint */
+        get: operations["completed_count_endpoint_bookings_completed_count__handyman_email__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/completed-counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Completed Counts Batch Endpoint */
+        post: operations["completed_counts_batch_endpoint_bookings_completed_counts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/me/notifications": {
         parameters: {
             query?: never;
@@ -1097,6 +1131,32 @@ export interface components {
             /** Last Login At */
             last_login_at?: string | null;
         };
+        /** AvailabilityListItem */
+        AvailabilityListItem: {
+            /** Email */
+            email: string;
+            /** Slots */
+            slots?: components["schemas"]["AvailabilitySlot"][];
+        };
+        /** AvailabilityListResponse */
+        AvailabilityListResponse: {
+            /** Cursor */
+            cursor: number;
+            /** Items */
+            items?: components["schemas"]["AvailabilityListItem"][];
+        };
+        /** AvailabilityMessageResponse */
+        AvailabilityMessageResponse: {
+            /** Message */
+            message: string;
+        };
+        /** AvailabilityResponse */
+        AvailabilityResponse: {
+            /** Email */
+            email: string;
+            /** Slots */
+            slots?: components["schemas"]["AvailabilitySlot"][];
+        };
         /** AvailabilitySlot */
         AvailabilitySlot: {
             /** Start */
@@ -1179,6 +1239,20 @@ export interface components {
             completed_by_handyman: boolean;
             /** Completed At */
             completed_at?: string | null;
+        };
+        /** CompletedJobsCountResponse */
+        CompletedJobsCountResponse: {
+            /** Handyman Email */
+            handyman_email: string;
+            /** Completed Jobs Count */
+            completed_jobs_count: number;
+        };
+        /** CompletedJobsCountsResponse */
+        CompletedJobsCountsResponse: {
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
         };
         /** ConfirmBookingResponse */
         ConfirmBookingResponse: {
@@ -1269,6 +1343,41 @@ export interface components {
             /** Longitude */
             longitude?: number | null;
         };
+        /** DeleteAuthUserResponse */
+        DeleteAuthUserResponse: {
+            /** Message */
+            message: string;
+            /** User Id */
+            user_id: number;
+        };
+        /** DeleteBookingResponse */
+        DeleteBookingResponse: {
+            /** Message */
+            message: string;
+            /** Booking Id */
+            booking_id: string;
+        };
+        /** DeleteHandymanResponse */
+        DeleteHandymanResponse: {
+            /** Message */
+            message: string;
+            /** Email */
+            email: string;
+        };
+        /** DeleteMatchLogResponse */
+        DeleteMatchLogResponse: {
+            /** Message */
+            message: string;
+            /** Id */
+            id: number;
+        };
+        /** DeleteUserResponse */
+        DeleteUserResponse: {
+            /** Message */
+            message: string;
+            /** Email */
+            email: string;
+        };
         /** EmailVerifyConfirmRequest */
         EmailVerifyConfirmRequest: {
             /** Token */
@@ -1350,6 +1459,11 @@ export interface components {
              */
             rating_count: number;
             /**
+             * Profile Completeness
+             * @default 0
+             */
+            profile_completeness: number;
+            /**
              * Created At
              * Format: date-time
              */
@@ -1410,6 +1524,19 @@ export interface components {
             /** Updated */
             updated: number;
         };
+        /** MatchLogResponse */
+        MatchLogResponse: {
+            /** Id */
+            id: number;
+            /** User Latitude */
+            user_latitude: number;
+            /** User Longitude */
+            user_longitude: number;
+            /** Skill */
+            skill: string;
+            /** Job Description */
+            job_description?: string | null;
+        };
         /** MatchRequest */
         MatchRequest: {
             /** Latitude */
@@ -1448,6 +1575,26 @@ export interface components {
              * @default false
              */
             availability_unknown: boolean;
+            /**
+             * Avg Rating
+             * @default 0
+             */
+            avg_rating: number;
+            /**
+             * Rating Count
+             * @default 0
+             */
+            rating_count: number;
+            /**
+             * Profile Completeness
+             * @default 0
+             */
+            profile_completeness: number;
+            /**
+             * Completed Jobs Count
+             * @default 0
+             */
+            completed_jobs_count: number;
         };
         /** MeResponse */
         MeResponse: {
@@ -1697,6 +1844,13 @@ export interface components {
             /** App Version */
             app_version?: string | null;
         };
+        /** RegisterResponse */
+        RegisterResponse: {
+            /** Message */
+            message: string;
+            /** Roles */
+            roles: string[];
+        };
         /** RejectBookingRequest */
         RejectBookingRequest: {
             /** Reason */
@@ -1787,6 +1941,25 @@ export interface components {
             active: boolean;
             /** Sort Order */
             sort_order: number;
+        };
+        /** SkillsCatalogPatchResponse */
+        SkillsCatalogPatchResponse: {
+            /** Message */
+            message: string;
+            /** Added Categories */
+            added_categories: number;
+            /** Added Skills */
+            added_skills: number;
+            catalog: components["schemas"]["SkillCatalogFlatResponse"];
+        };
+        /** SkillsCatalogReplaceResponse */
+        SkillsCatalogReplaceResponse: {
+            /** Message */
+            message: string;
+            /** Categories */
+            categories: number;
+            /** Skills */
+            skills: number;
         };
         /** TokenPairResponse */
         TokenPairResponse: {
@@ -1978,7 +2151,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": Record<string, never>;
                 };
             };
         };
@@ -1998,7 +2171,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": Record<string, never>;
                 };
             };
         };
@@ -2018,7 +2191,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": Record<string, never>;
                 };
             };
         };
@@ -2038,7 +2211,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": Record<string, never>;
                 };
             };
         };
@@ -2058,7 +2231,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": Record<string, never>;
                 };
             };
         };
@@ -2080,7 +2253,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": Record<string, never>;
                 };
             };
             /** @description Validation Error */
@@ -2111,7 +2284,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": Record<string, never>;
                 };
             };
             /** @description Validation Error */
@@ -2144,7 +2317,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["RegisterResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2276,7 +2449,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["AuthActionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2537,7 +2710,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["DeleteAuthUserResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2785,7 +2958,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["UserResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2820,7 +2993,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["UserResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2851,7 +3024,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["UserResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2917,7 +3090,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["DeleteUserResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2969,7 +3142,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["HandymanResponse"][];
                 };
             };
             /** @description Validation Error */
@@ -3002,7 +3175,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["HandymanResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3033,7 +3206,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["HandymanResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3099,7 +3272,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["DeleteHandymanResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3134,7 +3307,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["HandymanResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3252,7 +3425,9 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": {
+                        [key: string]: string[];
+                    };
                 };
             };
             /** @description Validation Error */
@@ -3316,7 +3491,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["SkillsCatalogReplaceResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3349,7 +3524,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["SkillsCatalogPatchResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3400,7 +3575,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["AvailabilityResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3435,7 +3610,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["AvailabilityMessageResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3466,7 +3641,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["AvailabilityMessageResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3498,7 +3673,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["AvailabilityListResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3527,7 +3702,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["AvailabilityResponse"];
                 };
             };
         };
@@ -3551,7 +3726,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["AvailabilityMessageResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3580,7 +3755,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["AvailabilityMessageResponse"];
                 };
             };
         };
@@ -3637,7 +3812,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["MatchLogResponse"][];
                 };
             };
             /** @description Validation Error */
@@ -3668,7 +3843,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["DeleteMatchLogResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3703,7 +3878,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["BookingResponse"][];
                 };
             };
             /** @description Validation Error */
@@ -3802,7 +3977,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["BookingResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3833,7 +4008,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["DeleteBookingResponse"];
                 };
             };
             /** @description Validation Error */
@@ -4111,6 +4286,70 @@ export interface operations {
             };
         };
     };
+    completed_count_endpoint_bookings_completed_count__handyman_email__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                handyman_email: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompletedJobsCountResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    completed_counts_batch_endpoint_bookings_completed_counts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string[];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompletedJobsCountsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_notifications_me_notifications_get: {
         parameters: {
             query?: {
@@ -4365,7 +4604,9 @@ export interface operations {
     };
     stream_notifications_me_notifications_stream_get: {
         parameters: {
-            query?: never;
+            query?: {
+                access_token?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -4381,6 +4622,15 @@ export interface operations {
                     "application/json": unknown;
                     /** @example event: ready\ndata: {"ok":true}\n\n */
                     "text/event-stream": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -1,21 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   buildNotificationsStreamUrl,
   getMyNotifications,
   getNotificationUnreadCount,
 } from "@smart/api";
-import { createApiClient } from "../lib/api";
+import { useAdminApiClient, API_BASE_URL } from "../lib/api";
 import { formatDateTime } from "../lib/adminFormat";
 import Card from "../ui/Card";
 import DataTable, { type DataTableColumn } from "../ui/DataTable";
 import OverlayPanel from "../ui/OverlayPanel";
 import Page from "../ui/Page";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
-
 export default function NotificationsDashboard() {
-  const api = useMemo(() => createApiClient(() => localStorage.getItem("token")), []);
+  const api = useAdminApiClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("unread");
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -33,10 +31,9 @@ export default function NotificationsDashboard() {
   const unreadCountQ = useQuery({
     queryKey: ["admin-unread-count"],
     queryFn: () => getNotificationUnreadCount(api),
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
   });
 
-  // Test SSE connection
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -55,7 +52,6 @@ export default function NotificationsDashboard() {
         eventSource.close();
       };
 
-      // Auto-close after 5 seconds for testing
       const timeout = setTimeout(() => {
         eventSource.close();
         setSseStatus("idle");
