@@ -11,6 +11,7 @@ import LoginScreen from '../auth/LoginScreen';
 import RolePickerScreen from './RolePickerScreen';
 import UserTabsNavigator from './UserTabsNavigator';
 import HandymanTabsNavigator from './HandymanTabsNavigator';
+import { getRoleTabNavigatorName } from './roleTabConfig';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import UserSettings from '../screens/user/ProfilePlaceholder';
 import HandymanSettings from '../screens/handyman/ProfilePlaceholder';
@@ -116,6 +117,9 @@ export default function RootNavigator() {
     roleMode === 'handyman' ? HandymanTabsNavigator : UserTabsNavigator;
   const ProfileComponent =
     roleMode === 'handyman' ? HandymanSettings : UserSettings;
+  const tabsRootName = getRoleTabNavigatorName(
+    roleMode === 'handyman' ? 'handyman' : 'user',
+  );
 
   return (
     <SearchProvider>
@@ -124,7 +128,7 @@ export default function RootNavigator() {
           screenOptions={{
             headerShown: false,
           }}>
-          <Stack.Screen name="UserTabs" component={TabsComponent} />
+          <Stack.Screen name={tabsRootName} component={TabsComponent} />
 
           <Stack.Group
             screenOptions={{
