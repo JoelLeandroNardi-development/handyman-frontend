@@ -6,6 +6,7 @@ export type RegisterBody = components['schemas']['Register'];
 export type TokenPairResponse = components['schemas']['TokenPairResponse'];
 export type RefreshBody = components['schemas']['RefreshRequest'];
 export type LogoutBody = components['schemas']['LogoutRequest'];
+export type AuthActionResponse = components['schemas']['AuthActionResponse'];
 export type OnboardingUserBody = components['schemas']['OnboardingUserRequest'];
 export type OnboardingUserResponse =
   components['schemas']['OnboardingUserResponse'];
@@ -31,8 +32,8 @@ export async function login(
 export async function register(
   api: ApiClient,
   body: RegisterBody,
-): Promise<TokenPairResponse> {
-  return api.request<TokenPairResponse>('/register', {
+): Promise<unknown> {
+  return api.request<unknown>('/register', {
     method: 'POST',
     json: body,
     skipAuthRefresh: true,
@@ -75,8 +76,8 @@ export async function refresh(
 export async function logout(
   api: ApiClient,
   body: LogoutBody,
-): Promise<{ ok?: boolean }> {
-  return api.request<{ ok?: boolean }>('/logout', {
+): Promise<AuthActionResponse> {
+  return api.request<AuthActionResponse>('/logout', {
     method: 'POST',
     json: body,
     skipAuthRefresh: true,
