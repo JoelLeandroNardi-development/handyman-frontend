@@ -50,10 +50,7 @@ export function ModalScreen({
           style={[
             StyleSheet.absoluteFillObject,
             {
-              backgroundColor:
-                mode === 'dark'
-                  ? 'rgba(5, 10, 18, 0.42)'
-                  : 'rgba(12, 18, 26, 0.18)',
+              backgroundColor: tokens.colors.modalOverlay,
             },
           ]}
         />
@@ -86,10 +83,7 @@ export function ModalScreen({
         style={[
           StyleSheet.absoluteFillObject,
           {
-            backgroundColor:
-              mode === 'dark'
-                ? 'rgba(5, 10, 18, 0.42)'
-                : 'rgba(12, 18, 26, 0.18)',
+            backgroundColor: tokens.colors.modalOverlay,
           },
         ]}
       />

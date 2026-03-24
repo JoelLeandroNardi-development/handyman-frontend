@@ -178,6 +178,41 @@ export function FaintText({
   return <Text style={[styles.faintText, style]}>{children}</Text>;
 }
 
+export function DetailRow({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ gap: 3 }}>
+      <Text
+        style={{
+          color: colors.textFaint,
+          fontSize: 12,
+          fontWeight: '700',
+          letterSpacing: 0.3,
+          textTransform: 'uppercase',
+        }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: colors.textSoft,
+          fontSize: 16,
+          lineHeight: 22,
+          fontFamily: mono ? 'monospace' : undefined,
+        }}>
+        {value}
+      </Text>
+    </View>
+  );
+}
+
 export function AppInput(props: TextInputProps) {
   const { colors, tokens } = useTheme();
   const styles = useStyles();

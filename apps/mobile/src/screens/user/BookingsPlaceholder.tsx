@@ -41,6 +41,7 @@ import {
   BottomSheet,
   ButtonRow,
   Card,
+  DetailRow,
   EmptyState,
   Screen,
   StatusBadge,
@@ -101,59 +102,12 @@ function StarRating({
   );
 }
 
-function DetailRow({
-  label,
-  value,
-  mono = false,
-  colors,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-  colors: {
-    text: string;
-    textSoft: string;
-    textFaint: string;
-  };
-}) {
-  return (
-    <View style={{ gap: 3 }}>
-      <Text
-        style={{
-          color: colors.textFaint,
-          fontSize: 12,
-          fontWeight: '700',
-          letterSpacing: 0.3,
-          textTransform: 'uppercase',
-        }}>
-        {label}
-      </Text>
-      <Text
-        style={{
-          color: colors.textSoft,
-          fontSize: 16,
-          lineHeight: 22,
-          fontFamily: mono ? 'monospace' : undefined,
-        }}>
-        {value}
-      </Text>
-    </View>
-  );
-}
-
 export default function BookingsPlaceholder() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const api = useMemo(() => createApiClient(), []);
-  const { colors, mode } = useTheme();
+  const { colors } = useTheme();
   const { unreadCount } = useNotifications();
-
-  const elevatedCardBackground =
-    mode === 'dark' ? 'rgba(13, 26, 47, 0.92)' : 'rgba(247, 248, 250, 0.92)';
-  const elevatedMutedBackground =
-    mode === 'dark' ? 'rgba(18, 35, 61, 0.90)' : 'rgba(247, 248, 250, 0.88)';
-  const sectionBadgeBackground =
-    mode === 'dark' ? 'rgba(13, 26, 47, 0.88)' : 'rgba(247, 248, 250, 0.90)';
 
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [selected, setSelected] = useState<BookingResponse | null>(null);
@@ -331,7 +285,7 @@ export default function BookingsPlaceholder() {
         key={item.booking_id}
         style={{
           marginBottom: 12,
-          backgroundColor: elevatedCardBackground,
+          backgroundColor: colors.surfaceElevated,
           gap: 14,
         }}>
         <View
@@ -469,7 +423,7 @@ export default function BookingsPlaceholder() {
 
         <View
           style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-          <Card style={{ backgroundColor: elevatedMutedBackground, gap: 10 }}>
+          <Card style={{ backgroundColor: colors.surfaceElevatedMuted, gap: 10 }}>
             <Text style={{ color: colors.textSoft, lineHeight: 22 }}>
               Keep track of each request, open the full details, and leave a review once the work is complete.
             </Text>
@@ -499,7 +453,7 @@ export default function BookingsPlaceholder() {
                   borderRadius: 999,
                   borderWidth: 1,
                   borderColor: colors.border,
-                    backgroundColor: sectionBadgeBackground,
+                    backgroundColor: colors.sectionBadge,
                   paddingHorizontal: 14,
                   paddingVertical: 8,
                 }}>
@@ -592,7 +546,6 @@ export default function BookingsPlaceholder() {
                 <DetailRow
                   label="Start"
                   value={formatDateTime(selected.desired_start)}
-                  colors={colors}
                 />
               </View>
               <View
@@ -607,7 +560,6 @@ export default function BookingsPlaceholder() {
                 <DetailRow
                   label="End"
                   value={formatDateTime(selected.desired_end)}
-                  colors={colors}
                 />
               </View>
             </View>
@@ -624,39 +576,33 @@ export default function BookingsPlaceholder() {
               <DetailRow
                 label="Completed by you"
                 value={selected.completed_by_user ? 'Yes' : 'No'}
-                colors={colors}
               />
               <DetailRow
                 label="Completed by handyman"
                 value={selected.completed_by_handyman ? 'Yes' : 'No'}
-                colors={colors}
               />
               {selected.completed_at ? (
                 <DetailRow
                   label="Completed at"
                   value={formatDateTime(selected.completed_at)}
-                  colors={colors}
                 />
               ) : null}
               {selected.cancellation_reason ? (
                 <DetailRow
                   label="Cancel reason"
                   value={selected.cancellation_reason}
-                  colors={colors}
                 />
               ) : null}
               {selected.failure_reason ? (
                 <DetailRow
                   label="Failure reason"
                   value={selected.failure_reason}
-                  colors={colors}
                 />
               ) : null}
               {selected.rejection_reason ? (
                 <DetailRow
                   label="Rejection reason"
                   value={selected.rejection_reason}
-                  colors={colors}
                 />
               ) : null}
             </View>

@@ -265,7 +265,7 @@ export default function LoginScreen() {
             style={{
               padding: 20,
               maxHeight: maxCardHeight,
-              backgroundColor: "rgba(247, 248, 250, 0.88)",
+              backgroundColor: colors.surfaceElevatedMuted,
             }}>
             <PageHeader
               title={<BrandWordmark />}

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  ScrollView,
   SectionList,
   Text,
   View,
@@ -38,6 +39,7 @@ import {
   BottomSheet,
   ButtonRow,
   Card,
+  DetailRow,
   EmptyState,
   Screen,
   StatusBadge,
@@ -208,10 +210,10 @@ export default function JobsScreen() {
 
   function renderBookingCard(item: BookingResponse) {
     return (
-      <Card key={item.booking_id} style={{ marginBottom: 10 }}>
+      <Card key={item.booking_id} style={{ marginBottom: 12, backgroundColor: colors.surfaceElevated, gap: 14 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>{item.user_email}</Text>
+            <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>{item.user_email}</Text>
             <Text
               style={{
                 marginTop: 4,
@@ -230,24 +232,30 @@ export default function JobsScreen() {
           />
         </View>
 
-        <View style={{ gap: 4 }}>
-          <Text style={{ color: colors.textSoft }}>Start: {formatDateTime(item.desired_start)}</Text>
-          <Text style={{ color: colors.textSoft }}>End: {formatDateTime(item.desired_end)}</Text>
-          {item.job_description ? (
-            <Text style={{ color: colors.textSoft }}>Job: {item.job_description}</Text>
-          ) : null}
-          <Text style={{ color: colors.textSoft }}>
-            Completion: user={item.completed_by_user ? "yes" : "no"} • handyman={item.completed_by_handyman ? "yes" : "no"}
-          </Text>
-          {item.completed_at ? (
-            <Text style={{ color: colors.textSoft }}>Completed at: {formatDateTime(item.completed_at)}</Text>
-          ) : null}
-          {item.rejected_by_handyman ? (
-            <Text style={{ color: colors.danger }}>
-              Rejected{item.rejection_reason ? `: ${item.rejection_reason}` : ""}
-            </Text>
-          ) : null}
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{ flex: 1, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceMuted, padding: 12, gap: 4 }}>
+            <Text style={{ color: colors.textFaint, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>Start</Text>
+            <Text style={{ color: colors.textSoft, lineHeight: 20 }}>{formatDateTime(item.desired_start)}</Text>
+          </View>
+          <View style={{ flex: 1, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceMuted, padding: 12, gap: 4 }}>
+            <Text style={{ color: colors.textFaint, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>End</Text>
+            <Text style={{ color: colors.textSoft, lineHeight: 20 }}>{formatDateTime(item.desired_end)}</Text>
+          </View>
         </View>
+
+        {item.job_description ? (
+          <View style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 12, gap: 4 }}>
+            <Text style={{ color: colors.textFaint, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>Job description</Text>
+            <Text style={{ color: colors.textSoft, lineHeight: 22 }}>{item.job_description}</Text>
+          </View>
+        ) : null}
+
+        {item.rejected_by_handyman ? (
+          <View style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.danger, backgroundColor: colors.dangerSoft, padding: 12, gap: 4 }}>
+            <Text style={{ color: colors.danger, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>Rejected</Text>
+            <Text style={{ color: colors.danger, lineHeight: 22 }}>{item.rejection_reason || "No reason given"}</Text>
+          </View>
+        ) : null}
 
         <AppButton
           label="Open actions"
@@ -255,6 +263,7 @@ export default function JobsScreen() {
             openJobDetails(item);
           }}
           tone="secondary"
+          style={{ minHeight: 48 }}
         />
       </Card>
     );
@@ -269,30 +278,46 @@ export default function JobsScreen() {
           notificationBadgeCount={unreadCount}
         />
 
-        <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 2 }}>
-          <AppButton
-            label="Refresh"
-            onPress={() => loadBookings(fetchJobs)}
-            style={{ minWidth: 120 }}
-          />
+        <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
+          <Card style={{ backgroundColor: colors.surfaceElevatedMuted, gap: 10 }}>
+            <Text style={{ color: colors.textSoft, lineHeight: 22 }}>
+              Track incoming requests, manage active jobs, and mark work as complete.
+            </Text>
+            <AppButton
+              label="Refresh jobs"
+              onPress={() => loadBookings(fetchJobs)}
+              style={{ alignSelf: 'flex-start', minWidth: 168, minHeight: 48 }}
+            />
+          </Card>
         </View>
 
         <SectionList
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 28 }}
           sections={sections}
           stickySectionHeadersEnabled
           keyExtractor={(item) => item.booking_id}
           renderSectionHeader={({ section }) => (
             <View
               style={{
-                paddingTop: 6,
-                paddingBottom: 8,
-                backgroundColor: colors.bg,
+                paddingTop: 10,
+                paddingBottom: 10,
+                backgroundColor: 'transparent',
               }}
             >
-              <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
-                {section.title}
-              </Text>
+              <View
+                style={{
+                  alignSelf: 'flex-start',
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  backgroundColor: colors.sectionBadge,
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                }}>
+                <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text }}>
+                  {section.title}
+                </Text>
+              </View>
             </View>
           )}
           renderItem={({ item }) => renderBookingCard(item)}
@@ -317,31 +342,68 @@ export default function JobsScreen() {
 
       <BottomSheet visible={!!selected} onClose={() => setSelected(null)} title="Job actions">
         {selected ? (
-          <>
-            <Text style={{ color: colors.textSoft }}>User: {selected.user_email}</Text>
-            <Text style={{ color: colors.textSoft }}>Booking ID: {selected.booking_id}</Text>
-            <Text style={{ color: colors.textSoft }}>Start: {formatDateTime(selected.desired_start)}</Text>
-            <Text style={{ color: colors.textSoft }}>End: {formatDateTime(selected.desired_end)}</Text>
-            <Text style={{ color: colors.textSoft }}>
-              Status: {getBookingDisplayStatus(selected.status, "handyman")}
-            </Text>
+          <ScrollView
+            style={{ maxHeight: 540 }}
+            contentContainerStyle={{ gap: 14, paddingBottom: 8 }}
+            showsVerticalScrollIndicator={false}>
+            <View
+              style={{
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: colors.border,
+                backgroundColor: colors.surfaceMuted,
+                padding: 14,
+                gap: 12,
+              }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                <View style={{ flex: 1, gap: 4 }}>
+                  <Text style={{ fontSize: 22, fontWeight: '800', color: colors.text }}>
+                    {selected.user_email}
+                  </Text>
+                  <Text style={{ color: colors.textFaint, fontFamily: 'monospace', fontSize: 13 }}>
+                    {selected.booking_id}
+                  </Text>
+                </View>
+                <StatusBadge
+                  label={getBookingDisplayStatus(selected.status, "handyman")}
+                  tone={getBookingStatusTone(selected.status)}
+                />
+              </View>
 
-            {selected.job_description ? (
-              <Text style={{ color: colors.textSoft }}>Job: {selected.job_description}</Text>
-            ) : null}
+              {selected.job_description ? (
+                <Text style={{ color: colors.textSoft, lineHeight: 22 }}>
+                  {selected.job_description}
+                </Text>
+              ) : null}
+            </View>
 
-            <Text style={{ color: colors.textSoft }}>
-              Completed by user: {selected.completed_by_user ? "Yes" : "No"}
-            </Text>
-            <Text style={{ color: colors.textSoft }}>
-              Completed by handyman: {selected.completed_by_handyman ? "Yes" : "No"}
-            </Text>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <View style={{ flex: 1, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 12 }}>
+                <DetailRow label="Start" value={formatDateTime(selected.desired_start)} />
+              </View>
+              <View style={{ flex: 1, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 12 }}>
+                <DetailRow label="End" value={formatDateTime(selected.desired_end)} />
+              </View>
+            </View>
 
-            {selected.completed_at ? (
-              <Text style={{ color: colors.textSoft }}>
-                Completed at: {formatDateTime(selected.completed_at)}
-              </Text>
-            ) : null}
+            <View
+              style={{
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+                padding: 14,
+                gap: 12,
+              }}>
+              <DetailRow label="Completed by user" value={selected.completed_by_user ? "Yes" : "No"} />
+              <DetailRow label="Completed by handyman" value={selected.completed_by_handyman ? "Yes" : "No"} />
+              {selected.completed_at ? (
+                <DetailRow label="Completed at" value={formatDateTime(selected.completed_at)} />
+              ) : null}
+              {selected.rejection_reason ? (
+                <DetailRow label="Rejection reason" value={selected.rejection_reason} />
+              ) : null}
+            </View>
 
             {canRejectJob(selected) ? (
               <View style={{ gap: 8 }}>
@@ -390,7 +452,7 @@ export default function JobsScreen() {
                 />
               ) : null}
             </ButtonRow>
-          </>
+          </ScrollView>
         ) : null}
       </BottomSheet>
     </>

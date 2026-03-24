@@ -4,6 +4,10 @@ export type ThemePalette = {
   bg: string;
   surface: string;
   surfaceMuted: string;
+  surfaceElevated: string;
+  surfaceElevatedMuted: string;
+  sectionBadge: string;
+  modalOverlay: string;
   border: string;
   borderStrong: string;
   text: string;
@@ -147,6 +151,10 @@ export const lightPalette: ThemePalette = {
   bg: '#eef1f4',
   surface: '#f7f8fa',
   surfaceMuted: '#eef2f6',
+  surfaceElevated: 'rgba(247, 248, 250, 0.92)',
+  surfaceElevatedMuted: 'rgba(247, 248, 250, 0.88)',
+  sectionBadge: 'rgba(247, 248, 250, 0.90)',
+  modalOverlay: 'rgba(12, 18, 26, 0.18)',
   border: '#d8dee6',
   borderStrong: '#bcc6d3',
   text: '#0f172a',
@@ -166,6 +174,10 @@ export const darkPalette: ThemePalette = {
   bg: '#081224',
   surface: '#0d1a2f',
   surfaceMuted: '#12233d',
+  surfaceElevated: 'rgba(13, 26, 47, 0.92)',
+  surfaceElevatedMuted: 'rgba(18, 35, 61, 0.90)',
+  sectionBadge: 'rgba(13, 26, 47, 0.88)',
+  modalOverlay: 'rgba(5, 10, 18, 0.42)',
   border: '#233653',
   borderStrong: '#34507a',
   text: '#f8fafc',
