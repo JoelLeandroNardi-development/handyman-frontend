@@ -161,8 +161,9 @@ export default function NotificationsScreen() {
     if (!pending) return;
     if (pending.targetRole !== roleMode) return;
 
+    const tabsScreenName = roleMode === 'handyman' ? 'HandymanTabs' : 'UserTabs';
     pendingNavRef.current = null;
-    navigation.navigate('UserTabs', {
+    navigation.navigate(tabsScreenName, {
       screen: pending.tab,
       params: {
         focusBookingId: pending.bookingId,
@@ -173,7 +174,8 @@ export default function NotificationsScreen() {
 
   const navigateToTarget = (target: NotificationNavigationTarget) => {
     if (target.targetRole === roleMode) {
-      navigation.navigate('UserTabs', {
+      const tabsScreenName = roleMode === 'handyman' ? 'HandymanTabs' : 'UserTabs';
+      navigation.navigate(tabsScreenName, {
         screen: target.tab,
         params: {
           focusBookingId: target.bookingId,

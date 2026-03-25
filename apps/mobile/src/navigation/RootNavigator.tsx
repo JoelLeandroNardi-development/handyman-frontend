@@ -112,10 +112,10 @@ export default function RootNavigator() {
     );
   }
 
-  const TabsComponent =
-    roleMode === 'handyman' ? HandymanTabsNavigator : UserTabsNavigator;
-  const ProfileComponent =
-    roleMode === 'handyman' ? HandymanSettings : UserSettings;
+  const isHandyman = roleMode === 'handyman';
+  const TabsComponent = isHandyman ? HandymanTabsNavigator : UserTabsNavigator;
+  const ProfileComponent = isHandyman ? HandymanSettings : UserSettings;
+  const tabsScreenName = isHandyman ? 'HandymanTabs' : 'UserTabs';
 
   return (
     <SearchProvider>
@@ -124,7 +124,7 @@ export default function RootNavigator() {
           screenOptions={{
             headerShown: false,
           }}>
-          <Stack.Screen name="UserTabs" component={TabsComponent} />
+          <Stack.Screen name={tabsScreenName} component={TabsComponent} />
 
           <Stack.Group
             screenOptions={{
