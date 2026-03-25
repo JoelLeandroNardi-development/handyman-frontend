@@ -22,10 +22,6 @@ export type NotificationStore = {
   applyMarkAllRead: () => void;
 };
 
-/**
- * Manages notifications state: item list, unread count, and optimistic local mutations.
- * Owns one clear update path for each piece of state.
- */
 export function useNotificationStore(
   api: ApiClient,
   isAuthenticated: boolean,
@@ -51,7 +47,6 @@ export function useNotificationStore(
       });
       setItems(result.items);
     } catch {
-      // Keep existing items on transient errors
     } finally {
       setLoadingItems(false);
     }
@@ -73,11 +68,6 @@ export function useNotificationStore(
     }
   }, [api, isAuthenticated]);
 
-  /**
-   * Prepends a newly received SSE notification to the item list and updates
-   * the unread count in one atomic operation, avoiding competing update paths.
-   * Notifications without an explicit status default to unread for counting purposes.
-   */
   const prependItem = useCallback((item: NotificationItem) => {
     setLatestCreatedNotification(item);
     setItems((prev) => {

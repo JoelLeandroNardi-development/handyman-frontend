@@ -38,11 +38,6 @@ export function parseSseNotification(data: string): NotificationItem | null {
 
 export type SseNotificationCallback = (item: NotificationItem) => void;
 
-/**
- * Connects to the notifications SSE stream with automatic reconnect (exponential backoff).
- * Falls back to polling via `onPoll` if EventSource is unavailable in the runtime.
- * Returns a cleanup function that closes the connection and cancels any pending timers.
- */
 export function connectNotificationsStream(
   onNotification: SseNotificationCallback,
   onPoll: () => void,
@@ -99,9 +94,7 @@ export function connectNotificationsStream(
         const next = parseSseNotification(event.data);
         if (!next) return;
         onNotification(next);
-      } catch {
-        // Malformed SSE payloads are silently ignored
-      }
+      } catch { }
     };
 
     source.addEventListener?.("notification.created", handleIncomingEvent);

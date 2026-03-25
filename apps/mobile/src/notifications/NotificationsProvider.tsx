@@ -6,18 +6,10 @@ import { useSession } from "../auth/SessionProvider";
 import { connectNotificationsStream } from "./notificationsSseClient";
 import { useNotificationStore, type NotificationStore } from "./useNotificationStore";
 
-/**
- * The public context surface — everything from the store except the internal
- * `prependItem` mutation which is consumed only by this provider.
- */
 export type NotificationsContextValue = Omit<NotificationStore, "prependItem">;
 
 const NotificationsContext = createContext<NotificationsContextValue | null>(null);
 
-/**
- * Glue layer: wires the SSE transport client to the notification state store,
- * shows in-app toasts for new notifications, and seeds the initial data load.
- */
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
   const api = useMemo(() => createApiClient(), []);
   const { session } = useSession();
@@ -40,13 +32,11 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     Alert.alert("New notification", title);
   }, []);
 
-  // Initial data load when the session becomes available.
   useEffect(() => {
     void refreshItems();
     void refreshUnreadCount();
   }, [refreshItems, refreshUnreadCount]);
 
-  // SSE stream — runs only while authenticated.
   useEffect(() => {
     if (!session) return;
 
@@ -64,7 +54,6 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     return cleanup;
   }, [session, prependItem, showCreatedToast, refreshItems, refreshUnreadCount]);
 
-  // Expose everything except the internal prependItem mutation.
   const value = useMemo<NotificationsContextValue>(
     () => ({
       items: store.items,

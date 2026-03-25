@@ -52,8 +52,6 @@ export default function NotificationsScreen() {
     alertTitle: 'Notifications',
   });
 
-  // Refresh the item list while the screen is focused so long-lived sessions
-  // stay up to date without relying solely on SSE.
   useEffect(() => {
     if (!isFocused) return;
 
