@@ -3,7 +3,6 @@ import { FlatList, View } from 'react-native';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import {
   archiveNotification,
-  getMyNotifications,
   markAllNotificationsRead,
   markNotificationRead,
   type NotificationItem,
@@ -35,62 +34,38 @@ export default function NotificationsScreen() {
   const { colors } = useTheme();
   const isFocused = useIsFocused();
   const { roleMode, availableRoles, pickRole } = useSession();
-  const { setUnreadCount, refreshUnreadCount, latestCreatedNotification } =
-    useNotifications();
-  const [items, setItems] = useState<NotificationItem[]>([]);
+  const {
+    items,
+    loadingItems,
+    refreshItems,
+    refreshUnreadCount,
+    applyMarkRead,
+    applyArchive,
+    applyMarkAllRead,
+  } = useNotifications();
   const [pendingAction, setPendingAction] =
     useState<PendingNotificationAction>(null);
   const pendingNavRef = useRef<NotificationNavigationTarget | null>(null);
   const { bottomGuardHeight, bottomContentPadding } = useBottomGuard();
 
-  const { execute: loadNotifications, loading } = useAsyncOperation({
-    alertTitle: 'Load Notifications',
-  });
-
   const { execute: runAction, loading: actionLoading } = useAsyncOperation({
     alertTitle: 'Notifications',
   });
 
-  const loadNotificationsList = React.useCallback(async () => {
-    const result = await getMyNotifications(api, {
-      status: null,
-      limit: 50,
-      cursor: null,
-    });
-    setItems(result.items);
-    const unread = result.items.filter(isUnread).length;
-    setUnreadCount(unread);
-  }, [api, setUnreadCount]);
-
-  useEffect(() => {
-    loadNotifications(loadNotificationsList);
-  }, [loadNotificationsList]);
-
+  // Refresh the item list while the screen is focused so long-lived sessions
+  // stay up to date without relying solely on SSE.
   useEffect(() => {
     if (!isFocused) return;
 
     const pollTimer = setInterval(() => {
-      loadNotifications(loadNotificationsList);
+      void refreshItems();
     }, 30000);
 
     return () => clearInterval(pollTimer);
-  }, [isFocused, loadNotifications, loadNotificationsList]);
-
-  useEffect(() => {
-    if (!latestCreatedNotification) return;
-
-    setItems(prev => {
-      const exists = prev.some(
-        item =>
-          item.notification_id === latestCreatedNotification.notification_id,
-      );
-      if (exists) return prev;
-      return [latestCreatedNotification, ...prev];
-    });
-  }, [latestCreatedNotification]);
+  }, [isFocused, refreshItems]);
 
   const reload = () => {
-    loadNotifications(loadNotificationsList);
+    void refreshItems();
   };
 
   const onMarkRead = (notificationId: string) => {
@@ -102,16 +77,7 @@ export default function NotificationsScreen() {
     runAction(async () => {
       try {
         await markNotificationRead(api, notificationId);
-        setItems(prev =>
-          prev.map(item =>
-            item.notification_id === notificationId
-              ? {
-                  ...item,
-                  status: 'read',
-                }
-              : item,
-          ),
-        );
+        applyMarkRead(notificationId);
         await refreshUnreadCount();
       } finally {
         setPendingAction(null);
@@ -128,9 +94,7 @@ export default function NotificationsScreen() {
     runAction(async () => {
       try {
         await archiveNotification(api, notificationId);
-        setItems(prev =>
-          prev.filter(item => item.notification_id !== notificationId),
-        );
+        applyArchive(notificationId);
         await refreshUnreadCount();
       } finally {
         setPendingAction(null);
@@ -147,8 +111,7 @@ export default function NotificationsScreen() {
     runAction(async () => {
       try {
         await markAllNotificationsRead(api);
-        setItems(prev => prev.map(item => ({ ...item, status: 'read' })));
-        setUnreadCount(0);
+        applyMarkAllRead();
         await refreshUnreadCount();
       } finally {
         setPendingAction(null);
@@ -203,16 +166,7 @@ export default function NotificationsScreen() {
     runAction(async () => {
       if (isUnread(item)) {
         await markNotificationRead(api, item.notification_id);
-        setItems(prev =>
-          prev.map(current =>
-            current.notification_id === item.notification_id
-              ? {
-                  ...current,
-                  status: 'read',
-                }
-              : current,
-          ),
-        );
+        applyMarkRead(item.notification_id);
         await refreshUnreadCount();
       }
 
@@ -255,10 +209,10 @@ export default function NotificationsScreen() {
             paddingBottom: bottomContentPadding,
             gap: 10,
           }}
-          refreshing={loading}
+          refreshing={loadingItems}
           onRefresh={reload}
           ListEmptyComponent={
-            loading ? null : (
+            loadingItems ? null : (
               <EmptyState text="No notifications. You are all caught up." />
             )
           }
@@ -297,3 +251,4 @@ export default function NotificationsScreen() {
     </ModalScreen>
   );
 }
+

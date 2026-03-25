@@ -1,58 +1,30 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo } from "react";
 import { Alert, Platform, ToastAndroid } from "react-native";
-import {
-  buildNotificationsStreamUrl,
-  getNotificationUnreadCount,
-  type NotificationItem,
-} from "@smart/api";
-import { API_BASE_URL, createApiClient } from "../lib/api";
+import type { NotificationItem } from "@smart/api";
+import { createApiClient } from "../lib/api";
 import { useSession } from "../auth/SessionProvider";
-import { getStoredToken } from "../auth/session";
+import { connectNotificationsStream } from "./notificationsSseClient";
+import { useNotificationStore, type NotificationStore } from "./useNotificationStore";
 
-type NotificationsContextValue = {
-  unreadCount: number;
-  loadingUnreadCount: boolean;
-  refreshUnreadCount: () => Promise<void>;
-  setUnreadCount: (count: number) => void;
-  latestCreatedNotification: NotificationItem | null;
-};
+/**
+ * The public context surface — everything from the store except the internal
+ * `prependItem` mutation which is consumed only by this provider.
+ */
+export type NotificationsContextValue = Omit<NotificationStore, "prependItem">;
 
 const NotificationsContext = createContext<NotificationsContextValue | null>(null);
 
-function toNotificationItem(payload: Record<string, unknown>): NotificationItem {
-  const idValue = payload.notification_id ?? payload.id;
-  return {
-    ...(payload as NotificationItem),
-    notification_id:
-      typeof idValue === "string" && idValue.length > 0
-        ? idValue
-        : `notification-${Date.now()}`,
-  };
-}
-
-function parseSseNotification(data: string): NotificationItem | null {
-  const parsed = JSON.parse(data) as {
-    event?: string;
-    data?: Record<string, unknown>;
-    [key: string]: unknown;
-  };
-
-  if (parsed.event) {
-    if (parsed.event !== "notification.created") return null;
-    if (!parsed.data || typeof parsed.data !== "object") return null;
-    return toNotificationItem(parsed.data);
-  }
-
-  return toNotificationItem(parsed as Record<string, unknown>);
-}
-
+/**
+ * Glue layer: wires the SSE transport client to the notification state store,
+ * shows in-app toasts for new notifications, and seeds the initial data load.
+ */
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
   const api = useMemo(() => createApiClient(), []);
   const { session } = useSession();
-  const [unreadCount, setUnreadCountState] = useState(0);
-  const [loadingUnreadCount, setLoadingUnreadCount] = useState(false);
-  const [latestCreatedNotification, setLatestCreatedNotification] =
-    useState<NotificationItem | null>(null);
+  const isAuthenticated = !!session;
+
+  const store = useNotificationStore(api, isAuthenticated);
+  const { refreshItems, refreshUnreadCount, prependItem } = store;
 
   const showCreatedToast = useCallback((item: NotificationItem) => {
     const title =
@@ -68,139 +40,56 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     Alert.alert("New notification", title);
   }, []);
 
-  const setUnreadCount = useCallback((count: number) => {
-    setUnreadCountState(Math.max(0, count));
-  }, []);
-
-  const refreshUnreadCount = useCallback(async () => {
-    if (!session) {
-      setUnreadCountState(0);
-      return;
-    }
-
-    setLoadingUnreadCount(true);
-    try {
-      const result = await getNotificationUnreadCount(api);
-      setUnreadCountState(Math.max(0, result.unread_count));
-    } catch {
-      setUnreadCountState(0);
-    } finally {
-      setLoadingUnreadCount(false);
-    }
-  }, [api, session]);
-
+  // Initial data load when the session becomes available.
   useEffect(() => {
+    void refreshItems();
     void refreshUnreadCount();
-  }, [refreshUnreadCount]);
+  }, [refreshItems, refreshUnreadCount]);
 
+  // SSE stream — runs only while authenticated.
   useEffect(() => {
-    let closed = false;
-    let closeStream: (() => void) | null = null;
-    let pollTimer: ReturnType<typeof setInterval> | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-    let attempt = 0;
+    if (!session) return;
 
-    const MAX_BACKOFF_MS = 30_000;
-    const BASE_DELAY_MS = 1_000;
+    const cleanup = connectNotificationsStream(
+      (item) => {
+        prependItem(item);
+        showCreatedToast(item);
+      },
+      () => {
+        void refreshItems();
+        void refreshUnreadCount();
+      },
+    );
 
-    function backoffDelay(n: number): number {
-      return Math.min(BASE_DELAY_MS * Math.pow(2, n), MAX_BACKOFF_MS);
-    }
+    return cleanup;
+  }, [session, prependItem, showCreatedToast, refreshItems, refreshUnreadCount]);
 
-    const scheduleReconnect = () => {
-      if (closed) return;
-      const delay = backoffDelay(attempt);
-      attempt += 1;
-      reconnectTimer = setTimeout(() => {
-        reconnectTimer = null;
-        void connect();
-      }, delay);
-    };
-
-    const connect = async () => {
-      if (!session || closed) return;
-
-      const EventSourceCtor = (globalThis as unknown as { EventSource?: new (url: string) => {
-        onmessage: ((event: { data?: string }) => void) | null;
-        onerror: (() => void) | null;
-        addEventListener?: (
-          type: string,
-          listener: (event: { data?: string }) => void,
-        ) => void;
-        close: () => void;
-        readyState?: number;
-        CLOSED?: number;
-      } }).EventSource;
-
-      if (!EventSourceCtor) {
-        pollTimer = setInterval(() => {
-          void refreshUnreadCount();
-        }, 30000);
-        return;
-      }
-
-      const token = await getStoredToken();
-      if (!token || closed) return;
-
-      const streamUrl = buildNotificationsStreamUrl(API_BASE_URL, token);
-      const source = new EventSourceCtor(streamUrl);
-
-      const handleIncomingEvent = (event: { data?: string }) => {
-        if (!event?.data) return;
-        try {
-          const next = parseSseNotification(event.data);
-          if (!next) return;
-
-          setLatestCreatedNotification(next);
-          if (next.status === "unread" || !next.status) {
-            setUnreadCountState((prev) => prev + 1);
-          }
-          showCreatedToast(next);
-        } catch {
-        }
-      };
-
-      source.addEventListener?.("notification.created", handleIncomingEvent);
-
-      source.onmessage = (event: { data?: string }) => {
-        attempt = 0;
-        handleIncomingEvent(event);
-      };
-
-      source.onerror = () => {
-        source.close();
-        closeStream = null;
-        scheduleReconnect();
-      };
-
-      closeStream = () => source.close();
-    };
-
-    void connect();
-
-    return () => {
-      closed = true;
-      closeStream?.();
-      if (pollTimer) clearInterval(pollTimer);
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-    };
-  }, [session, showCreatedToast, refreshUnreadCount]);
-
+  // Expose everything except the internal prependItem mutation.
   const value = useMemo<NotificationsContextValue>(
     () => ({
-      unreadCount,
-      loadingUnreadCount,
-      refreshUnreadCount,
-      setUnreadCount,
-      latestCreatedNotification,
+      items: store.items,
+      loadingItems: store.loadingItems,
+      unreadCount: store.unreadCount,
+      loadingUnreadCount: store.loadingUnreadCount,
+      latestCreatedNotification: store.latestCreatedNotification,
+      refreshItems: store.refreshItems,
+      refreshUnreadCount: store.refreshUnreadCount,
+      applyMarkRead: store.applyMarkRead,
+      applyArchive: store.applyArchive,
+      applyMarkAllRead: store.applyMarkAllRead,
     }),
     [
-      unreadCount,
-      loadingUnreadCount,
-      refreshUnreadCount,
-      setUnreadCount,
-      latestCreatedNotification,
-    ]
+      store.items,
+      store.loadingItems,
+      store.unreadCount,
+      store.loadingUnreadCount,
+      store.latestCreatedNotification,
+      store.refreshItems,
+      store.refreshUnreadCount,
+      store.applyMarkRead,
+      store.applyArchive,
+      store.applyMarkAllRead,
+    ],
   );
 
   return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;
