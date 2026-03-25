@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { APP_BACKGROUND_IMAGE } from '../../theme/appChrome';
 import DateTimePicker, {
@@ -10,7 +10,7 @@ import {
   setMyAvailability,
   type AvailabilitySlot,
 } from '@smart/api';
-import { createApiClient } from '../../lib/api';
+import { useApi } from '../../lib/ApiProvider';
 import {
   combineDateAndTime,
 } from '../../lib/dateTime';
@@ -43,7 +43,7 @@ type PickerTarget = 'date' | 'start' | 'end' | null;
 type ScreenTab = 'recurring' | 'one-off' | 'blockout';
 
 export default function AvailabilityPlaceholder() {
-  const api = useMemo(() => createApiClient(), []);
+  const api = useApi();
   const { colors, tokens } = useTheme();
   const { unreadCount } = useNotifications();
 

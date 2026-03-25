@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { Alert, ScrollView, Text, View } from 'react-native';
 import {
   createBooking,
@@ -11,7 +11,7 @@ import {
 } from '@smart/api';
 import { PAGINATION_DEFAULTS } from '@smart/core';
 import { useAsyncOperation } from '../../hooks/useAsyncOperation';
-import { createApiClient } from '../../lib/api';
+import { useApi } from '../../lib/ApiProvider';
 import { useSession } from '../../auth/SessionProvider';
 import { useNotifications } from '../../notifications/NotificationsProvider';
 import { APP_BACKGROUND_IMAGE } from '../../theme/appChrome';
@@ -28,7 +28,7 @@ import type { Coords } from './FindScreen/utils';
 import { useAppLocation } from '../../location/AppLocationProvider';
 
 export default function FindScreen() {
-  const api = useMemo(() => createApiClient(), []);
+  const api = useApi();
   const scrollViewRef = useRef<ScrollView | null>(null);
   const { session } = useSession();
   const { coords: appCoords } = useAppLocation();
