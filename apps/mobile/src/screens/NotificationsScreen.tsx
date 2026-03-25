@@ -18,7 +18,6 @@ import {
   getNotificationNavigationTarget,
   type NotificationNavigationTarget,
 } from '../notifications/notificationRouting';
-import { getRoleTabNavigatorName } from '../navigation/roleTabConfig';
 import { AppButton, EmptyState } from '../ui/primitives';
 import { ModalScreen } from '../ui/ModalScreen';
 import { ScreenHeader } from '../ui/ScreenHeader';
@@ -163,7 +162,7 @@ export default function NotificationsScreen() {
     if (pending.targetRole !== roleMode) return;
 
     pendingNavRef.current = null;
-    navigation.navigate(getRoleTabNavigatorName(pending.targetRole), {
+    navigation.navigate('UserTabs', {
       screen: pending.tab,
       params: {
         focusBookingId: pending.bookingId,
@@ -174,7 +173,7 @@ export default function NotificationsScreen() {
 
   const navigateToTarget = (target: NotificationNavigationTarget) => {
     if (target.targetRole === roleMode) {
-      navigation.navigate(getRoleTabNavigatorName(target.targetRole), {
+      navigation.navigate('UserTabs', {
         screen: target.tab,
         params: {
           focusBookingId: target.bookingId,
@@ -184,13 +183,9 @@ export default function NotificationsScreen() {
       return;
     }
 
-    if (
-      availableRoles.includes(
-        target.targetRole as (typeof availableRoles)[number],
-      )
-    ) {
+    if (availableRoles.includes(target.targetRole as typeof availableRoles[number])) {
       pendingNavRef.current = target;
-      pickRole(target.targetRole as (typeof availableRoles)[number]);
+      pickRole(target.targetRole as typeof availableRoles[number]);
       return;
     }
   };
@@ -244,7 +239,9 @@ export default function NotificationsScreen() {
           label="Read all"
           tone="secondary"
           onPress={onMarkAllRead}
-          loading={actionLoading && pendingAction?.kind === 'mark-all-read'}
+          loading={
+            actionLoading && pendingAction?.kind === 'mark-all-read'
+          }
           disabled={items.length === 0}
         />
       </View>
