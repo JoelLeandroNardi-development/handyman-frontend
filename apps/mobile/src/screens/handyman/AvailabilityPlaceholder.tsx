@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { APP_BACKGROUND_IMAGE } from '../../theme/appChrome';
 import DateTimePicker, {

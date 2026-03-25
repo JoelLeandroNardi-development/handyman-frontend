@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { Alert, ScrollView, Text, View } from 'react-native';
 import {
   createBooking,
