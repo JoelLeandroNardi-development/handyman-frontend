@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { getMeUser, updateMe, type UserResponse } from '@smart/api';
 import { useSession } from '../../auth/SessionProvider';
@@ -6,7 +6,7 @@ import { useAsyncOperation } from '../../hooks/useAsyncOperation';
 import { useBottomGuard } from '../../hooks/useBottomGuard';
 import { useFormState } from '../../hooks/useFormState';
 import { useAppLocation } from '../../location/AppLocationProvider';
-import { createApiClient } from '../../lib/api';
+import { useApi } from '../../lib/ApiProvider';
 import { extractDeviceCoordinates } from '../../lib/coordinates';
 import { toNullableString } from '../../lib/profileForm';
 import { useNotifications } from '../../notifications/NotificationsProvider';
@@ -43,7 +43,7 @@ const initialFormData: UserFormData = {
 };
 
 export default function UserSettings() {
-  const api = useMemo(() => createApiClient(), []);
+  const api = useApi();
   const { colors } = useTheme();
   const { availableRoles, pickRole, logout } = useSession();
   const { unreadCount } = useNotifications();

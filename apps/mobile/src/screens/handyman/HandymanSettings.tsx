@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -13,7 +13,7 @@ import {
   type HandymanResponse,
   type SkillCatalogFlatResponse,
 } from '@smart/api';
-import { createApiClient } from '../../lib/api';
+import { useApi } from '../../lib/ApiProvider';
 import { toNullableString } from '../../lib/profileForm';
 import { useTheme } from '../../theme';
 import { useSession } from '../../auth/SessionProvider';
@@ -64,7 +64,7 @@ const initialFormData: HandymanFormData = {
 };
 
 export default function HandymanSettings() {
-  const api = useMemo(() => createApiClient(), []);
+  const api = useApi();
   const { colors, tokens } = useTheme();
   const { availableRoles, pickRole, logout } = useSession();
   const { unreadCount } = useNotifications();

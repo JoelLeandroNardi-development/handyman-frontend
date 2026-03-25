@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -22,7 +22,7 @@ import {
   PAGINATION_DEFAULTS,
   normalizeBookingStatus,
 } from '@smart/core';
-import { createApiClient } from '../../lib/api';
+import { useApi } from '../../lib/ApiProvider';
 import {
   canReviewBooking,
   canUserCompleteBooking,
@@ -45,7 +45,7 @@ import { BookingDetailsSheet } from './BookingDetailsSheet';
 export default function BookingsPlaceholder() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const api = useMemo(() => createApiClient(), []);
+  const api = useApi();
   const { colors } = useTheme();
   const { unreadCount } = useNotifications();
 

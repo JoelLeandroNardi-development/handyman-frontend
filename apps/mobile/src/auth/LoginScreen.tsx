@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { ActivityIndicator, ImageBackground, ScrollView, Text, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
@@ -9,7 +9,7 @@ import {
   onboardingUser,
   type SkillCatalogFlatResponse,
 } from "@smart/api";
-import { createApiClient, API_BASE_URL } from "../lib/api";
+import { useApi } from "../lib/ApiProvider";
 import { storeTokenPair } from "./session";
 import { useSession } from "./SessionProvider";
 import { AppButton, AppInput, Card, Label, MutedText, PageHeader, Screen } from "../ui/primitives";
@@ -40,7 +40,7 @@ export default function LoginScreen() {
   const [loadingSkillsCatalog, setLoadingSkillsCatalog] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
-  const api = useMemo(() => createApiClient(), []);
+  const api = useApi();
   const { refresh } = useSession();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();

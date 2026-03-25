@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo } from "react";
 import { Alert, Platform, ToastAndroid } from "react-native";
 import type { NotificationItem } from "@smart/api";
-import { createApiClient } from "../lib/api";
+import { useApi } from "../lib/ApiProvider";
 import { useSession } from "../auth/SessionProvider";
 import { connectNotificationsStream } from "./notificationsSseClient";
 import { useNotificationStore, type NotificationStore } from "./useNotificationStore";
@@ -11,7 +11,7 @@ export type NotificationsContextValue = Omit<NotificationStore, "prependItem">;
 const NotificationsContext = createContext<NotificationsContextValue | null>(null);
 
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
-  const api = useMemo(() => createApiClient(), []);
+  const api = useApi();
   const { session } = useSession();
   const isAuthenticated = !!session;
 

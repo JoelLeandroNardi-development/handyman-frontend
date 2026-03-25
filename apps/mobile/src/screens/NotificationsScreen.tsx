@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, View } from 'react-native';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import {
@@ -7,7 +7,7 @@ import {
   markNotificationRead,
   type NotificationItem,
 } from '@smart/api';
-import { createApiClient } from '../lib/api';
+import { useApi } from '../lib/ApiProvider';
 import { useTheme } from '../theme';
 import { useAsyncOperation } from '../hooks/useAsyncOperation';
 import { useBottomGuard } from '../hooks/useBottomGuard';
@@ -30,7 +30,7 @@ type PendingNotificationAction =
 
 export default function NotificationsScreen() {
   const navigation = useNavigation<any>();
-  const api = useMemo(() => createApiClient(), []);
+  const api = useApi();
   const { colors } = useTheme();
   const isFocused = useIsFocused();
   const { roleMode, availableRoles, pickRole } = useSession();

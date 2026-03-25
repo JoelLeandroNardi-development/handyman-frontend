@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -20,7 +20,7 @@ import { useAsyncOperation } from "../../hooks/useAsyncOperation";
 import {
   PAGINATION_DEFAULTS,
 } from "@smart/core";
-import { createApiClient } from "../../lib/api";
+import { useApi } from "../../lib/ApiProvider";
 import {
   getHandymanJobSections,
 } from '../../lib/bookingSections';
@@ -41,7 +41,7 @@ import { JobDetailsSheet } from './JobDetailsSheet';
 export default function JobsScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const api = useMemo(() => createApiClient(), []);
+  const api = useApi();
   const { session } = useSession();
   const { colors } = useTheme();
   const { unreadCount } = useNotifications();

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { getMe, logout as logoutApi } from "@smart/api";
-import { createApiClient } from "../lib/api";
+import { useApi } from "../lib/ApiProvider";
 import { AUTH_THEME_MODE } from '../theme/appChrome';
 import { useTheme } from "../theme";
 import {
@@ -29,6 +29,7 @@ type SessionContextValue = {
 const SessionContext = createContext<SessionContextValue | null>(null);
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
+  const api = useApi();
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<MobileSession | null>(null);
   const [roleMode, setRoleMode] = useState<RoleMode | null>(null);
@@ -46,7 +47,6 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const api = createApiClient();
       const me = await getMe(api);
       const nextSession = buildSession(token, me);
       setSession(nextSession);
@@ -85,7 +85,6 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     try {
       const refreshToken = await getStoredRefreshToken();
       if (refreshToken) {
-        const api = createApiClient();
         await logoutApi(api, { refresh_token: refreshToken });
       }
     } catch { }
