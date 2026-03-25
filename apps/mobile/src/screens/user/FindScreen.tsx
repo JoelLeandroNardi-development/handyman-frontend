@@ -1,18 +1,5 @@
-import React, { useRef, useState, useMemo } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
-import {
-  createBooking,
-  getHandyman,
-  listHandymanReviews,
-  match,
-  type HandymanResponse,
-  type MatchResult,
-  type SkillCatalogFlatResponse,
-} from '@smart/api';
-import { PAGINATION_DEFAULTS } from '@smart/core';
-import { useAsyncOperation } from '../../hooks/useAsyncOperation';
-import { useApi } from '../../lib/ApiProvider';
-import { useSession } from '../../auth/SessionProvider';
+import React, { useState } from 'react';
+import { ScrollView, Text, View } from 'react-native';
 import { useNotifications } from '../../notifications/NotificationsProvider';
 import { APP_BACKGROUND_IMAGE } from '../../theme/appChrome';
 import { useTheme } from '../../theme';
@@ -23,166 +10,36 @@ import { MapResults } from './FindScreen/MapResults';
 import { HandymenList } from './FindScreen/HandymenList';
 import { SkillSelector } from './FindScreen/SkillSelector';
 import { HandymanDetail } from './FindScreen/HandymanDetail';
-import { combineDateAndTime } from '../../lib/dateTime';
-import type { Coords } from './FindScreen/utils';
-import { useAppLocation } from '../../location/AppLocationProvider';
+import { useApi } from '../../lib/ApiProvider';
+import { useFindSearchState } from './FindScreen/useFindSearchState';
+import { useFindMatchFlow } from './FindScreen/useFindMatchFlow';
+import { useSelectedHandyman } from './FindScreen/useSelectedHandyman';
 
 export default function FindScreen() {
   const api = useApi();
-  const scrollViewRef = useRef<ScrollView | null>(null);
-  const { session } = useSession();
-  const { coords: appCoords } = useAppLocation();
   const { unreadCount } = useNotifications();
   const { colors } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [startTime, setStartTime] = useState(() => {
-    const d = new Date();
-    d.setHours(d.getHours() + 1, 0, 0, 0);
-    return d;
-  });
-  const [endTime, setEndTime] = useState(() => {
-    const d = new Date();
-    d.setHours(d.getHours() + 2, 0, 0, 0);
-    return d;
-  });
-  const [selectedSkillKey, setSelectedSkillKey] = useState('');
-  const [jobDescription, setJobDescription] = useState('');
-  const [userCoords, setUserCoords] = useState<Coords | null>(appCoords);
-  const [catalog, setCatalog] = useState<SkillCatalogFlatResponse | null>(null);
-  const [skillModalOpen, setSkillModalOpen] = useState(false);
 
-  const [results, setResults] = useState<MatchResult[]>([]);
-  const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
+  const search = useFindSearchState();
 
-  const [selectedHandymanProfile, setSelectedHandymanProfile] =
-    useState<HandymanResponse | null>(null);
-
-  const currentUserEmail = session?.email ?? '';
-  const selected = results.find(r => r.email === selectedEmail) ?? null;
-  const hasResults = results.length > 0;
-
-  const desiredStartDate = useMemo(
-    () => combineDateAndTime(selectedDate, startTime),
-    [selectedDate, startTime],
-  );
-  const desiredEndDate = useMemo(
-    () => combineDateAndTime(selectedDate, endTime),
-    [selectedDate, endTime],
-  );
-
-  React.useEffect(() => {
-    if (!userCoords && appCoords) {
-      setUserCoords(appCoords);
-    }
-  }, [appCoords, userCoords]);
-
-  React.useEffect(() => {
-    if (!hasResults) {
-      return;
-    }
-
-    requestAnimationFrame(() => {
-      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-    });
-  }, [hasResults]);
-
-  const { execute: handleMatch, loading: loadingMatch } = useAsyncOperation({
-    alertTitle: 'Search',
+  const handyman = useSelectedHandyman({
+    jobDescription: search.jobDescription,
+    desiredStartDate: search.desiredStartDate,
+    desiredEndDate: search.desiredEndDate,
   });
 
-  const { execute: handleOpenHandyman, loading: profileLoading } =
-    useAsyncOperation({
-      alertTitle: 'Handyman Profile',
-    });
+  const matchFlow = useFindMatchFlow({
+    userCoords: search.userCoords,
+    selectedSkillKey: search.selectedSkillKey,
+    jobDescription: search.jobDescription,
+    desiredStartDate: search.desiredStartDate,
+    desiredEndDate: search.desiredEndDate,
+    onMatchComplete: handyman.clearSelection,
+  });
 
-  const { execute: handleCreateBooking, loading: creatingBooking } =
-    useAsyncOperation({
-      alertTitle: 'Create Booking',
-    });
-
-  async function performMatch() {
-    if (!userCoords) {
-      throw new Error('Tap "Use my location" first.');
-    }
-    if (!selectedSkillKey) {
-      throw new Error('Please choose a skill.');
-    }
-    if (desiredEndDate <= desiredStartDate) {
-      throw new Error('End time must be after start time.');
-    }
-
-    const res = await match(api, {
-      latitude: userCoords.latitude,
-      longitude: userCoords.longitude,
-      skill: selectedSkillKey,
-      job_description: jobDescription.trim() || null,
-      desired_start: desiredStartDate.toISOString(),
-      desired_end: desiredEndDate.toISOString(),
-    });
-
-    if (res.length === 0) {
-      setResults([]);
-      setSelectedEmail(null);
-      setSelectedHandymanProfile(null);
-      Alert.alert(
-        'No handyman available',
-        'No handyman available for the specified skill and time window.',
-      );
-      return;
-    }
-
-    setResults(res);
-    setSelectedEmail(null);
-    setSelectedHandymanProfile(null);
-  }
-
-  function resetSearchView() {
-    setSelectedEmail(null);
-    setSelectedHandymanProfile(null);
-    setResults([]);
-  }
-
-  async function performOpenHandyman(email: string) {
-    setSelectedEmail(email);
-    const [profile] = await Promise.all([
-      getHandyman(api, email),
-      listHandymanReviews(api, email, {
-        limit: 10,
-        offset: PAGINATION_DEFAULTS.OFFSET,
-      }),
-    ]);
-    setSelectedHandymanProfile(profile);
-  }
-
-  async function performCreateBooking() {
-    if (!selectedEmail) {
-      throw new Error('No handyman selected.');
-    }
-    if (!currentUserEmail) {
-      throw new Error('Could not determine current user from /me.');
-    }
-    if (desiredEndDate <= desiredStartDate) {
-      throw new Error('End time must be after start time.');
-    }
-
-    const booking = await createBooking(api, {
-      user_email: currentUserEmail,
-      handyman_email: selectedEmail,
-      desired_start: desiredStartDate.toISOString(),
-      desired_end: desiredEndDate.toISOString(),
-      job_description: jobDescription.trim() || null,
-    });
-
-    setSelectedEmail(null);
-    setSelectedHandymanProfile(null);
-
-    Alert.alert(
-      'Booking created',
-      `Status: ${booking.status}\nBooking ID: ${booking.booking_id}`,
-    );
-  }
+  const selected = matchFlow.results.find(r => r.email === handyman.selectedEmail) ?? null;
 
   return (
     <Screen backgroundImage={APP_BACKGROUND_IMAGE}>
@@ -195,20 +52,20 @@ export default function FindScreen() {
       />
 
       <ScrollView
-        ref={scrollViewRef}
+        ref={matchFlow.scrollViewRef}
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingBottom: 28,
           gap: 14,
         }}>
-        {hasResults ? (
+        {matchFlow.hasResults ? (
           <>
             <Card>
               <CardTitle
                 title="Current search"
                 action={
                   <Text style={{ color: colors.textFaint, fontWeight: '700' }}>
-                    {results.length} found
+                    {matchFlow.results.length} found
                   </Text>
                 }
               />
@@ -233,19 +90,22 @@ export default function FindScreen() {
                     CURRENT SEARCH
                   </Text>
                   <Text style={{ color: colors.text, fontWeight: '800' }}>
-                    {catalog?.categories
+                    {search.catalog?.categories
                       .flatMap(category => category.skills)
-                      .find(skill => skill.key === selectedSkillKey)?.label ?? 'Selected skill'}
+                      .find(skill => skill.key === search.selectedSkillKey)?.label ?? 'Selected skill'}
                   </Text>
                   <Text style={{ color: colors.textSoft }}>
-                    {desiredStartDate.toLocaleString()} → {desiredEndDate.toLocaleString()}
+                    {search.desiredStartDate.toLocaleString()} → {search.desiredEndDate.toLocaleString()}
                   </Text>
                 </View>
 
                 <ButtonRow>
                   <AppButton
                     label="Edit search"
-                    onPress={resetSearchView}
+                    onPress={() => {
+                      handyman.clearSelection();
+                      matchFlow.resetSearchView();
+                    }}
                     tone="secondary"
                     style={{ flex: 1 }}
                   />
@@ -254,56 +114,54 @@ export default function FindScreen() {
             </Card>
 
             <HandymenList
-              results={results}
-              userCoords={userCoords}
-              loadingMatch={loadingMatch}
-              selectedEmail={selectedEmail}
-              onHandymanSelected={email =>
-                handleOpenHandyman(() => performOpenHandyman(email))
-              }
+              results={matchFlow.results}
+              userCoords={search.userCoords}
+              loadingMatch={matchFlow.loadingMatch}
+              selectedEmail={handyman.selectedEmail}
+              onHandymanSelected={handyman.openHandyman}
             />
           </>
         ) : (
           <SearchFilters
             api={api}
-            catalog={catalog}
-            selectedSkillKey={selectedSkillKey}
-            selectedDate={selectedDate}
-            startTime={startTime}
-            endTime={endTime}
-            jobDescription={jobDescription}
-            userCoords={userCoords}
-            loadingMatch={loadingMatch}
-            onCatalogLoaded={setCatalog}
-            onSkillKeySelected={setSelectedSkillKey}
-            onDateChanged={setSelectedDate}
-            onStartTimeChanged={setStartTime}
-            onEndTimeChanged={setEndTime}
-            onJobDescriptionChanged={setJobDescription}
-            onMatch={() => handleMatch(performMatch)}
-            onSkillModalOpen={() => setSkillModalOpen(true)}
+            catalog={search.catalog}
+            selectedSkillKey={search.selectedSkillKey}
+            selectedDate={search.selectedDate}
+            startTime={search.startTime}
+            endTime={search.endTime}
+            jobDescription={search.jobDescription}
+            userCoords={search.userCoords}
+            loadingMatch={matchFlow.loadingMatch}
+            onCatalogLoaded={search.setCatalog}
+            onSkillKeySelected={search.setSelectedSkillKey}
+            onDateChanged={search.setSelectedDate}
+            onStartTimeChanged={search.setStartTime}
+            onEndTimeChanged={search.setEndTime}
+            onJobDescriptionChanged={search.setJobDescription}
+            onMatch={matchFlow.runMatch}
+            onSkillModalOpen={() => search.setSkillModalOpen(true)}
           />
         )}
 
-        <MapResults userCoords={userCoords} results={results} />
+        <MapResults userCoords={search.userCoords} results={matchFlow.results} />
       </ScrollView>
 
       <SkillSelector
-        open={skillModalOpen}
-        catalog={catalog}
-        selectedSkillKey={selectedSkillKey}
-        onSkillSelected={setSelectedSkillKey}
-        onClose={() => setSkillModalOpen(false)}
+        open={search.skillModalOpen}
+        catalog={search.catalog}
+        selectedSkillKey={search.selectedSkillKey}
+        onSkillSelected={search.setSelectedSkillKey}
+        onClose={() => search.setSkillModalOpen(false)}
       />
 
       <HandymanDetail
         open={!!selected}
         selected={selected}
-        handymanProfile={selectedHandymanProfile}
-        profileLoading={profileLoading}
-        bookingLoading={creatingBooking}
-        onClose={() => setSelectedEmail(null)}
-        onBookingRequested={() => handleCreateBooking(performCreateBooking)}
+        handymanProfile={handyman.selectedHandymanProfile}
+        profileLoading={handyman.profileLoading}
+        bookingLoading={handyman.creatingBooking}
+        onClose={handyman.closeHandyman}
+        onBookingRequested={handyman.requestBooking}
       />
     </Screen>
   );
